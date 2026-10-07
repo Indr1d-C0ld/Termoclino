@@ -1,0 +1,238 @@
+{
+  "formato": "termoclino-piattaforma/1",
+  "id": "alfa",
+  "aggiornato": "2026-10-07",
+  "identita": {
+    "nome": "Alfa",
+    "designazione": "progetto 705 / 705K «Lira»",
+    "tipo": "SSN",
+    "nazione": "URSS",
+    "lato": "urss",
+    "progetto": "705 (Leningrado, reattore OK-550) e 705K (Severodvinsk, reattore BM-40A)",
+    "configurazione": "unita' di serie 705/705K del 1985-1989; i due progetti differiscono solo per l'impianto e la lunghezza",
+    "primo_in_servizio": {"valore": 1971, "unita": "anno", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Prototipo K-64, 31/12/1971; radiato nel 1974 dopo la solidificazione del refrigerante."},
+    "prima_unita_di_serie": {"valore": 1977, "unita": "anno", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "K-123 (705K), 12/12/1977."},
+    "unita_costruite": {"valore": 7, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "K-64 piu' 6 di serie (K-316, K-373, K-463 a Leningrado; K-123, K-432, K-493 a Severodvinsk)."},
+    "operativi_per_anno": {
+      "1985": {"valore": 5, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "6 in organico, ma K-123 in grande lavoro dal 6/1983 all'8/1992. FAS segnala un'unita' ritirata verso il 1986-87 dopo un incidente al reattore [FAS-705]: deepstorm non lo conferma e si segue deepstorm.", "rif": "01_piattaforme.md §2.1"},
+      "1986": {"valore": 5, "unita": "n", "fonte": "[DS-705] [FAS-705]", "confidenza": "stimato"},
+      "1987": {"valore": 5, "unita": "n", "fonte": "[DS-705] [FAS-705]", "confidenza": "stimato"},
+      "1988": {"valore": 5, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato"},
+      "1989": {"valore": 5, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato"},
+      "1990": {"valore": 0, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Le cinque unita' operative escono dal servizio nel 1990: gli scenari 1990-91 usano Victor III, Akula e Sierra (PROGETTO §5.8)."},
+      "1991": {"valore": 0, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato"}
+    },
+    "equipaggio": {"valore": 32, "unita": "n", "fonte": "[DS-705] [PM04]", "confidenza": "stimato", "nota": "Progetto: 16 → 29 (25 ufficiali + 4 mičman) → 32. FAS e Combat Fleets: 31-45."},
+    "turno_combattimento": {"valore": 8, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Sistema di comando «Akkord», nessuna guardia fissa ai macchinari."}
+  },
+  "dimensioni": {
+    "lunghezza": {"valore": 81.4, "unita": "m", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "705; il 705K e' lungo 79,6 m."},
+    "larghezza": {"valore": 10.0, "unita": "m", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "FAS: 9,5 m."},
+    "pescaggio": {"valore": 7.6, "unita": "m", "fonte": "[FAS-705]", "confidenza": "stimato", "intervallo": [6.9, 7.6]},
+    "dislocamento_superficie": {"valore": 2300, "unita": "t", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "705K: 2 280 t. Combat Fleets 1986/87 credeva 2 900 t."},
+    "dislocamento_immersione": {"valore": 3180, "unita": "t", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Variante 3 610 t nelle opere russe; Combat Fleets 3 680 t.", "intervallo": [3180, 3610]}
+  },
+  "propulsione": {
+    "reattore": "OK-550 (705) o BM-40A (705K): un reattore a metallo liquido, eutettico piombo-bismuto; turbina OK-7K",
+    "potenza_termica": {"valore": 155000, "unita": "kW", "fonte": "[DS-705] [FAS-705]", "confidenza": "stimato", "nota": "155 MW termici."},
+    "potenza_asse": {"valore": 29400, "unita": "kW", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "40 000 cavalli metrici."},
+    "assi": {"valore": 1, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato"},
+    "elica_pale": {"valore": 5, "unita": "n", "fonte": "[FAS-705]", "confidenza": "stimato", "nota": "«1 5 bladed propeller» (FAS); deepstorm non lo dice."},
+    "giri_per_nodo": {"valore": 8, "unita": "giri/min/kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Elica ad alto numero di giri ottimizzata per la velocita' (05 §7.2): circa 330 giri/min a 41 kt. Serve solo al DEMON."},
+    "reattore_sempre_acceso": {"valore": true, "fonte": "[DS-705] [FAS-705] [COTE03 p.59]", "confidenza": "stimato", "nota": "Il piombo-bismuto solidifica se si raffredda (K-64, 1974): il reattore non si spegne e lo «sprint and drift» a reattore minimo e' rischioso.", "rif": "01_piattaforme.md §2.4"},
+    "ausiliari": {"valore": 200, "unita": "kW", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "2 motori ausiliari da 100 kW in gondole sugli impennaggi orizzontali, con eliche a pale orientabili."}
+  },
+  "dinamica": {
+    "velocita_max": {"valore": 41, "unita": "kt", "fonte": "[DS-705] [PM04] [COTE03 p.59]", "confidenza": "stimato", "nota": "41 kt in tre fonti indipendenti; nota di deepstorm: «in realta' non oltre 39». Le stime occidentali di 43-46 kt (FAS, Combat Fleets) sono «intelligence d'epoca» per il briefing NATO 1986.", "intervallo": [39, 41], "rif": "01_piattaforme.md §2.2"},
+    "velocita_max_superficie": {"valore": 14, "unita": "kt", "fonte": "[DS-705]", "confidenza": "stimato"},
+    "telegrafo": {
+      "tipo": "percentuale",
+      "minimo": {"valore": -10, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato", "nota": "Graduazione del telegrafo dell'Alfa nel gioco del 1989: -10, 0, 25, 50, 75, 100, 110, osservata in DOSBox (docs/ORIGINALE.md, schermata 093); il manuale non la descrive."},
+      "massimo": {"valore": 110, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato", "nota": "110 = tutta forza."},
+      "legge": "lineare nei giri: velocita' = velocita_max · percentuale / 110",
+      "nota": "La percentuale si legge come giri nominali dell'asse (velocita' proporzionale ai giri): scelta nozionale, giocabile anche alle velocita' basse. Il telegrafo e' continuo, le tacche sono quelle di ordini_macchina."
+    },
+    "ordini_macchina": [
+      {"ordine": "-10%", "percentuale": {"valore": -10, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato"}, "velocita": {"valore": -3.7, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Dalla legge lineare del telegrafo."}},
+      {"ordine": "0%", "percentuale": {"valore": 0, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato"}, "velocita": {"valore": 0, "unita": "kt", "fonte": "[FIL-688]", "confidenza": "documentato"}},
+      {"ordine": "25%", "percentuale": {"valore": 25, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato"}, "velocita": {"valore": 9.3, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"}},
+      {"ordine": "50%", "percentuale": {"valore": 50, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato"}, "velocita": {"valore": 18.6, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"}},
+      {"ordine": "75%", "percentuale": {"valore": 75, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato"}, "velocita": {"valore": 28.0, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"}},
+      {"ordine": "100%", "percentuale": {"valore": 100, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato"}, "velocita": {"valore": 37.3, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Vicino ai «non oltre 39 kt» del servizio reale."}},
+      {"ordine": "110%", "percentuale": {"valore": 110, "unita": "%", "fonte": "[FIL-688]", "confidenza": "documentato"}, "velocita": {"valore": 41, "unita": "kt", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Coincide con velocita_max."}}
+    ],
+    "accelerazione": {
+      "tau": {"valore": 12, "unita": "s", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Tarato sulla fonte: l'impianto a metallo liquido non richiedeva il passaggio a parametri elevati e il battello «poteva sviluppare la piena velocita' entro un minuto». Con questi valori: da 0 a 40 kt in circa 59 s.", "rif": "01_piattaforme.md §2.4"},
+      "max": {"valore": 1.0, "unita": "kt/s", "fonte": "[DS-705]", "confidenza": "nozionale"}
+    },
+    "decelerazione": {
+      "tau": {"valore": 75, "unita": "s", "fonte": "[DS-705] [CONO]", "confidenza": "nozionale", "nota": "Stima: resistenza a 41 kt ≈ 0,7 × 29,4 MW / 21,1 m/s ≈ 1,0 MN su 3 180 t + 10 % ≈ 0,28 m/s² = 0,55 kt/s; tau ≈ v_max / decelerazione. Rendimento e massa aggiunta nozionali."},
+      "max": {"valore": 0.55, "unita": "kt/s", "fonte": "[DS-705] [CONO]", "confidenza": "nozionale"}
+    },
+    "frenata_rev": {"valore": 0.8, "unita": "kt/s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Battello leggero e potente: frena meglio del 688."},
+    "accostata": {
+      "angolo_timone_max": {"valore": 30, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "diametro_tattico": {"valore": 360, "unita": "m", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Tarato sull'inversione di rotta di 180° alla velocita' massima in 42 s [DS-705]: a 41 kt con il 30 % di perdita di velocita' (14,8 m/s) e raggio 180 m l'accostata vale 4,7 °/s, 180° in 38 s piu' 4 s di risposta. Circa 4,4 lunghezze.", "rif": "01_piattaforme.md §2.4"},
+      "velocita_angolare_max": {"valore": 5, "unita": "°/s", "fonte": "[DS-705]", "confidenza": "nozionale"},
+      "tempo_risposta": {"valore": 4, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "perdita_velocita": {"valore": 0.3, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale"}
+    },
+    "quota": {
+      "assetto_max": {"valore": 20, "unita": "°", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Alta manovrabilita' dichiarata dalla fonte; il valore e' nozionale."},
+      "velocita_assetto": {"valore": 1.5, "unita": "°/s", "fonte": "[DS-705]", "confidenza": "nozionale"},
+      "velocita_piena_efficacia_timoni": {"valore": 6, "unita": "kt", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "Come per il 688: i timoni vogliono abbrivio."},
+      "velocita_verticale_max": {"valore": 6.0, "unita": "m/s", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "A tutta forza e 20° di assetto sarebbe 7,2 m/s: il tetto lo limita."},
+      "velocita_verticale_zavorra": {"valore": 0.1, "unita": "m/s", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "velocita_emersione_emergenza": {"valore": 4.0, "unita": "m/s", "fonte": "[CONO]", "confidenza": "nozionale"}
+    }
+  },
+  "profondita": {
+    "periscopica": {"valore": 16, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Scafo e vela piu' bassi del 688; valore non trovato."},
+    "automatica": {"valore": 45.72, "unita": "m", "fonte": "[MAN-688 p. 45] [FIL-688]", "confidenza": "documentato", "nota": "Anche la pulsantiera dell'Alfa del 1989 ha «150 FT» (docs/ORIGINALE.md, schermata 093)."},
+    "operativa": {"valore": 320, "unita": "m", "fonte": "[DS-705] [COTE03 p.59]", "confidenza": "stimato", "nota": "Рабочая глубина 320 (350?) m; Cote: operativa «more like 1,100 feet» (335 m). Le stime occidentali iniziali (610-760 m, CFW «oltre 900 m») erano sbagliate.", "intervallo": [320, 350], "rif": "01_piattaforme.md §2.2"},
+    "collaudo": {"valore": 400, "unita": "m", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Предельная глубина 400 (420?) m, equivalente della test depth USA. Scende piu' del 688 (290 m).", "intervallo": [400, 420]},
+    "collasso": {"valore": 600, "unita": "m", "fonte": "[PM04]", "confidenza": "nozionale", "nota": "≈ 1,5 × la profondita' limite (glossario di Polmar & Moore)."}
+  },
+  "acustica": {
+    "rumore_irradiato": {
+      "gradino_sl0": {"valore": 14, "unita": "dB", "fonte": "[FAS-705] [DS-705] [CW23]", "confidenza": "nozionale", "nota": "A bassa velocita' «simile agli altri SSN sovietici» di 2ª generazione, con zattera ad anello migliore del Victor I: fra Victor III e Victor I. La posizione regge anche se la C4 alzasse l'Early Victor III a +10/+12.", "rif": "01_piattaforme.md §3.3"},
+      "velocita_rif": {"valore": 5, "unita": "kt", "fonte": "[ONI96]", "confidenza": "nozionale"},
+      "velocita_min": {"valore": 3, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Il reattore resta sempre acceso: il fondo di macchinario non sparisce mai."},
+      "pendenza": {"valore": 20, "unita": "dB/decade", "fonte": "[SONALYSTS-SC] [FUN-8]", "confidenza": "nozionale", "rif": "05_acustica.md §7.3"},
+      "pendenza_extra": {"valore": 1, "unita": "dB/kt", "fonte": "[FAS-705]", "confidenza": "nozionale", "nota": "«Extremely noisy at high speeds»: un decibel per nodo IN PIU' oltre soglia_pendenza_extra, sopra la legge comune (che a 15 kt vale circa 0,5 dB/kt). A 41 kt: +14 + 18,3 + 26 = +58 dB sul 688I a 5 kt, cavitazione esclusa.", "rif": "01_piattaforme.md §3.2"},
+      "soglia_pendenza_extra": {"valore": 15, "unita": "kt", "fonte": "[FAS-705]", "confidenza": "nozionale"},
+      "aspetto_poppa": {"valore": 3, "unita": "dB", "fonte": "[MCK12]", "confidenza": "nozionale"},
+      "aspetto_prua": {"valore": -2, "unita": "dB", "fonte": "[MCK12]", "confidenza": "nozionale"}
+    },
+    "cavitazione": {
+      "velocita_rif": {"valore": 6, "unita": "kt", "fonte": "[FUN-8] [PAT3676802]", "confidenza": "nozionale", "nota": "Elica ad alto numero di giri ottimizzata per la velocita': 6 kt a 20 m, 14 kt a 150 m, 19 kt a 300 m, 22 kt alla quota limite di 400 m. A tutta forza l'Alfa cavita a qualunque quota.", "rif": "05_acustica.md §7.2"},
+      "quota_rif": {"valore": 20, "unita": "m", "fonte": "[FUN-8]", "confidenza": "nozionale"},
+      "salto": {"valore": 18, "unita": "dB", "fonte": "[CW-MOD] [FUN-8]", "confidenza": "nozionale"}
+    },
+    "rumore_proprio": {
+      "livello_macchinario": {"valore": 48, "unita": "dB", "fonte": "[DS-705] [CW23]", "confidenza": "nozionale", "nota": "3 dB sopra il 688: macchinario rumoroso su zattera ad anello, meno efficace delle zattere orizzontali; i piu' rumorosi su ammortizzatori pneumatici [DS-705].", "rif": "05_acustica.md §7.1"},
+      "esponente": {"valore": 6, "unita": "1", "fonte": "[URICK83]", "confidenza": "stimato"},
+      "velocita_soglia_sfera": {"valore": 8, "unita": "kt", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "A 41 kt il rumore proprio sale di oltre 40 dB: a tutta forza l'Alfa e' sordo."},
+      "velocita_soglia_conforme": {"valore": 5, "unita": "kt", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Senza array conforme: valore per uniformita' di schema."},
+      "velocita_soglia_rimorchiata": {"valore": 3, "unita": "kt", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Senza antenna rimorchiata: valore per uniformita' di schema."}
+    },
+    "tonali": [
+      {
+        "nome": "rete elettrica a 400 Hz",
+        "frequenza": {"valore": 400, "unita": "Hz", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Due generatori sincroni trifase da 1 500 kW, 400 V, 400 Hz: il primo SSN sovietico con la rete a frequenza elevata. Riga che distingue l'Alfa dai battelli a 50 Hz."},
+        "sopra_banda_larga": {"valore": 12, "unita": "dB", "fonte": "[COTE03 p.67]", "confidenza": "nozionale", "nota": "Le classi sovietiche di 2ª generazione hanno righe marcate (01 §3.3, avvertenza 2)."},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 41, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Sempre presente."}
+      },
+      {
+        "nome": "turbopompe del metallo liquido",
+        "frequenza": {"valore": 47, "unita": "Hz", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Pompe di circolazione del primo circuito (tre sul 705, due turbopompe in parallelo sul 705K): frequenza nozionale."},
+        "sopra_banda_larga": {"valore": 10, "unita": "dB", "fonte": "[COTE03 p.67]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 41, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Sempre presente: il reattore non si spegne mai."}
+      },
+      {
+        "nome": "turbina e riduttore ad alta potenza",
+        "frequenza": {"valore": 165, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "sopra_banda_larga": {"valore": 8, "unita": "dB", "fonte": "[FAS-705]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 25, "unita": "kt", "fonte": "[FAS-705]", "confidenza": "nozionale", "nota": "Cambio di regime oltre i 25 kt: la riga che annuncia lo scatto."},
+        "a_velocita": {"valore": 41, "unita": "kt", "fonte": "[FAS-705]", "confidenza": "nozionale"}
+      }
+    ],
+    "forza_bersaglio": {
+      "prua_poppa": {"valore": 10, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "rif": "05_acustica.md §2.3"},
+      "traverso": {"valore": 25, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale"},
+      "correzione_rivestimento": {"valore": 0, "unita": "dB", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Neutra invece dei +3 dB proposti da 05 per gli scafi senza piastrelle: deepstorm sostiene che le forme dello scafo riducevano l'eco (fonte di parte, solo qualitativa). CONTRADDIZIONI C19 risolta."}
+    }
+  },
+  "sensori": {
+    "sfera": {
+      "presente": {"valore": true, "fonte": "[DS-705] [FAS-705]", "confidenza": "stimato"},
+      "nome": "GAK «Okean» (nel testo di deepstorm e per FAS) / «Enisej» MGK-1001 (nella tabella di deepstorm)",
+      "banda_min": {"valore": 1000, "unita": "Hz", "fonte": "[DS-705]", "confidenza": "nozionale", "rif": "04_sensori.md §4.6.1"},
+      "banda_max": {"valore": 5000, "unita": "Hz", "fonte": "[DS-705]", "confidenza": "nozionale"},
+      "diametro_equivalente": {"valore": 3.0, "unita": "m", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Apertura equivalente scelta perche' σ e fascio risultino circa del 50 % peggiori della sfera USA (06 §5.4: +30-50 % sulle classi vecchie) e il DI circa 3,5 dB sotto il BQQ-5 (04: Okean ≈ Rubikon, 1-3 dB sotto)."},
+      "frequenza_rif": {"valore": 2000, "unita": "Hz", "fonte": "[DS-705]", "confidenza": "nozionale"},
+      "indice_direttivita": {"valore": 22.0, "unita": "dB", "fonte": "[DS-705]", "confidenza": "calcolato", "nota": "20·log(π·D/λ) con il diametro nozionale; 16 dB a 1 kHz."},
+      "fascio_3db": {"valore": 14.75, "unita": "°", "fonte": "[DS-705]", "confidenza": "calcolato", "nota": "59°·λ/D: con R1 da' 7,4° a soglia e 2,3° con SE = 10 dB, contro i 2,5° / 8° di 04."},
+      "sigma_min": {"valore": 0.75, "unita": "°", "fonte": "[COLL94]", "confidenza": "nozionale", "nota": "0,5° della sfera USA + 50 %.", "rif": "CONTRADDIZIONI.md §4 R1"},
+      "coefficiente_sigma": {"valore": 0.5, "unita": "1", "fonte": "[COLL94]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R1"},
+      "arco_baffles": {"valore": 70, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "rif": "04_sensori.md §4.6.1"}
+    },
+    "sfera_attiva": {
+      "presente": {"valore": true, "fonte": "[FAS-705]", "confidenza": "stimato", "nota": "«Okean active/passive sonar»."},
+      "frequenza": {"valore": 3000, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "settore": {"valore": 60, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"}
+    },
+    "conforme": {
+      "presente": {"valore": false, "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Nessuna antenna di fianco nell'elenco del materiale (le avranno gli Akula con lo Skat-3)."}
+    },
+    "rimorchiata": {
+      "presente": {"valore": false, "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Nessuna antenna rimorchiata nell'elenco del materiale radioelettronico del progetto 705 (assenza in un elenco, non prova formale). Il gioco del 1989 gliela dava, con limite al 50 % [MAN-688 p. 48]. Il Victor III la porta nella gondola sulla deriva."}
+    },
+    "intercettazione": {
+      "presente": {"valore": true, "fonte": "[FAS-705]", "confidenza": "stimato", "nota": "FAS chiama «Yenisei» il ricevitore d'intercettazione e «Okean» il sonar: puo' spiegare la doppia denominazione di deepstorm (CONTRADDIZIONI L7)."},
+      "nome": "«Enisej» (secondo FAS)",
+      "banda_min": {"valore": 1000, "unita": "Hz", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
+      "banda_max": {"valore": 60000, "unita": "Hz", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
+      "sigma_bassa": {"valore": 5, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
+      "sigma_media": {"valore": 10, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
+      "sigma_alta": {"valore": 45, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale"}
+    },
+    "alta_frequenza": {
+      "presente": {"valore": false, "fonte": "[MAN-688 pp. 38–39]", "confidenza": "nozionale", "nota": "Niente contour imaging sull'Alfa, come nel 1989. FAS elenca un sonar per mine «MG-24 Luch»: non verificato, fuori da F1."}
+    },
+    "periscopio": {
+      "presente": {"valore": true, "fonte": "[DS-705]", "confidenza": "stimato"},
+      "numero": {"valore": 1, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Periscopio universale «Signal»."},
+      "errore_stadimetro": {"valore": 7, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Come il 688 (CONTRADDIZIONI C10)."}
+    }
+  },
+  "armi": {
+    "tubi": {
+      "numero": {"valore": 6, "unita": "n", "fonte": "[DSTORM-705]", "confidenza": "stimato", "nota": "6 tubi da 533 mm a prua, pneumoidraulici, caricamento rapido; tiro da quota periscopica fino alla quota massima."},
+      "calibro": {"valore": 0.533, "unita": "m", "fonte": "[DSTORM-705]", "confidenza": "stimato"},
+      "posizione": "a prua",
+      "tempo_ricarica": {"valore": 120, "unita": "s", "fonte": "[DSTORM-705]", "confidenza": "nozionale", "nota": "Meta' del 688: la fonte parla di caricamento rapido senza cifre."}
+    },
+    "capacita": {"valore": 20, "unita": "n", "fonte": "[DSTORM-705]", "confidenza": "stimato", "nota": "20 siluri (SAET-60A, SET-65A) oppure 24 (36?) mine PMR-1/PMR-2. Il 1989 ne dava 18."},
+    "vls": {"valore": 0, "unita": "n", "fonte": "[DSTORM-705]", "confidenza": "stimato"},
+    "filoguida": {"valore": false, "fonte": "[MR-TEST71]", "confidenza": "stimato", "nota": "Il TEST-71 filoguidato non compare fra i vettori (641, 641B, 877, 671, 945): niente filoguida per l'Alfa (02 §2.7)."},
+    "dotazioni": [
+      {
+        "dal_anno": {"valore": 1985, "unita": "anno", "fonte": "[MR-SET65]", "confidenza": "stimato"},
+        "al_anno": {"valore": 1989, "unita": "anno", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Ultimo anno operativo."},
+        "voci": [
+          {"arma": "SET-65A", "numero": {"valore": 14, "unita": "n", "fonte": "[MR-SET65] [DSTORM-705]", "confidenza": "nozionale", "nota": "Antisom, testa attiva «Sapfir» da 800 m; versione 65A (1972) con immissione elettrica dei dati per il pr. 705."}},
+          {"arma": "SAET-60A", "numero": {"valore": 4, "unita": "n", "fonte": "[MR-SAET60] [DSTORM-705]", "confidenza": "nozionale", "nota": "Antinave, testa passiva: utile solo contro unita' di superficie."}},
+          {"arma": "simulatore semovente", "numero": {"valore": 2, "unita": "n", "fonte": "[KORZH10] [MR-MG74]", "confidenza": "nozionale", "nota": "Occupano due posti del deposito (tipo MG-44/MG-74). L'MG-74 non elenca il 705 fra i vettori (CONTRADDIZIONI L4): ipotesi dichiarata."}}
+        ]
+      }
+    ],
+    "contromisure": {
+      "tipo": "apparati alla deriva (tipo MG-34) da un piccolo lanciatore interno, piu' i simulatori nei tubi",
+      "lanciatori": {"valore": 1, "unita": "n", "fonte": "[KORZH10]", "confidenza": "nozionale", "nota": "Dispositivo di tipo «VIPS», gia' presente sui sottomarini sovietici degli anni '60 (CONTRADDIZIONI L4)."},
+      "dotazione": {"valore": 4, "unita": "n", "fonte": "[KORZH10]", "confidenza": "nozionale", "nota": "Dotazione reale ignota (03 §3.6); il 1989 dava all'Alfa 4 noisemaker."},
+      "tempo_ricarica": {"valore": 30, "unita": "s", "fonte": "[KORZH10]", "confidenza": "nozionale"},
+      "durata": {"valore": 300, "unita": "s", "fonte": "[KORZH10]", "confidenza": "nozionale", "rif": "03_contromisure.md §3.5"}
+    }
+  },
+  "riferimento_1989": {
+    "velocita_max": {"valore": 42, "unita": "kt", "fonte": "[MAN-688 pp. 60–61]", "confidenza": "documentato"},
+    "profondita_max": {"valore": 548.6, "unita": "m", "fonte": "[MAN-688 pp. 60–61]", "confidenza": "documentato", "nota": "1 800 ft; gli autori ammettono di aver alterato le profondita' sovietiche."},
+    "rimorchiata": {"valore": true, "fonte": "[MAN-688 p. 48]", "confidenza": "documentato", "nota": "Nel 1989 l'Alfa filava un towed array, con limite al 50 % della velocita'."},
+    "limite_velocita_rimorchiata": {"valore": 0.5, "unita": "1", "fonte": "[MAN-688 p. 48]", "confidenza": "documentato"},
+    "siluri": {"valore": 18, "unita": "n", "fonte": "[MAN-688 pp. 18–28]", "confidenza": "documentato", "nota": "«Type 53»."},
+    "noisemaker": {"valore": 4, "unita": "n", "fonte": "[MAN-688 pp. 18–28]", "confidenza": "documentato"}
+  },
+  "contraddizioni": {
+    "C4": "aperta: tocca Akula e Victor III; l'Alfa a +14 resta fra Victor III e Victor I anche con la proposta +10/+12",
+    "C5": "risolta per la scala di riferimento: vale 01 §3.3",
+    "C8": "risolta con R1, σ sovietico +50 % come in 06 §5.4",
+    "C10": "risolta: stadimetro ±7 %",
+    "C13": "non usata in F1: l'MG-74 si data 1972-74 [MR-MG74] [KORZH10]",
+    "C19": "risolta: correzione TS neutra (0 dB)",
+    "L4": "aperta e dichiarata: i 2 simulatori dell'Alfa sono un'ipotesi",
+    "L7": "annotata: FAS chiama «Yenisei» il ricevitore d'intercettazione e «Okean» il sonar"
+  }
+}

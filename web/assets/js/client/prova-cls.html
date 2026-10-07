@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prova interprete CLS</title>
+<style>
+  :root {
+    --fondo: #14171c; --pannello: #1d2128; --bordo: #2e343e; --testo: #d8dde5; --tenue: #8a93a1;
+    --ok: #5fd38a; --ko: #ff6b6b; --accento: #6cb6ff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--testo); font: 14px/1.45 system-ui, sans-serif; }
+  header { position: sticky; top: 0; z-index: 2; background: var(--pannello); border-bottom: 1px solid var(--bordo);
+    padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  header label { color: var(--tenue); display: inline-flex; gap: 6px; align-items: center; }
+  header select, header input { background: var(--fondo); color: var(--testo); border: 1px solid var(--bordo);
+    border-radius: 4px; padding: 2px 6px; }
+  #stato { color: var(--tenue); margin-left: auto; }
+  main { padding: 16px; display: grid; gap: 16px; }
+  .lavoro { background: var(--pannello); border: 1px solid var(--bordo); border-radius: 6px; padding: 12px; min-height: 260px; }
+  .lavoro h2 { font-size: 14px; margin: 0 0 8px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 6px 12px; }
+  .lavoro h2 small { color: var(--tenue); font-weight: 400; }
+  .esito { font-weight: 600; }
+  .esito.ok { color: var(--ok); } .esito.ko { color: var(--ko); }
+  .vedute { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+  figure { margin: 0; min-width: 0; max-width: 100%; }
+  figcaption { color: var(--tenue); font-size: 12px; margin-top: 4px; }
+  .grande { position: relative; max-width: 100%; overflow: auto; }
+  canvas, img { display: block; image-rendering: pixelated; background: #000; }
+  .grande canvas.sopra { position: absolute; left: 0; top: 0; background: transparent; pointer-events: none; }
+  .vuoto { width: 320px; height: 200px; display: grid; place-items: center; color: var(--tenue);
+    border: 1px dashed var(--bordo); font-size: 12px; text-align: center; padding: 8px; }
+  .errore { color: var(--ko); white-space: pre-wrap; }
+  @media (max-width: 700px) { main { padding: 8px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Interprete CLS — prova visiva</h1>
+  <label>Scala grande
+    <select id="scala"><option>2</option><option>2.5</option><option>3</option><option selected>4</option><option>5</option></select>
+  </label>
+  <label><input type="checkbox" id="hotspot"> hotspot e agganci</label>
+  <label>Lavori <input id="filtro" placeholder="filtra (es. STEER, alfa)" size="18"></label>
+  <span id="stato">caricamento…</span>
+</header>
+<main id="elenco"></main>
+<script type="module">
+// Pagina di prova per lo sviluppo: disegna ogni lavoro di cls/pannelli.json con CanvasTarget a scala 1 e
+// alla scala scelta, accanto alla cattura DOSBox corrispondente se c'è, e controlla che a scala 1 la tela
+// coincida pixel per pixel con FrameBuffer. Le tele si creano solo quando il riquadro entra in vista.
+// Parametri: ?originali=URL della cartella generata dall'estrattore (predefinita ../../originali/),
+// ?schermate=URL delle catture DOSBox (predefinita: privato/ del repo, se la radice del repo è servita).
+import { caricaRisorse, leggiJsonDaUrl, CanvasTarget, FrameBuffer, eseguiLavoro } from './cls.js';
+
+const par = new URLSearchParams(location.search);
+const BASE = new URL(par.get('originali') ?? '../../originali/', location.href);
+const SCHERMATE = new URL(par.get('schermate') ?? '../../../../privato/schermate_dosbox/catalogo/', location.href);
+const $ = (/** @type {string} */ s) => /** @type {HTMLElement} */ (document.querySelector(s));
+const stato = $('#stato');
+
+/** @param {string} url @returns {Promise<HTMLImageElement | null>} */
+function immagine(url) {
+  return new Promise((ok) => {
+    const im = new Image();
+    im.onload = () => ok(im);
+    im.onerror = () => ok(null);
+    im.src = url;
+  });
+}
+
+try {
+  const leggi = leggiJsonDaUrl(BASE);
+  const [risorse, pannelli, palette] = await Promise.all([
+    caricaRisorse(leggi), leggi('cls/pannelli.json'), leggi('palette/DAY.json'),
+  ]);
+  /** @type {Record<string, HTMLImageElement | null>} */
+  const sfondi = {};
+  for (const n of ['688', 'ALFA']) sfondi[`${n}.PAK`] = await immagine(new URL(`sale/${n}.png`, BASE).href);
+  const colori = palette.colori;
+  const elenco = $('#elenco');
+  /** @type {Map<Element, () => void>} */
+  const disegna = new Map();
+  let identici = 0, diversi = 0;
+
+  /** sfondo dei lavori: la sala di controllo sotto gli hotspot di M.CLS */
+  const sfondo = (/** @type {string} */ nome, /** @type {any} */ _pg, /** @type {any} */ b) => {
+    const im = sfondi[nome];
+    if (im && b instanceof CanvasTarget) b.disegnaImmagine(im);
+  };
+
+  /** @param {any} lav @param {number} scala @param {HTMLCanvasElement} tela */
+  function rendi(lav, scala, tela) {
+    tela.width = Math.round(320 * scala);
+    tela.height = Math.round(200 * scala);
+    const ctx = /** @type {CanvasRenderingContext2D} */ (tela.getContext('2d'));
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, tela.width, tela.height);
+    const b = new CanvasTarget(ctx, { palette: colori, scala });
+    const it = eseguiLavoro(risorse, lav, b, { sfondo });
+    if (lav.mostra === 'retro') b.copia('retro', 'schermo', 0, 0, 319, 199); // il gioco mostra il retro
+    return it;
+  }
+
+  /** @param {any} it @param {number} scala @param {HTMLCanvasElement} sopra */
+  function sovrapponi(it, scala, sopra) {
+    sopra.width = Math.round(320 * scala);
+    sopra.height = Math.round(200 * scala);
+    const c = /** @type {CanvasRenderingContext2D} */ (sopra.getContext('2d'));
+    c.clearRect(0, 0, sopra.width, sopra.height);
+    if (!(/** @type {HTMLInputElement} */ ($('#hotspot'))).checked) return;
+    c.lineWidth = 2;
+    c.font = `${Math.max(10, 3 * scala)}px monospace`;
+    for (const h of it.hotspot) {
+      c.strokeStyle = '#ff40ff';
+      c.strokeRect(h.x1 * scala, h.y1 * scala, (h.x2 - h.x1 + 1) * scala, (h.y2 - h.y1 + 1) * scala);
+      c.fillStyle = '#ffff60';
+      const k = h.tasto >= 33 && h.tasto < 127 ? String.fromCharCode(h.tasto) : String(h.tasto);
+      c.fillText(k, h.x1 * scala + 3, h.y1 * scala + 3 * scala + 2);
+    }
+    for (const a of it.agganci) {
+      if (a.tipo !== 'cifra') continue;
+      c.strokeStyle = '#40ffff';
+      c.strokeRect(a.x1 * scala, a.y1 * scala, (a.x2 - a.x1 + 1) * scala, (a.y2 - a.y1 + 1) * scala);
+      if (a.barra) {
+        const [x1, y1, x2, y2] = a.barra;
+        c.strokeRect(x1 * scala, y1 * scala, (x2 - x1 + 1) * scala, (y2 - y1 + 1) * scala);
+      }
+    }
+  }
+
+  for (const lav of pannelli.lavori) {
+    const art = document.createElement('section');
+    art.className = 'lavoro';
+    art.dataset.id = lav.id;
+    art.innerHTML = `<h2>${lav.id} <small>${lav.titolo}</small><span class="esito"></span></h2><div class="vedute"></div>`;
+    elenco.append(art);
+    disegna.set(art, () => {
+      const vedute = /** @type {HTMLElement} */ (art.querySelector('.vedute'));
+      const esito = /** @type {HTMLElement} */ (art.querySelector('.esito'));
+      vedute.textContent = '';
+      // scala 1, con il controllo contro FrameBuffer
+      const t1 = document.createElement('canvas');
+      rendi(lav, 1, t1);
+      const fb = new FrameBuffer();
+      eseguiLavoro(risorse, lav, fb);
+      const atteso = fb.rgba(lav.mostra, colori);
+      const visto = /** @type {CanvasRenderingContext2D} */ (t1.getContext('2d')).getImageData(0, 0, 320, 200).data;
+      let diff = 0;
+      const conSfondo = lav.passi.some((/** @type {any} */ p) => p.sfondo);
+      if (!conSfondo) for (let i = 0; i < atteso.length; i++) if (atteso[i] !== visto[i]) diff++;
+      if (!art.dataset.contato) {
+        art.dataset.contato = '1';
+        if (!conSfondo) diff ? diversi++ : identici++;
+        stato.textContent = `${pannelli.lavori.length} lavori; a scala 1 identici a FrameBuffer: ${identici}, diversi: ${diversi}`;
+      }
+      esito.className = 'esito ' + (diff ? 'ko' : 'ok');
+      esito.textContent = conSfondo ? '(con sfondo PAK: confronto non fatto)'
+        : diff ? `scala 1 ≠ FrameBuffer (${diff / 4} componenti)` : 'scala 1 = FrameBuffer';
+      const f1 = document.createElement('figure');
+      f1.append(t1, Object.assign(document.createElement('figcaption'), { textContent: 'scala 1' }));
+      // scala grande
+      const scala = Number((/** @type {HTMLSelectElement} */ ($('#scala'))).value);
+      const g = document.createElement('div');
+      g.className = 'grande';
+      const tg = document.createElement('canvas');
+      const it = rendi(lav, scala, tg);
+      const sopra = document.createElement('canvas');
+      sopra.className = 'sopra';
+      sovrapponi(it, scala, sopra);
+      g.append(tg, sopra);
+      const fg = document.createElement('figure');
+      fg.append(g, Object.assign(document.createElement('figcaption'), {
+        textContent: `scala ${scala} — ${it.hotspot.length} hotspot, ${it.agganci.filter((a) => a.tipo === 'cifra').length} caselle`,
+      }));
+      // cattura DOSBox
+      const fd = document.createElement('figure');
+      if (lav.dosbox) {
+        const im = document.createElement('img');
+        im.width = 320;
+        im.height = 200;
+        im.alt = lav.dosbox;
+        im.onerror = () => im.replaceWith(Object.assign(document.createElement('div'), {
+          className: 'vuoto', textContent: `cattura ${lav.dosbox} non raggiungibile (?schermate=…)` }));
+        im.src = new URL(lav.dosbox, SCHERMATE).href;
+        fd.append(im, Object.assign(document.createElement('figcaption'), { textContent: `DOSBox: ${lav.dosbox}` }));
+      } else {
+        fd.append(Object.assign(document.createElement('div'), { className: 'vuoto', textContent: 'nessuna cattura DOSBox' }));
+      }
+      vedute.append(f1, fd, fg);
+    });
+  }
+
+  // tele create solo in vista, liberate quando il riquadro esce di molto
+  const osserva = new IntersectionObserver((voci) => {
+    for (const v of voci) {
+      const art = /** @type {HTMLElement} */ (v.target);
+      if (v.isIntersecting && !art.dataset.vivo) {
+        art.dataset.vivo = '1';
+        disegna.get(art)?.();
+      } else if (!v.isIntersecting && art.dataset.vivo) {
+        delete art.dataset.vivo;
+        for (const t of art.querySelectorAll('canvas')) { t.width = 0; t.height = 0; }
+      }
+    }
+  }, { rootMargin: '600px 0px' });
+  for (const art of disegna.keys()) osserva.observe(art);
+
+  const ridisegna = () => {
+    for (const [art, f] of disegna) if (/** @type {HTMLElement} */ (art).dataset.vivo) f();
+  };
+  $('#scala').addEventListener('change', ridisegna);
+  $('#hotspot').addEventListener('change', ridisegna);
+  $('#filtro').addEventListener('input', () => {
+    const q = (/** @type {HTMLInputElement} */ ($('#filtro'))).value.trim().toLowerCase();
+    for (const art of disegna.keys()) {
+      const el = /** @type {HTMLElement} */ (art);
+      el.hidden = !!q && !(el.dataset.id ?? '').toLowerCase().includes(q);
+    }
+  });
+  stato.textContent = `${pannelli.lavori.length} lavori`;
+} catch (e) {
+  stato.textContent = 'errore';
+  $('#elenco').append(Object.assign(document.createElement('p'), { className: 'errore',
+    textContent: `Non riesco a caricare gli asset da ${BASE}: ${e}\n\nGenerarli con: python3 tools/estrai/estrai688.py "<cartella del gioco>" --client` }));
+}
+</script>
+</body>
+</html>

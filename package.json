@@ -1,0 +1,19 @@
+{
+  "name": "termoclino",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Termoclino: tributo e reinterpretazione di 688 Attack Sub (1989). Strumenti comuni alla radice del repo.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "typecheck": "tsc -p jsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/ws": "^8.18.2",
+    "typescript": "^7.0.2"
+  }
+}

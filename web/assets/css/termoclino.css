@@ -1,0 +1,235 @@
+/*
+ * Termoclino — foglio di stile delle pagine (non del client di gioco).
+ *
+ * Ispirato alla sala di controllo di un sottomarino di fine anni '80: acciaio
+ * scuro, vetri neri degli strumenti, scritte nei colori degli schermi a fosfori
+ * e della palette EGA. Non usa nessuna grafica del 1989 (decisione D4): quella
+ * vive solo nel client di gioco, dopo l'accesso.
+ *
+ * Due «arie», scelte da App\Core\View::ambiente():
+ *   superficie — soglia, accesso, errori: mare notturno
+ *   bordo      — tutto il resto: luce di plancia
+ */
+
+:root {
+  --mare: #06101a;
+  --mare-2: #0b1c2c;
+  --acciaio: #1a2129;
+  --acciaio-2: #232c36;
+  --lamiera: #2f3a46;
+  --bordo-chiaro: #4a5866;
+  --testo: #d7dee4;
+  --tenue: #8796a3;
+  --vetro: #020608;
+  /* i colori degli schermi: EGA chiari, come i caratteri dei pannelli */
+  --ciano: #55ffff;
+  --verde: #55ff55;
+  --giallo: #ffff55;
+  --rosso: #ff5555;
+  --ambra: #ffb347;
+  --accento: var(--ciano);
+  --raggio: 3px;
+  --mono: "DejaVu Sans Mono", "Liberation Mono", ui-monospace, Menlo, Consolas, monospace;
+  --testo-corpo: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { background: var(--mare); }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font: 16px/1.6 var(--testo-corpo);
+  color: var(--testo);
+  background: var(--acciaio);
+}
+
+body[data-ambiente="superficie"] {
+  background:
+    radial-gradient(ellipse at 50% -20%, #12304a 0%, transparent 60%),
+    linear-gradient(180deg, var(--mare-2) 0%, var(--mare) 70%);
+}
+
+a { color: var(--ciano); text-underline-offset: 2px; }
+a:hover { color: #b3ffff; }
+
+/* --- Testata -------------------------------------------------------------- */
+.testata {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .6rem 1rem;
+  background: linear-gradient(180deg, var(--lamiera), var(--acciaio-2));
+  border-bottom: 1px solid #000;
+  box-shadow: inset 0 -1px 0 var(--bordo-chiaro);
+}
+.marchio {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  color: var(--testo);
+  text-decoration: none;
+  font: 700 1.05rem/1 var(--mono);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+.testata nav { display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; font-size: .95rem; }
+.testata nav a { text-decoration: none; }
+.in-linea { display: inline; margin: 0; }
+
+/* --- Corpo ---------------------------------------------------------------- */
+.contenuto {
+  flex: 1;
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+.contenuto.largo { max-width: 72rem; }
+
+h1, h2 { font-weight: 600; line-height: 1.2; }
+h1 { font-size: 2rem; margin: .2rem 0 1rem; color: #fff; }
+h2 { font-size: 1.15rem; margin: 0 0 .6rem; color: var(--giallo); font-family: var(--mono); letter-spacing: .04em; }
+.occhiello {
+  margin: 0;
+  font: 600 .78rem/1.4 var(--mono);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ciano);
+}
+.sommario { font-size: 1.1rem; color: var(--testo); max-width: 38rem; }
+.tenue { color: var(--tenue); }
+
+/* La «carta» e' un pannello di lamiera con un vetro: il modulo, il riquadro. */
+.carta {
+  background: var(--acciaio-2);
+  border: 1px solid #000;
+  border-radius: var(--raggio);
+  box-shadow: inset 0 1px 0 var(--bordo-chiaro), 0 2px 0 rgba(0,0,0,.4);
+  padding: 1.1rem 1.2rem;
+  margin: 1rem 0;
+}
+.colonne { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
+.colonne .carta { margin: 0; }
+
+.nota {
+  margin: 1.4rem 0;
+  padding: .8rem 1rem;
+  border-left: 3px solid var(--ambra);
+  background: rgba(255, 179, 71, .07);
+  color: var(--testo);
+  font-size: .95rem;
+}
+
+/* --- Moduli ----------------------------------------------------------------- */
+.campo { display: flex; flex-direction: column; gap: .3rem; margin-bottom: 1rem; }
+label { font: 600 .82rem/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+input[type="text"], input[type="email"], input[type="password"] {
+  font: 1rem/1.4 var(--mono);
+  color: var(--verde);
+  background: var(--vetro);
+  border: 1px solid #000;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.8), 0 0 0 1px var(--lamiera);
+  border-radius: var(--raggio);
+  padding: .55rem .7rem;
+}
+input:focus { outline: 2px solid var(--ciano); outline-offset: 1px; }
+.aiuto { font-size: .85rem; color: var(--tenue); }
+
+.bottoni { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; margin-top: .4rem; }
+.bottoni.centrati { justify-content: center; margin: 1.6rem 0; }
+
+button, .bottone {
+  display: inline-block;
+  font: 700 .85rem/1 var(--mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #001014;
+  background: linear-gradient(180deg, #8ff, var(--ciano));
+  border: 1px solid #000;
+  border-radius: var(--raggio);
+  box-shadow: inset 0 1px 0 #dff, 0 2px 0 #000;
+  padding: .7rem 1.1rem;
+  cursor: pointer;
+}
+button:active, .bottone:active { transform: translateY(1px); box-shadow: inset 0 1px 0 #dff, 0 1px 0 #000; }
+button.secondario, .bottone.secondario {
+  color: var(--testo);
+  background: linear-gradient(180deg, var(--lamiera), var(--acciaio-2));
+  box-shadow: inset 0 1px 0 var(--bordo-chiaro), 0 2px 0 #000;
+}
+button.tenue, .bottone.tenue {
+  color: var(--tenue);
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+  padding: .4rem .2rem;
+  letter-spacing: .06em;
+}
+
+/* --- Avvisi ------------------------------------------------------------------ */
+.avviso {
+  padding: .75rem 1rem;
+  margin: 0 0 1rem;
+  border-radius: var(--raggio);
+  border: 1px solid var(--lamiera);
+  background: var(--acciaio-2);
+  font-family: var(--mono);
+  font-size: .92rem;
+}
+.avviso.errore     { border-color: #7a1f1f; color: var(--rosso); background: #1d0d0f; }
+.avviso.riuscito   { border-color: #1f6a2a; color: var(--verde); background: #0b1a0e; }
+.avviso.attenzione { border-color: #7a5a1f; color: var(--giallo); background: #1d170b; }
+
+/* --- Soglia ------------------------------------------------------------------ */
+.soglia { text-align: center; padding: 1rem 0 .5rem; }
+.soglia h1 { font: 700 clamp(2.4rem, 8vw, 3.6rem)/1 var(--mono); letter-spacing: .25em; text-transform: uppercase; }
+.soglia .sommario { margin: 0 auto; }
+.cruscotto-pubblico { text-align: center; color: var(--tenue); font-family: var(--mono); }
+.cifra { display: block; font-size: 2rem; color: var(--verde); text-shadow: 0 0 8px rgba(85,255,85,.35); }
+
+/* --- Plancia (F0) -------------------------------------------------------------- */
+.schermo {
+  background: var(--lamiera);
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: .7rem;
+  box-shadow: inset 0 1px 0 var(--bordo-chiaro);
+}
+.vetro {
+  background: var(--vetro);
+  border: 1px solid #000;
+  border-radius: 2px;
+  box-shadow: inset 0 0 18px rgba(0,0,0,.9);
+  min-height: 16rem;
+  padding: .8rem 1rem;
+  font-family: var(--mono);
+  color: var(--verde);
+}
+.riga-stato { margin: 0 0 .6rem; display: flex; align-items: center; gap: .6rem; color: var(--giallo); }
+.spia { width: .8rem; height: .8rem; border-radius: 50%; background: #333; box-shadow: inset 0 0 2px #000; }
+.spia[data-stato="in-corso"] { background: var(--ambra); box-shadow: 0 0 6px var(--ambra); }
+.spia[data-stato="acceso"]   { background: var(--verde); box-shadow: 0 0 8px var(--verde); }
+.spia[data-stato="guasto"]   { background: var(--rosso); box-shadow: 0 0 8px var(--rosso); }
+#registro-bordo { margin: 0; white-space: pre-wrap; font-size: .85rem; color: #7cd67c; max-height: 22rem; overflow: auto; }
+
+/* --- Piede ---------------------------------------------------------------------- */
+.piede {
+  padding: 1rem;
+  border-top: 1px solid #000;
+  background: var(--mare);
+  color: var(--tenue);
+  font-size: .8rem;
+  text-align: center;
+}
+.piede p { margin: .2rem auto; max-width: 48rem; }
+
+@media (max-width: 30rem) {
+  .testata { flex-direction: column; align-items: flex-start; }
+  h1 { font-size: 1.6rem; }
+}

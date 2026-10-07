@@ -1,0 +1,34 @@
+# Termoclino — server di gioco in esercizio su il server.
+#
+#   docker compose -f server/compose.yaml up -d --build
+#
+# Rete dell'host: il server ascolta su 127.0.0.1:8095 della macchina, dove
+# Apache lo raggiunge (ProxyPass /termoclino/ws) e PHP ne legge la sonda; da
+# F1 raggiungera' MariaDB in locale allo stesso modo. Niente porte esposte
+# verso l'esterno: TERMOCLINO_HOST resta 127.0.0.1.
+#
+# Il riavvio lo fa Docker (restart: unless-stopped), quindi niente unita'
+# systemd e niente sudo per tenerlo in vita.
+services:
+  termoclino-server:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    image: termoclino-server:latest
+    container_name: termoclino-server
+    restart: unless-stopped
+    network_mode: host
+    env_file: /data/termoclino-config/server.env
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"

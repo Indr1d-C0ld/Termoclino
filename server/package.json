@@ -1,0 +1,17 @@
+{
+  "name": "termoclino-server",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Termoclino — server di gioco (WebSocket, simulazione autoritativa)",
+  "type": "module",
+  "license": "GPL-3.0-or-later",
+  "engines": { "node": ">=20" },
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

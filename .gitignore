@@ -1,0 +1,30 @@
+# Dipendenze npm (radice e sottoprogetti)
+node_modules/
+
+# Segreti e configurazioni locali: mai in nessun repo, nemmeno nel privato.
+/web/config/config.php
+/web/config/prova_sviluppo.txt
+/server/sviluppo.env
+/.claude/
+
+# Stato locale del sito.
+/web/storage/logs/*.log
+/web/storage/*.lock
+/web/storage/cache/
+
+# La grafica originale del 1989 estratta per il client: si rigenera con
+# tools/estrai/estrai688.py dalla copia del gioco dell'utente.
+/web/assets/originali/*
+# la nota che spiega cosa manca e come estrarlo (solo nella copia pubblica)
+!/web/assets/originali/LEGGIMI.txt
+
+# Le fonti scaricate durante la ricerca (~200 MB, PDF di riviste e libri di
+# terzi): restano sul disco di lavoro. Il catalogo che le cita sta in docs/ricerca/.
+/privato/ricerca_grezza/
+
+__pycache__/
+*.pyc
+
+# Fixture delle prove dell'interprete CLS: pagine del gioco ridisegnate dalla copia dell'utente
+# (tools/estrai/estrai688.py "<cartella del gioco>" --client --fixture). Mai nel repo.
+/tests/client/fixture/

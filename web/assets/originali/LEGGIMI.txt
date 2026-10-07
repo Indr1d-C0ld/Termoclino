@@ -1,0 +1,7 @@
+Qui va la grafica originale di 688 Attack Sub (1989), che non e' inclusa: e' di
+Electronic Arts e degli autori, e non e' nostra da ridistribuire. Si estrae dalla
+propria copia del gioco con:
+
+    python3 tools/estrai/estrai688.py "<cartella del gioco>" --client web/assets/originali
+
+Senza, il sito funziona; il client di gioco resta senza la grafica d'epoca.

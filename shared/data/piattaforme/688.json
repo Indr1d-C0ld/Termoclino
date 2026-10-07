@@ -1,0 +1,351 @@
+{
+  "formato": "termoclino-piattaforma/1",
+  "id": "688",
+  "aggiornato": "2026-10-07",
+  "identita": {
+    "nome": "Los Angeles",
+    "designazione": "SSN 688 (Flight I)",
+    "tipo": "SSN",
+    "nazione": "USA",
+    "lato": "usa",
+    "progetto": "SCB 303",
+    "configurazione": "Flight I (SSN 688-718) come riferimento del duello 1985-1991; Flight II e 688I in «varianti»",
+    "primo_in_servizio": {"valore": 1976, "unita": "anno", "fonte": "[FAS-688]", "confidenza": "stimato", "nota": "SSN 688 Los Angeles, in servizio il 13/11/1976."},
+    "unita_costruite": {"valore": 62, "unita": "n", "fonte": "[FAS-688]", "confidenza": "stimato", "nota": "SSN 688-725 e 750-773 (i numeri 726-749 andarono agli Ohio): 31 Flight I, 8 Flight II, 23 688I."},
+    "operativi_per_anno": {
+      "1985": {"valore": 33, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato", "nota": "In servizio al 31/12, tutte le varianti (31 Flight I + 2 Flight II). Al 1/1/1985 erano 29. Nessun ritiro prima del 1995.", "rif": "01_piattaforme.md §1.1"},
+      "1986": {"valore": 35, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato", "nota": "Al 31/12: 31 Flight I + 4 Flight II."},
+      "1987": {"valore": 37, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato", "nota": "Al 31/12: 31 Flight I + 6 Flight II."},
+      "1988": {"valore": 39, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato", "nota": "Al 31/12: 31 Flight I + 7 Flight II + 1 688I (SSN 751, 6/8/1988)."},
+      "1989": {"valore": 42, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato", "nota": "Al 31/12: 31 + 8 + 3."},
+      "1990": {"valore": 44, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato", "nota": "Al 31/12: 31 + 8 + 5."},
+      "1991": {"valore": 47, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato", "nota": "Al 31/12: 31 + 8 + 8 (ultimo SSN 758, 28/9/1991)."}
+    },
+    "equipaggio": {"valore": 127, "unita": "n", "fonte": "[CFW86 p.618–619] [USN-FF97]", "confidenza": "documentato", "nota": "12 ufficiali + 115 secondo Combat Fleets 1986/87; 13 + 116 secondo il fact file del 1997.", "intervallo": [127, 129]}
+  },
+  "dimensioni": {
+    "lunghezza": {"valore": 109.7, "unita": "m", "fonte": "[CFW86 p.618–619] [FAS-688]", "confidenza": "stimato", "nota": "360 ft."},
+    "larghezza": {"valore": 10.06, "unita": "m", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato", "nota": "33 ft; e' anche il diametro dello scafo resistente."},
+    "pescaggio": {"valore": 9.75, "unita": "m", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato"},
+    "dislocamento_superficie": {"valore": 6080, "unita": "t", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato"},
+    "dislocamento_immersione": {"valore": 6927, "unita": "t", "fonte": "[CFW86 p.618–619] [FAS-688]", "confidenza": "stimato", "nota": "Long tons; differenza con le tonnellate metriche irrilevante per il gioco (01 §0.3)."}
+  },
+  "propulsione": {
+    "reattore": "S6G (General Electric), acqua pressurizzata; 2 turbine a vapore",
+    "potenza_asse": {"valore": 26100, "unita": "kW", "fonte": "[CFW86 p.618–619] [FAS-688]", "confidenza": "stimato", "nota": "35 000 shp."},
+    "assi": {"valore": 1, "unita": "n", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato"},
+    "elica_pale": {"valore": 7, "unita": "n", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato"},
+    "giri_per_nodo": {"valore": 5.6, "unita": "giri/min/kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Circa 180 giri/min a 32 kt: ordine di grandezza dei grandi SSN monoelica, non verificato. Serve solo alla frequenza di pala (giri × pale) per il DEMON."},
+    "reattore_sempre_acceso": {"valore": false, "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Un PWR si porta a bassa potenza senza rischi per il refrigerante; il vincolo vale solo per l'Alfa."},
+    "propulsione_emergenza": "motore di emergenza su batteria con diesel-generatore Fairbanks-Morse (CFW 1986/87)"
+  },
+  "dinamica": {
+    "velocita_max": {"valore": 32, "unita": "kt", "fonte": "[FAS-688] [CFW86 p.618–619] [USN-FF97]", "confidenza": "stimato", "nota": "Ufficiale «20+» (fact file fino agli anni '90), reale 30-32 per FAS, «30+» per Combat Fleets. Valore di gioco: l'estremo alto dell'intervallo FAS.", "intervallo": [30, 32], "rif": "01_piattaforme.md §1.1"},
+    "velocita_max_superficie": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Non trovata nelle fonti lette (Combat Fleets da' solo la velocita' in immersione). In superficie un SSN e' lento e fa onda."},
+    "telegrafo": {
+      "tipo": "ordini",
+      "nota": "Ordini di macchina USN: 1/3 e 2/3 sono frazioni della velocita' standard, FULL e' 4/3 dello standard, FLANK la massima (convenzione USN da conoscenza pregressa). Standard = 15 kt, nozionale."
+    },
+    "ordini_macchina": [
+      {"ordine": "REV", "velocita": {"valore": -6, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Marcia indietro a tutta: valore non trovato; il gioco del 1989 la rendeva «estremamente rumorosa» [MAN-688 p. 46]."}},
+      {"ordine": "STOP", "velocita": {"valore": 0, "unita": "kt", "fonte": "[MAN-688] [FIL-688]", "confidenza": "documentato", "nota": "Tacca STOP del telegrafo del 1989 (docs/ORIGINALE.md, schermata 013)."}},
+      {"ordine": "1/3", "velocita": {"valore": 5, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Un terzo dello standard (15 kt)."}},
+      {"ordine": "2/3", "velocita": {"valore": 10, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Due terzi dello standard."}},
+      {"ordine": "STD", "velocita": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Standard nozionale: sopra comincia il rumore di flusso sulla sfera (05 §7.1)."}},
+      {"ordine": "FULL", "velocita": {"valore": 20, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "4/3 dello standard. Nel gioco del 1989 FULL valeva 33,8 kt (misurato in DOSBox, docs/ORIGINALE.md)."}},
+      {"ordine": "FLANK", "velocita": {"valore": 32, "unita": "kt", "fonte": "[FAS-688]", "confidenza": "stimato", "nota": "Coincide con velocita_max."}}
+    ],
+    "accelerazione": {
+      "tau": {"valore": 45, "unita": "s", "fonte": "[DS-705] [CONO]", "confidenza": "nozionale", "nota": "Costante di tempo con cui la velocita' insegue l'ordine quando accelera. Un PWR deve alzare gradualmente i parametri dell'impianto, l'Alfa no [DS-705]: da 0 a 32 kt in circa 4 minuti. Il gioco del 1989 accelerava di 0,5 kt/s (0 → 37 in 70 s, docs/ORIGINALE.md)."},
+      "max": {"valore": 0.2, "unita": "kt/s", "fonte": "[DS-705] [CONO]", "confidenza": "nozionale", "nota": "Limite all'accelerazione (variazione di potenza ammessa dal reattore)."}
+    },
+    "decelerazione": {
+      "tau": {"valore": 110, "unita": "s", "fonte": "[CFW86 p.618–619] [CONO]", "confidenza": "nozionale", "nota": "Rallentamento per sola resistenza (macchina ridotta, non indietro). Stima: resistenza a 32 kt ≈ 0,7 × 26,1 MW / 16,5 m/s ≈ 1,1 MN su 6 927 t + 10 % di massa aggiunta ≈ 0,15 m/s² = 0,3 kt/s; tau ≈ v_max / decelerazione. Rendimento propulsivo e massa aggiunta nozionali."},
+      "max": {"valore": 0.3, "unita": "kt/s", "fonte": "[CFW86 p.618–619] [CONO]", "confidenza": "nozionale", "nota": "Il gioco del 1989 perdeva 0,35 kt/s a 1/3 da 33,8 kt (docs/ORIGINALE.md)."}
+    },
+    "frenata_rev": {"valore": 0.45, "unita": "kt/s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Decelerazione massima con macchina indietro (resistenza + spinta in marcia indietro, circa un terzo della potenza). Il gioco del 1989 frenava a 1-2 kt/s."},
+    "accostata": {
+      "angolo_timone_max": {"valore": 30, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Barra tutta."},
+      "diametro_tattico": {"valore": 550, "unita": "m", "fonte": "[CONO] [CFW86 p.618–619]", "confidenza": "nozionale", "nota": "Diametro dell'accostata a barra tutta, quasi indipendente dalla velocita'. Regola empirica di 4-6 lunghezze per un sottomarino in immersione (non verificata) applicata ai 109,7 m dello scafo."},
+      "velocita_angolare_max": {"valore": 2.5, "unita": "°/s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Tetto alla velocita' d'accostata. Con perdita di velocita' del 30 %: a 32 kt circa 2,4 °/s, inversione di rotta in circa 80 s contro i 42 s dell'Alfa; a 15 kt circa 1,1 °/s."},
+      "tempo_risposta": {"valore": 5, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Ritardo fra il comando di barra e l'accostata a regime (movimento del timone, inerzia d'imbardata)."},
+      "perdita_velocita": {"valore": 0.3, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Frazione di velocita' persa in un'accostata prolungata a barra tutta (i sottomarini ne perdono molta: 25-40 %, conoscenza pregressa). Utile anche al knuckle (03 §3.5)."}
+    },
+    "quota": {
+      "assetto_max": {"valore": 15, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Angolo di assetto (beccheggio) usato per i cambi di quota normali."},
+      "velocita_assetto": {"valore": 1.0, "unita": "°/s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Variazione massima dell'assetto con i timoni orizzontali a piena efficacia."},
+      "velocita_piena_efficacia_timoni": {"valore": 6, "unita": "kt", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "I timoni orizzontali vogliono abbrivio: sotto questa velocita' la loro efficacia scala come (v / 6 kt)². Correzione voluta del 1989, dove si scendeva a 18 ft/s anche da fermi (docs/ORIGINALE.md)."},
+      "velocita_verticale_max": {"valore": 4.0, "unita": "m/s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Tetto della velocita' verticale (circa 790 ft/min). Sotto il tetto vale v · sin(assetto): a 10 kt e 15° circa 1,3 m/s."},
+      "velocita_verticale_zavorra": {"valore": 0.1, "unita": "m/s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Variazione di quota da fermi con le casse d'assetto (circa 20 ft/min)."},
+      "velocita_emersione_emergenza": {"valore": 4.0, "unita": "m/s", "fonte": "[MAN-688] [CONO]", "confidenza": "nozionale", "nota": "Risalita con soffiaggio d'emergenza della zavorra: rumorosa (transitorio forte), come nel 1989 [MAN-688 p. 45]."}
+    }
+  },
+  "profondita": {
+    "periscopica": {"valore": 18, "unita": "m", "fonte": "[CONO] [MAN-688]", "confidenza": "nozionale", "nota": "Circa 60 ft di chiglia per un 688 (conoscenza pregressa). Il gioco del 1989 usava 20 ft [MAN-688 pp. 11-12]."},
+    "automatica": {"valore": 45.72, "unita": "m", "fonte": "[MAN-688]", "confidenza": "documentato", "nota": "La funzione automatica «150 FT» della pulsantiera del 1989 [MAN-688 p. 45]."},
+    "operativa": {"valore": 290, "unita": "m", "fonte": "[PM04] [FAS-688]", "confidenza": "stimato", "nota": "Per la US Navy la test depth e' gia' la massima quota autorizzata: non c'e' una quota «di lavoro» distinta come la рабочая sovietica (01 §0.2)."},
+    "collaudo": {"valore": 290, "unita": "m", "fonte": "[PM04] [FAS-688]", "confidenza": "stimato", "nota": "Test depth di 950 ft, limitata dal grosso impianto S6G [PM04]; ufficialmente «greater than 800 feet». Il 688 e' il battello meno profondo del duello (01 §7.6).", "rif": "01_piattaforme.md §1.1"},
+    "collasso": {"valore": 450, "unita": "m", "fonte": "[FAS-688] [CFW86 p.618–619]", "confidenza": "stimato", "nota": "1 475 ft ≈ 1,5 × test depth. Il «maximum diving depth is 450 m» di Combat Fleets coincide: probabile confusione fra le due grandezze."}
+  },
+  "acustica": {
+    "rumore_irradiato": {
+      "gradino_sl0": {"valore": 1, "unita": "dB", "fonte": "[ONI96] [COTE03 p.72]", "confidenza": "nozionale", "nota": "Scarto dal livello di riferimento del 688I (= 0) sulla scala a gradini. L'ordine 688I < 688 < Akula e' documentato (grafico ONI 1996, testimonianza Baggett 1985), i decibel sono nozionali. Scala di riferimento: 01 §3.3 (CONTRADDIZIONI C5 risolta a favore di 01).", "rif": "01_piattaforme.md §3.3"},
+      "velocita_rif": {"valore": 5, "unita": "kt", "fonte": "[ONI96]", "confidenza": "nozionale", "nota": "Velocita' a cui vale SL₀: centro delle «tactical speeds (5-7 knots)» del grafico ONI."},
+      "velocita_min": {"valore": 3, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Sotto questa velocita' il rumore irradiato non cala piu' (macchinario ausiliario sempre acceso).", "rif": "05_acustica.md §7.3"},
+      "pendenza": {"valore": 20, "unita": "dB/decade", "fonte": "[SONALYSTS-SC] [FUN-8]", "confidenza": "nozionale", "nota": "SL(v) = SL₀ + 20·log(max(v, 3)/5): circa 0,5 dB/kt intorno ai 15 kt, come gli altri SSN (01 §3.2).", "rif": "05_acustica.md §7.3"},
+      "pendenza_extra": {"valore": 0, "unita": "dB/kt", "fonte": "[ONI96]", "confidenza": "nozionale", "nota": "Nessuna pendenza aggiuntiva: vale solo per l'Alfa."},
+      "soglia_pendenza_extra": {"valore": 15, "unita": "kt", "fonte": "[ONI96]", "confidenza": "nozionale", "nota": "Irrilevante con pendenza_extra = 0; presente per uniformita' di schema."},
+      "aspetto_poppa": {"valore": 3, "unita": "dB", "fonte": "[MCK12]", "confidenza": "nozionale", "nota": "Correzione per chi ascolta di poppa (le navi irradiano di piu' a poppa: 5-10 dB nei mercantili)."},
+      "aspetto_prua": {"valore": -2, "unita": "dB", "fonte": "[MCK12]", "confidenza": "nozionale"}
+    },
+    "cavitazione": {
+      "velocita_rif": {"valore": 8, "unita": "kt", "fonte": "[FUN-8] [PAT3676802]", "confidenza": "nozionale", "nota": "Velocita' d'innesco alla quota di riferimento. Legge documentata: V(d) = V_rif · √((d + 10,1)/(d_rif + 10,1)) con la pressione assoluta; valori nozionali. Ne seguono 18,5 kt a 150 m (≈ 500 ft) e 25,6 kt a 300 m (≈ 1000 ft), come chiede PROGETTO §11.3.", "rif": "05_acustica.md §7.2"},
+      "quota_rif": {"valore": 20, "unita": "m", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Quota del battello (chiglia), confusa con quella dell'elica: lo scarto di qualche metro e' assorbito nel valore nozionale di velocita_rif."},
+      "salto": {"valore": 18, "unita": "dB", "fonte": "[CW-MOD] [FUN-8]", "confidenza": "nozionale", "nota": "Aumento del rumore a banda larga sopra 1 kHz all'innesco: intervallo 15-20 dB di 05 §7.2 (Cold Waters usa 20)."}
+    },
+    "rumore_proprio": {
+      "livello_macchinario": {"valore": 45, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "dB re 1 µPa²/Hz nella banda di 1 kHz, a velocita' minima. NL(v) = NL_mach + 10·log(1 + (v/v₀)^6).", "rif": "05_acustica.md §7.1"},
+      "esponente": {"valore": 6, "unita": "1", "fonte": "[URICK83]", "confidenza": "stimato", "nota": "Il rumore di flusso cresce come 50-60·log V (Urick, da conoscenza pregressa del ricercatore)."},
+      "velocita_soglia_sfera": {"valore": 8, "unita": "kt", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "v₀ della sfera di prua: a 5 kt sotto il mare forza 2, a 15 kt comincia a dominare, a 25 kt sordo."},
+      "velocita_soglia_conforme": {"valore": 5, "unita": "kt", "fonte": "[FUN-8]", "confidenza": "nozionale"},
+      "velocita_soglia_rimorchiata": {"valore": 3, "unita": "kt", "fonte": "[FUN-8] [CW-MAN]", "confidenza": "nozionale", "nota": "v₀ dell'antenna rimorchiata (05 §7.1); i limiti d'uso sono in sensori.rimorchiata."}
+    },
+    "tonali": [
+      {
+        "nome": "rete elettrica di bordo",
+        "frequenza": {"valore": 60, "unita": "Hz", "fonte": "[SONALYSTS-SC] [CONO]", "confidenza": "stimato", "nota": "Corrente alternata a 60 Hz delle unita' USA (50 Hz per le altre marine, scelta di modello di Sub Command)."},
+        "sopra_banda_larga": {"valore": 6, "unita": "dB", "fonte": "[COTE03 p.69]", "confidenza": "nozionale", "nota": "Altezza della riga sullo spettro a banda larga dello stesso battello, alla stessa frequenza, in una cella di 1 Hz. Il 688 e' silenzioso: righe basse."},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Sempre presente."}
+      },
+      {
+        "nome": "pompe del refrigerante, bassa velocita'",
+        "frequenza": {"valore": 74, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Frequenza di passaggio delle pale di una pompa a 890 giri/min con girante a 5 pale: ordine di grandezza plausibile, non da fonte."},
+        "sopra_banda_larga": {"valore": 5, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 16, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Sopra i 16 kt le pompe passano in alta velocita': e' il «cambio di regime» che si sente (PROGETTO §5.4)."}
+      },
+      {
+        "nome": "pompe del refrigerante, alta velocita'",
+        "frequenza": {"valore": 148, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Doppio della bassa velocita'."},
+        "sopra_banda_larga": {"valore": 8, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 16, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      }
+    ],
+    "forza_bersaglio": {
+      "prua_poppa": {"valore": 10, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "TS al sonar attivo di prua o di poppa; fra i due valori si interpola col seno quadro dell'aspetto. Intervallo documentato 15-25 dB per i sottomarini.", "rif": "05_acustica.md §2.3"},
+      "traverso": {"valore": 25, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale"},
+      "correzione_rivestimento": {"valore": 0, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Nessun rivestimento anecoico dei 688 del periodo nelle fonti lette."}
+    }
+  },
+  "sensori": {
+    "sfera": {
+      "presente": {"valore": true, "fonte": "[GUS-GAK] [WWH-SON]", "confidenza": "stimato"},
+      "nome": "AN/BQQ-5, sfera AN/BQS-13 (passiva)",
+      "banda_min": {"valore": 500, "unita": "Hz", "fonte": "[GUS-GAK]", "confidenza": "stimato"},
+      "banda_max": {"valore": 5000, "unita": "Hz", "fonte": "[GUS-GAK]", "confidenza": "stimato"},
+      "diametro_equivalente": {"valore": 4.5, "unita": "m", "fonte": "[GUS-GAK] [POL-1981]", "confidenza": "stimato", "nota": "Circa 15 ft, 1 241 idrofoni."},
+      "frequenza_rif": {"valore": 2000, "unita": "Hz", "fonte": "[GUS-GAK]", "confidenza": "nozionale", "nota": "Centro tattico della banda (1-2 kHz) a cui si danno DI e fascio; il modello li ricava a ogni frequenza dal diametro.", "rif": "04_sensori.md §4.6.1"},
+      "indice_direttivita": {"valore": 25.5, "unita": "dB", "fonte": "[GUS-GAK]", "confidenza": "calcolato", "nota": "Pistone circolare: DI = 20·log(π·D/λ), c = 1500 m/s. 19,5 dB a 1 kHz."},
+      "fascio_3db": {"valore": 9.8, "unita": "°", "fonte": "[GUS-GAK]", "confidenza": "calcolato", "nota": "59°·λ/D. Coerente con i fasci di circa 6° × 7,2° del modo attivo a 3,5 kHz."},
+      "sigma_min": {"valore": 0.5, "unita": "°", "fonte": "[COLL94]", "confidenza": "nozionale", "nota": "Pavimento dell'errore di rilevamento. Il valore di 0,5° viene da un'ipotesi di simulazione [COLL94], quindi nozionale (CONTRADDIZIONI C9).", "rif": "CONTRADDIZIONI.md §4 R1"},
+      "coefficiente_sigma": {"valore": 0.5, "unita": "1", "fonte": "[COLL94] [GUS-GAK]", "confidenza": "nozionale", "nota": "σ = max(σ_min, 0,5 · fascio · 10^(−SE/20)): a 2 kHz 5° a soglia, 1,6° con SE = 10 dB, 0,5° oltre i 20 dB. Formula armonizzata R1 (CONTRADDIZIONI C8 risolta).", "rif": "PROGETTO.md §5.6"},
+      "arco_baffles": {"valore": 60, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Ampiezza totale del cono cieco di poppa: la sfera copre ±150° dalla prua (04 §4.6.1, R5). Il gioco del 1989 usava 90°.", "rif": "04_sensori.md §4.6.1"}
+    },
+    "sfera_attiva": {
+      "presente": {"valore": true, "fonte": "[GUS-GAK] [WWH-SON]", "confidenza": "stimato"},
+      "frequenza": {"valore": 3500, "unita": "Hz", "fonte": "[GUS-GAK] [WWH-SON]", "confidenza": "stimato"},
+      "settore": {"valore": 60, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Semiampiezza del settore prodiero del ping."}
+    },
+    "conforme": {
+      "presente": {"valore": true, "fonte": "[GUS-GAK] [WP-LA]", "confidenza": "stimato", "nota": "Array conforme di scafo del BQQ-5: 104 idrofoni, 24 fasci per lato."},
+      "nome": "array conforme di scafo (BQQ-5)",
+      "banda_min": {"valore": 50, "unita": "Hz", "fonte": "[GS-BQR7]", "confidenza": "nozionale"},
+      "banda_max": {"valore": 1000, "unita": "Hz", "fonte": "[GS-BQR7]", "confidenza": "nozionale"},
+      "frequenza_rif": {"valore": 500, "unita": "Hz", "fonte": "[GS-BQR7]", "confidenza": "nozionale"},
+      "indice_direttivita": {"valore": 12, "unita": "dB", "fonte": "[GS-BQR7]", "confidenza": "nozionale", "nota": "Intervallo 10-15 dB di 04 §4.6.1 (file di idrofoni lunghe 50 ft del BQR-7)."},
+      "fascio_3db": {"valore": 20, "unita": "°", "fonte": "[GS-BQR7]", "confidenza": "nozionale"},
+      "sigma_min": {"valore": 1.0, "unita": "°", "fonte": "[GS-BQR7]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R1"},
+      "coefficiente_sigma": {"valore": 0.5, "unita": "1", "fonte": "[COLL94]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R1"},
+      "settore_da": {"valore": 30, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Copertura su ciascun fianco, da 30° a 150° di rilevamento relativo: aiuta a risolvere l'ambiguita' della rimorchiata."},
+      "settore_a": {"valore": 150, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"}
+    },
+    "rimorchiata": {
+      "presente": {"valore": true, "fonte": "[FAS-TB16] [COTE03 p.49]", "confidenza": "stimato", "nota": "TB-16 su tutti i 688 del periodo. La BQR-15 resta agli SSBN (CONTRADDIZIONI C3 risolta)."},
+      "modello": "TB-16 («fat line»)",
+      "lunghezza_antenna": {"valore": 73, "unita": "m", "fonte": "[FAS-TB16]", "confidenza": "stimato", "nota": "240 ft (Gusev: 56 m per la TB-16F)."},
+      "lunghezza_cavo": {"valore": 730, "unita": "m", "fonte": "[FAS-TB16]", "confidenza": "stimato", "nota": "2 400 ft (Gusev: 780 m per la TB-16F)."},
+      "banda_min": {"valore": 30, "unita": "Hz", "fonte": "[COTE03 p.49]", "confidenza": "nozionale", "nota": "Bassa frequenza: righe di pala e di macchinario. Le fonti aperte non danno la banda in Hz."},
+      "banda_max": {"valore": 1000, "unita": "Hz", "fonte": "[COTE03 p.49]", "confidenza": "nozionale"},
+      "frequenza_rif": {"valore": 300, "unita": "Hz", "fonte": "[FAS-TB16]", "confidenza": "nozionale"},
+      "indice_direttivita": {"valore": 14.7, "unita": "dB", "fonte": "[FAS-TB16]", "confidenza": "calcolato", "nota": "Antenna lineare: DI = 10·log(2L/λ) al traverso."},
+      "fascio_3db": {"valore": 3.5, "unita": "°", "fonte": "[FAS-TB16]", "confidenza": "calcolato", "nota": "51°·λ/L al traverso."},
+      "sigma_min": {"valore": 1.0, "unita": "°", "fonte": "[FAS-TB16]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R1"},
+      "coefficiente_sigma": {"valore": 0.5, "unita": "1", "fonte": "[COLL94]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R1"},
+      "fattore_sigma_estremita": {"valore": 3, "unita": "1", "fonte": "[GS-TOWED]", "confidenza": "nozionale", "nota": "σ moltiplicato per 3 entro arco_estremita dall'asse dell'antenna (endfire).", "rif": "04_sensori.md §4.6.1"},
+      "arco_estremita": {"valore": 30, "unita": "°", "fonte": "[GS-TOWED]", "confidenza": "nozionale", "nota": "Semiampiezza, attorno a entrambe le estremita' dell'asse."},
+      "cieco_prua": {"valore": 20, "unita": "°", "fonte": "[GS-TOWED]", "confidenza": "nozionale", "nota": "Semiampiezza del cono cieco verso il proprio battello (rumore proprio). Con l'antenna filata i baffles si riducono: il gioco del 1989 passava da 90° a 45° [MAN-688 p. 59]."},
+      "tempo_filare": {"valore": 420, "unita": "s", "fonte": "[WWH-SON] [MAN-688]", "confidenza": "nozionale", "nota": "6-8 minuti: circa 800 m fra cavo e antenna a 1,5-2 m/s; il 1989 diceva «qualche minuto».", "intervallo": [360, 480], "rif": "04_sensori.md §4.6.2"},
+      "tempo_recuperare": {"valore": 420, "unita": "s", "fonte": "[WWH-SON]", "confidenza": "nozionale"},
+      "velocita_min": {"valore": 3, "unita": "kt", "fonte": "[WP-TAS]", "confidenza": "nozionale", "nota": "Sotto, l'antenna (zavorrata) scende e si incurva."},
+      "velocita_piena_efficacia": {"valore": 8, "unita": "kt", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Regola R2: piena efficacia fino a 8 kt (CONTRADDIZIONI C6 risolta).", "rif": "CONTRADDIZIONI.md §4 R2"},
+      "degrado_oltre": {"valore": 1, "unita": "dB/kt", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Perdita aggiuntiva fra velocita_piena_efficacia e velocita_sorda, oltre al rumore di flusso.", "rif": "CONTRADDIZIONI.md §4 R2"},
+      "velocita_sorda": {"valore": 12, "unita": "kt", "fonte": "[CW-MAN]", "confidenza": "nozionale", "nota": "Oltre i 12 kt l'antenna non da' rilevamenti (Cold Waters: «accecate» intorno ai 10 kt).", "rif": "CONTRADDIZIONI.md §4 R2"},
+      "velocita_danno": {"valore": 18, "unita": "kt", "fonte": "[WP-TAS]", "confidenza": "nozionale", "nota": "Limite meccanico della TB-16 (resistenza ∝ v²): oltre, probabilita' di danno crescente; si puo' tagliare il cavo come nel 1989.", "rif": "CONTRADDIZIONI.md §4 R2"},
+      "tempo_morto_min": {"valore": 120, "unita": "s", "fonte": "[FAS-TB23]", "confidenza": "nozionale", "nota": "Dopo un'accostata oltre soglia_accostata l'antenna tace per t = (cavo + antenna)/v, fra 2 e 8 minuti: TB-16 a 5 kt circa 5 min, a 10 kt circa 2,6 min (CONTRADDIZIONI C7 risolta).", "rif": "CONTRADDIZIONI.md §4 R3"},
+      "tempo_morto_max": {"valore": 480, "unita": "s", "fonte": "[FAS-TB23]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R3"},
+      "soglia_accostata": {"valore": 10, "unita": "°", "fonte": "[FAS-TB23]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R3"},
+      "fattore_sigma_piccola_accostata": {"valore": 2, "unita": "1", "fonte": "[FAS-TB23]", "confidenza": "nozionale", "nota": "Accostate fino a soglia_accostata: niente tempo morto ma σ raddoppiato per durata_piccola_accostata.", "rif": "CONTRADDIZIONI.md §4 R3"},
+      "durata_piccola_accostata": {"valore": 60, "unita": "s", "fonte": "[FAS-TB23]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R3"},
+      "ambiguita_destra_sinistra": {"valore": true, "fonte": "[GS-TOWED]", "confidenza": "stimato", "nota": "Idrofoni omnidirezionali in linea: due rilevamenti speculari rispetto all'asse; si risolve accostando (dopo il tempo morto) o con sfera e conforme."},
+      "abbassamento_lento": {"valore": 100, "unita": "m", "fonte": "[WP-TAS]", "confidenza": "nozionale", "nota": "Quanto l'antenna sta sotto il battello a velocita_min; cala linearmente fino ad abbassamento_veloce a velocita_sorda. Puo' stare sotto lo strato quando il battello e' sopra."},
+      "abbassamento_veloce": {"valore": 30, "unita": "m", "fonte": "[WP-TAS]", "confidenza": "nozionale"}
+    },
+    "intercettazione": {
+      "presente": {"valore": true, "fonte": "[POL-1979] [FAS-WLY1]", "confidenza": "stimato"},
+      "nome": "AN/WLR-9",
+      "banda_min": {"valore": 1000, "unita": "Hz", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Banda del WLR-9 non trovata (i «1,1-70 kHz» dei database dei giochi non si usano): ordine di grandezza del modulo d'intercettazione dell'MGK-400EM."},
+      "banda_max": {"valore": 60000, "unita": "Hz", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
+      "sigma_bassa": {"valore": 5, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Errore di rilevamento fra 1 e 10 kHz."},
+      "sigma_media": {"valore": 10, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Fra 10 e 30 kHz."},
+      "sigma_alta": {"valore": 45, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Oltre 30 kHz solo il quadrante: σ di 45° ne e' la resa."}
+    },
+    "alta_frequenza": {
+      "presente": {"valore": true, "fonte": "[FAS-BQS15] [POL-1979]", "confidenza": "stimato", "nota": "AN/BQS-15: mine, ghiaccio, ostacoli, fondale. E' l'erede onesto del «contour imaging» del 1989, ma emette ed e' intercettabile. Niente MIDAS, che e' del Seawolf (CONTRADDIZIONI C2 risolta)."},
+      "nome": "AN/BQS-15"
+    },
+    "periscopio": {
+      "presente": {"valore": true, "fonte": "[FAS-SSN688]", "confidenza": "stimato"},
+      "numero": {"valore": 2, "unita": "n", "fonte": "[FAS-SSN688] [CFW86 p.618–619]", "confidenza": "stimato", "nota": "Type 2 d'attacco (sinistra) e Type 18 di ricerca (dritta)."},
+      "errore_stadimetro": {"valore": 7, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Errore della distanza dallo stadimetro: valore unico fra il ±10 % di 06 e il ±5-10 % di 04 (CONTRADDIZIONI C10 risolta)."}
+    }
+  },
+  "armi": {
+    "tubi": {
+      "numero": {"valore": 4, "unita": "n", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato", "nota": "Tubi Mk 67 da 533 mm a centro nave, angolati verso l'esterno: la prua e' occupata dalla sfera. Il gioco del 1989 li metteva «a prua» con 2 tubi ausiliari per i noisemaker (08 §8.4 #14)."},
+      "calibro": {"valore": 0.533, "unita": "m", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato"},
+      "posizione": "a centro nave, angolati",
+      "tempo_ricarica": {"valore": 240, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Ricarica di un tubo dalle rastrelliere. Non trovata nelle fonti lette; nel 1989 armare un tubo richiedeva 15-25 s."}
+    },
+    "capacita": {"valore": 26, "unita": "n", "fonte": "[CFW86 p.618–619]", "confidenza": "stimato", "nota": "4 nei tubi + 22 ricariche: Mk 48, Harpoon, Tomahawk, mine (una mina Mk 67 per posto)."},
+    "vls": {"valore": 0, "unita": "n", "fonte": "[FAS-688]", "confidenza": "stimato", "nota": "I 12 tubi verticali per Tomahawk arrivano col Flight II (SSN 719, 7/1985)."},
+    "filoguida": {"valore": true, "fonte": "[FAS-MK48]", "confidenza": "stimato", "nota": "Tutti i 688 del periodo lanciano Mk 48 filoguidati."},
+    "dotazioni": [
+      {
+        "dal_anno": {"valore": 1985, "unita": "anno", "fonte": "[NAVY-TORP2005]", "confidenza": "stimato"},
+        "al_anno": {"valore": 1987, "unita": "anno", "fonte": "[FAS-MK48]", "confidenza": "stimato", "nota": "ADCAP solo in prova fino al 1987."},
+        "voci": [
+          {"arma": "Mk 48 Mod 4", "numero": {"valore": 22, "unita": "n", "fonte": "[NAVY-TORP2005] [NW-US]", "confidenza": "nozionale", "nota": "Dotazione da duello: niente armi nucleari (SUBROC) e niente Tomahawk d'attacco a terra."}},
+          {"arma": "UGM-84 Harpoon", "numero": {"valore": 4, "unita": "n", "fonte": "[DS-84]", "confidenza": "nozionale", "nota": "Lanciato in immersione dal tubo, in capsula."}}
+        ]
+      },
+      {
+        "dal_anno": {"valore": 1988, "unita": "anno", "fonte": "[FAS-MK48]", "confidenza": "documentato", "nota": "Primo lancio di un ADCAP con testata il 23/07/1988."},
+        "al_anno": {"valore": 1989, "unita": "anno", "fonte": "[GAO-91-22BR]", "confidenza": "documentato", "nota": "Produzione piena decisa nel febbraio 1989."},
+        "voci": [
+          {"arma": "Mk 48 Mod 4", "numero": {"valore": 20, "unita": "n", "fonte": "[NAVY-TORP2005]", "confidenza": "nozionale"}},
+          {"arma": "Mk 48 ADCAP", "numero": {"valore": 2, "unita": "n", "fonte": "[GAO-91-22BR]", "confidenza": "nozionale", "nota": "Al massimo 2 per battello nel 1988-89 (02 §2.9)."}},
+          {"arma": "UGM-84 Harpoon", "numero": {"valore": 4, "unita": "n", "fonte": "[DS-84]", "confidenza": "nozionale"}}
+        ]
+      },
+      {
+        "dal_anno": {"valore": 1990, "unita": "anno", "fonte": "[GAO-91-22BR]", "confidenza": "documentato", "nota": "260 ADCAP acquistati nell'anno fiscale 1990."},
+        "al_anno": {"valore": 1990, "unita": "anno", "fonte": "[GAO-91-22BR]", "confidenza": "documentato"},
+        "voci": [
+          {"arma": "Mk 48 Mod 4", "numero": {"valore": 11, "unita": "n", "fonte": "[GAO-91-22BR]", "confidenza": "nozionale", "nota": "Carico misto meta' e meta' (02 §2.9)."}},
+          {"arma": "Mk 48 ADCAP", "numero": {"valore": 11, "unita": "n", "fonte": "[GAO-91-22BR]", "confidenza": "nozionale"}},
+          {"arma": "UGM-84 Harpoon", "numero": {"valore": 4, "unita": "n", "fonte": "[DS-84]", "confidenza": "nozionale"}}
+        ]
+      },
+      {
+        "dal_anno": {"valore": 1991, "unita": "anno", "fonte": "[GAO-91-22BR]", "confidenza": "documentato"},
+        "al_anno": {"valore": 1991, "unita": "anno", "fonte": "[GAO-91-22BR]", "confidenza": "documentato"},
+        "voci": [
+          {"arma": "Mk 48 Mod 4", "numero": {"valore": 6, "unita": "n", "fonte": "[GAO-91-22BR]", "confidenza": "nozionale"}},
+          {"arma": "Mk 48 ADCAP", "numero": {"valore": 16, "unita": "n", "fonte": "[GAO-91-22BR]", "confidenza": "nozionale", "nota": "ADCAP prevalente nel 1991 (02 §2.9)."}},
+          {"arma": "UGM-84 Harpoon", "numero": {"valore": 4, "unita": "n", "fonte": "[DS-84]", "confidenza": "nozionale"}}
+        ]
+      }
+    ],
+    "contromisure": {
+      "tipo": "ADC Mk 2 da 3 pollici (esca stazionaria)",
+      "lanciatori": {"valore": 2, "unita": "n", "fonte": "[EPA-UNDS99] [MAN-688]", "confidenza": "nozionale", "nota": "Segnalatori interni ricaricabili a bordo; niente lanciatori esterni CSA Mk 2, che sono degli anni '90 e legati all'ADC Mk 3 (CONTRADDIZIONI C12 risolta). Il gioco del 1989 aveva 2 tubi ausiliari."},
+      "dotazione": {"valore": 10, "unita": "n", "fonte": "[CMANO-ADC] [MILAERO-2022]", "confidenza": "nozionale", "nota": "03 §3.5 proponeva 10-12; il 1989 ne dava 6 per missione. Niente Mk 70 MOSS, che stava solo sugli SSBN (CONTRADDIZIONI C11 risolta); niente ADC Mk 3 (1992)."},
+      "tempo_ricarica": {"valore": 30, "unita": "s", "fonte": "[CMANO-ADC]", "confidenza": "nozionale", "rif": "03_contromisure.md §3.5"},
+      "durata": {"valore": 240, "unita": "s", "fonte": "[MILAERO-2022]", "confidenza": "nozionale", "rif": "03_contromisure.md §3.5"}
+    }
+  },
+  "varianti": {
+    "flight_II": {
+      "designazione": "SSN 719-725 e 750 (Flight II)",
+      "dal_anno": {"valore": 1985, "unita": "anno", "fonte": "[FAS-688]", "confidenza": "stimato", "nota": "SSN 719 Providence, 27/7/1985."},
+      "vls": {"valore": 12, "unita": "n", "fonte": "[FAS-688] [CFW86 p.618–619]", "confidenza": "stimato", "nota": "Tubi verticali per Tomahawk fuori dallo scafo resistente, fra la sfera e lo scafo."},
+      "operativi_per_anno": {
+        "1985": {"valore": 2, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1986": {"valore": 4, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1987": {"valore": 6, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1988": {"valore": 7, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1989": {"valore": 8, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1990": {"valore": 8, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1991": {"valore": 8, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"}
+      },
+      "differenze": "nocciolo del reattore migliorato e 12 VLS; dinamica, acustica e sensori come il Flight I"
+    },
+    "688I": {
+      "designazione": "SSN 751 e seguenti (688I «Improved»)",
+      "dal_anno": {"valore": 1988, "unita": "anno", "fonte": "[FAS-688]", "confidenza": "stimato", "nota": "SSN 751 San Juan, 6/8/1988; 8 unita' entro il 1991."},
+      "operativi_per_anno": {
+        "1988": {"valore": 1, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1989": {"valore": 3, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1990": {"valore": 5, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"},
+        "1991": {"valore": 8, "unita": "n", "fonte": "[FAS-688]", "confidenza": "calcolato"}
+      },
+      "vls": {"valore": 12, "unita": "n", "fonte": "[FAS-688]", "confidenza": "stimato"},
+      "gradino_sl0": {"valore": 0, "unita": "dB", "fonte": "[ONI96] [COTE03 p.72]", "confidenza": "nozionale", "nota": "Riferimento della scala (688I = 0): il 688I e' sotto il 688 nel grafico ONI 1996."},
+      "sistema_combattimento": "AN/BSY-1 (sostituisce BQQ-5 e CCS Mk 1): sfera attiva a media frequenza (MFAC), attivo ad alta frequenza nella vela (HFAC), TB-16, TB-23",
+      "bsy1_completo_dal": {"valore": 1990, "unita": "anno", "fonte": "[GAO-90-72]", "confidenza": "documentato", "nota": "SSN 751-754 nacquero con un sistema «preliminare» di sola autodifesa (piena capacita' rinviata in media di 19 mesi); il primo BSY-1 completo fu installato sull'SSN 755 a settembre 1989, in servizio il 30/6/1990. Prima: handicap di scenario (tempi d'elaborazione piu' lunghi, guasti)."},
+      "sensori_esclusi": "Nel 1985-1991 il 688I NON ha: Wide Aperture Array BQG-5 (dal SSN 771), BQQ-5E e TB-29 (OPEVAL 1998), MIDAS (BQS-24 del Seawolf). CONTRADDIZIONI C1 risolta: la riga di 01 §1.2 descrive la configurazione di fine anni '90.",
+      "rimorchiata_sottile": {
+        "modello": "TB-23 («thin line»)",
+        "presente": {"valore": true, "fonte": "[WWH-SON] [FAS-TB23]", "confidenza": "stimato", "nota": "Avvolta su verricello nelle casse zavorra. Arriva anche sui 688 con BQQ-5D a fine anni '80 (data non precisata)."},
+        "lunghezza_antenna": {"valore": 290, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Non trovata nelle fonti lette; ipotesi di 04 (900-1000 ft)."},
+        "lunghezza_cavo": {"valore": 1500, "unita": "m", "fonte": "[FAS-TB23]", "confidenza": "nozionale", "nota": "Cavo coassiale da 1-2 km."},
+        "banda_min": {"valore": 10, "unita": "Hz", "fonte": "[COTE03 p.49]", "confidenza": "nozionale"},
+        "banda_max": {"valore": 500, "unita": "Hz", "fonte": "[COTE03 p.49]", "confidenza": "nozionale"},
+        "frequenza_rif": {"valore": 100, "unita": "Hz", "fonte": "[FAS-TB23]", "confidenza": "nozionale"},
+        "indice_direttivita": {"valore": 15.9, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "10·log(2L/λ): calcolo esatto, ma su una lunghezza nozionale."},
+        "fascio_3db": {"valore": 2.6, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "51°·λ/L: calcolo esatto, ma su una lunghezza nozionale."},
+        "sigma_min": {"valore": 0.5, "unita": "°", "fonte": "[COLL94]", "confidenza": "nozionale", "rif": "CONTRADDIZIONI.md §4 R1"},
+        "tempo_filare": {"valore": 900, "unita": "s", "fonte": "[WWH-SON]", "confidenza": "nozionale", "nota": "12-18 minuti.", "intervallo": [720, 1080]},
+        "tempo_recuperare": {"valore": 900, "unita": "s", "fonte": "[WWH-SON]", "confidenza": "nozionale"},
+        "velocita_danno": {"valore": 15, "unita": "kt", "fonte": "[WP-TAS]", "confidenza": "nozionale", "nota": "Le altre regole (R2, R3) come la TB-16.", "rif": "CONTRADDIZIONI.md §4 R2"}
+      },
+      "timoni_prodieri": "a prua, retrattili (non sulla vela); vela rinforzata per emergere nella banchisa",
+      "posa_mine_dai_tubi": {"valore": true, "fonte": "[FAS-688]", "confidenza": "stimato"}
+    }
+  },
+  "riferimento_1989": {
+    "velocita_max": {"valore": 37, "unita": "kt", "fonte": "[MAN-688 pp. 60–61]", "confidenza": "documentato", "nota": "Valore del gioco originale, per il preset «regolamento 1989» (D3). In DOSBox FLANK = 37,0 e FULL = 33,8 kt."},
+    "profondita_max": {"valore": 457.2, "unita": "m", "fonte": "[MAN-688 pp. 60–61]", "confidenza": "documentato", "nota": "1 500 ft."},
+    "quota_periscopica": {"valore": 6.1, "unita": "m", "fonte": "[MAN-688 pp. 11–12]", "confidenza": "documentato", "nota": "20 ft."},
+    "limite_velocita_rimorchiata": {"valore": 0.667, "unita": "1", "fonte": "[MAN-688 p. 48]", "confidenza": "documentato", "nota": "Due terzi della potenza con l'antenna filata."},
+    "arco_baffles": {"valore": 90, "unita": "°", "fonte": "[MAN-688 p. 59]", "confidenza": "documentato"},
+    "arco_baffles_con_rimorchiata": {"valore": 45, "unita": "°", "fonte": "[MAN-688 p. 59]", "confidenza": "documentato"},
+    "noisemaker": {"valore": 6, "unita": "n", "fonte": "[MAN-688 pp. 18–28]", "confidenza": "documentato"}
+  },
+  "contraddizioni": {
+    "C1": "risolta: il 688I del 1988-91 ha BSY-1, TB-16 e TB-23; niente WAA, BQQ-5E, TB-29, MIDAS (varianti.688I)",
+    "C2": "risolta: niente MIDAS, solo BQS-15 (sensori.alta_frequenza)",
+    "C3": "risolta: TB-16 sui 688, BQR-15 agli SSBN (sensori.rimorchiata)",
+    "C4": "aperta: riguarda Akula e Victor III (F7); non tocca 688 e Alfa",
+    "C5": "risolta per la scala di riferimento: vale 01 §3.3 (688I 0, 688 +1, Alfa +14); i valori di Sierra e Victor III si scriveranno in F7",
+    "C6": "risolta con R2 (sensori.rimorchiata)",
+    "C7": "risolta con R3 (sensori.rimorchiata)",
+    "C8": "risolta con R1: σ = max(σ_min, 0,5 · fascio · 10^(−SE/20)) per ogni sensore",
+    "C9": "risolta: σ_min = 0,5° marcato nozionale",
+    "C10": "risolta: stadimetro ±7 % nozionale (sensori.periscopio)",
+    "C11": "risolta: niente MOSS sul 688 (armi.contromisure)",
+    "C12": "risolta: ADC Mk 2 dai segnalatori interni, numeri nozionali (armi.contromisure)"
+  }
+}

@@ -1,0 +1,7 @@
+# Nel contesto di build entra solo cio' che serve al server di gioco.
+*
+!server/package.json
+!server/package-lock.json
+!server/src/
+!shared/
+shared/test/
