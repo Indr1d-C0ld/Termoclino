@@ -31,6 +31,7 @@ import { leggiTesto } from '../../../shared/data/piattaforme.js';
  * @property {number} x @property {number} y @property {number} rotta @property {number} velocita
  * @property {Punto[]} waypoint
  * @property {'ciclo' | 'ferma'} alTermine  dopo l'ultimo waypoint: si ricomincia dal punto di partenza, o ci si ferma
+ * @property {string | null} [piattaforma]  F2: la firma della classe (shared/data/firme/<id>.json)
  */
 
 /**
@@ -38,6 +39,7 @@ import { leggiTesto } from '../../../shared/data/piattaforme.js';
  * @property {number} x @property {number} y
  * @property {number} [quota] m
  * @property {number} [velocita] kt
+ * @property {string} [specie]  F2: la specie di shared/data/firme/biologico.json ('balena', 'globicefali')
  */
 
 /**
@@ -51,6 +53,7 @@ import { leggiTesto } from '../../../shared/data/piattaforme.js';
  * @property {NaveScenario[]} navi
  * @property {BiologicoScenario[]} biologici
  * @property {import('../sim/world/ambiente.js').OpzioniProvvisorio} [ambiente]
+ * @property {'giorno' | 'notte'} [luce]  F2: per il periscopio (predefinito giorno)
  */
 
 /**
@@ -191,6 +194,8 @@ export function normalizzaScenario(g, base, id) {
       velocita: num(n.velocita) ?? 12,
       waypoint: wp.length > 0 ? wp : [q],
       alTermine: /ferm|stop/i.test(String(n.al_termine ?? '')) ? 'ferma' : 'ciclo',
+      // F2: la firma della classe (sensori di H)
+      piattaforma: typeof n.piattaforma === 'string' ? n.piattaforma : null,
     });
   }
 
@@ -205,6 +210,8 @@ export function normalizzaScenario(g, base, id) {
     const velocita = num(b.velocita);
     if (quota !== null) bio.quota = quota;
     if (velocita !== null) bio.velocita = velocita;
+    // F2: la specie (canto, scatti) dal nome o dal tipo dello scenario
+    bio.specie = /globicef|odontocet|delfin/i.test(`${b.nome ?? ''} ${b.tipo ?? ''}`) ? 'globicefali' : 'balena';
     biologici.push(bio);
   }
 
@@ -233,6 +240,7 @@ export function normalizzaScenario(g, base, id) {
     id,
     nome: String(g.nome ?? base?.nome ?? id),
     fonte: 'file',
+    luce: /nott/i.test(String(g.ambiente?.luce?.valore ?? g.ambiente?.luce ?? '')) ? 'notte' : 'giorno',
     origine,
     area,
     partenze: partenze.length > 0 ? partenze : (base?.partenze ?? []),

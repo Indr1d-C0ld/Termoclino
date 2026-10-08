@@ -18,17 +18,24 @@
  *    «dei giri» dell'elica, che segue l'ordine di macchina piu' in fretta dello
  *    scafo: chi chiama tutta forza cavita subito, come nel 1989;
  *  - antenna rimorchiata: regole R2 e R3 (tempi, velocita', tempo morto dopo
- *    le accostate).
+ *    le accostate);
+ *  - F2: alberi (periscopio, ESM, radar) solo a quota periscopica, radar,
+ *    stato del sonar attivo (un ping alla volta), transitori (scafo nei cambi
+ *    di quota, pompe, cambio di regime, idraulica degli alberi, soffiaggio,
+ *    portelli da F3), righe tonali e modulazione dell'elica per la banda
+ *    stretta e il DEMON (dati: shared/data/piattaforme/*.json, SCHEMA §4.1).
  *
  * Il passo e' fisso (0,1 s di gioco); niente casualita' qui dentro tranne la
  * perdita dell'antenna per eccesso di velocita', che usa il generatore del
- * battello (sotto-flusso della partita).
+ * battello (sotto-flusso della partita), e gli scricchiolii dello scafo, che
+ * usano un sotto-flusso derivato a parte ('transitori').
  */
 
 import { NODO_MS, differenzaAngolare, normalizza360, gradiInRadianti, radiantiInGradi } from '../../../../shared/units.js';
 import { rilevamento as rilevamentoDa } from '../../../../shared/geo.js';
 import { TIMONI_O_MAX, WAYPOINT_MAX, MOTIVI_ORDINE } from '../../../../shared/protocol.js';
-import { velocitaCavitazione, livelloSottomarino } from '../sensors/acustica.js';
+import { normalizza180 } from '../../../../shared/units.js';
+import { velocitaCavitazione, livelloSottomarino, livelloSottomarinoA, spostamentoSpettro, sommaDb } from '../sensors/acustica.js';
 
 /** @typedef {import('../../../../shared/data/piattaforme.js').ValoriPiattaforma} ValoriPiattaforma */
 /** @typedef {import('../../../../shared/protocol.js').Ordine} Ordine */
@@ -39,8 +46,36 @@ import { velocitaCavitazione, livelloSottomarino } from '../sensors/acustica.js'
 /** @typedef {import('../sensors/acustica.js').NomeBanda} NomeBanda */
 
 /**
+ * Un transitorio (F2): un rumore breve, che i sensori altrui possono sentire
+ * come tale e che per la sua durata alza anche la banda larga.
+ * @typedef {object} Transitorio
+ * @property {'scafo' | 'portello' | 'pompa' | 'emersione' | 'meccanico' | 'biologico'} tipo
+ * @property {number} livello  dB re 1 µPa²/Hz a 1 m, equivalente a 1 kHz (spettro −20·log f)
+ * @property {number} durata  s
+ */
+
+/**
+ * Una riga dello spettro irradiato (F2), alla sorgente.
+ * @typedef {object} RigaIrradiata
+ * @property {number} f  Hz (senza Doppler)
+ * @property {number} livello  dB re 1 µPa² a 1 m, nella cella
+ * @property {'tonale' | 'giri' | 'pala' | 'asse' | 'canto'} tipo
+ */
+
+/**
+ * Modulazione d'ampiezza del rumore a banda larga (DEMON, F2).
+ * @typedef {object} Modulazione
+ * @property {number} asse  Hz, giri/60
+ * @property {number} pale  numero di pale
+ * @property {number} assi  numero di assi
+ * @property {number} m  indice di modulazione alla frequenza di pala
+ * @property {number} mAsse  indice alla frequenza d'asse
+ * @property {number} armoniche
+ */
+
+/**
  * @typedef {object} Rapporto
- * @property {'sonar' | 'guardia' | 'timone' | 'macchina' | 'navigazione'} chi
+ * @property {'sonar' | 'guardia' | 'timone' | 'macchina' | 'navigazione' | 'tiro'} chi  'tiro' = la centrale di tiro (TMA, F2)
  * @property {string} chiave
  * @property {Record<string, string | number | boolean | null>} parametri
  */
@@ -127,6 +162,30 @@ export class Battello {
     this.cavitante = false;
     /** transitorio in corso (dB in piu' sul rumore irradiato) */
     this.transitorio = 0;
+
+    // --- F2: alberi, radar, sonar attivo, transitori ---
+    /** alberi alzati */
+    this.alberi = { periscopio: false, esm: false, radar: false };
+    /** il radar trasmette */
+    this.radarAttivo = false;
+    /** sonar attivo: numero dell'ultimo ping, s che restano della finestra d'ascolto, ping chiesto e non ancora eseguito */
+    /** @type {{ping: number, ascolto: number, richiesto: {rilevamento: number | null, portata: 'corta' | 'lunga'} | null}} */
+    this.attivo = { ping: 0, ascolto: 0, richiesto: null };
+    /** @type {Transitorio[]} transitori nati dall'ultima raccolta (li prendono i sensori della partita) */
+    this.transitoriNuovi = [];
+    /** @type {{livello: number, restante: number, peso: number}[]} transitori in corso, per la banda larga */
+    this.transitoriAttivi = [];
+    /** @type {{quale: 'periscopio' | 'esm' | 'radar', alzato: boolean, da: 'ordine' | 'guardia'}[]} alzate e abbassate da raccogliere */
+    this.eventiAlberi = [];
+    /** @type {{attivo: boolean}[]} accensioni e spegnimenti del radar da raccogliere */
+    this.eventiRadar = [];
+    this.rngTransitori = a.rng.deriva('transitori');
+    this._quotaAccumulata = 0;
+    this._zPrecedente = this.z;
+    this._pompaFerma = Infinity;
+    this._regime = this._firmaRegime();
+    /** velocita' verticale delle casse d'assetto nell'ultimo passo, m/s */
+    this._wZavorra = 0;
     /** @type {Rapporto[]} rapporti prodotti dalla dinamica, raccolti dalla partita */
     this.rapporti = [];
     /** profondita' dell'acqua sotto il battello all'ultimo passo, m */
@@ -214,6 +273,12 @@ export class Battello {
       }
       case 'towed':
         return this._ordineTowed(o.valore);
+      case 'albero':
+        return this._ordineAlbero(o.valore.quale, o.valore.alzato);
+      case 'radar':
+        return this._ordineRadar(o.valore);
+      case 'attivo':
+        return this._ordineAttivo(o.valore);
       case 'waypoint': {
         const w = o.valore;
         const ap = this.autopilota;
@@ -282,6 +347,169 @@ export class Battello {
     t.quota = null;
     this._rapporto('sonar', 'towed.tagliata');
     return null;
+  }
+
+  // -------------------------------------------------------------------------
+  // F2: alberi, radar, sonar attivo
+  // -------------------------------------------------------------------------
+
+  /** Quota della chiglia oltre la quale gli alberi non si alzano, m. */
+  get quotaMassimaAlberi() {
+    return this.p.profondita.periscopica + (this.p.sensori.periscopio.margine_quota ?? 3);
+  }
+
+  /**
+   * Il battello ha quell'albero?
+   * @param {'periscopio' | 'esm' | 'radar'} quale
+   */
+  haAlbero(quale) {
+    const s = this.p.sensori;
+    if (quale === 'periscopio') return s.periscopio.presente;
+    if (quale === 'esm') return s.esm?.presente === true;
+    return s.radar?.presente === true;
+  }
+
+  /**
+   * @param {'periscopio' | 'esm' | 'radar'} quale
+   * @param {boolean} alzato
+   * @returns {string | null}
+   */
+  _ordineAlbero(quale, alzato) {
+    if (!this.haAlbero(quale)) return MOTIVI_ORDINE.SENZA_SENSORE;
+    if (alzato && this.z > this.quotaMassimaAlberi + 1e-6) return MOTIVI_ORDINE.QUOTA;
+    if (this.alberi[quale] !== alzato) {
+      this.alberi[quale] = alzato;
+      this.eventiAlberi.push({ quale, alzato, da: 'ordine' });
+      this.transitorioDi('meccanico');
+      if (quale === 'radar' && !alzato && this.radarAttivo) {
+        this.radarAttivo = false;
+        this.eventiRadar.push({ attivo: false });
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @param {boolean} trasmette
+   * @returns {string | null}
+   */
+  _ordineRadar(trasmette) {
+    if (!this.haAlbero('radar')) return MOTIVI_ORDINE.SENZA_SENSORE;
+    if (trasmette && !this.alberi.radar) return MOTIVI_ORDINE.ALBERO;
+    if (this.radarAttivo !== trasmette) {
+      this.radarAttivo = trasmette;
+      this.eventiRadar.push({ attivo: trasmette });
+    }
+    return null;
+  }
+
+  /**
+   * Un ping: si controlla solo che si possa; lo esegue chi conosce il mondo
+   * (sensors/attivo.js), che fissa anche la finestra d'ascolto.
+   * @param {{rilevamento: number | null, portata: 'corta' | 'lunga'}} v
+   * @returns {string | null}
+   */
+  _ordineAttivo(v) {
+    const sa = this.p.sensori.sfera_attiva;
+    if (!sa.presente) return MOTIVI_ORDINE.SENZA_SENSORE;
+    if (this.attivo.ascolto > 0 || this.attivo.richiesto) return MOTIVI_ORDINE.PING_IN_CORSO;
+    if (v.rilevamento !== null && Math.abs(normalizza180(v.rilevamento - this.rotta)) > (sa.settore ?? 60) + 1e-9) {
+      return MOTIVI_ORDINE.SETTORE;
+    }
+    this.attivo.richiesto = { rilevamento: v.rilevamento, portata: v.portata };
+    return null;
+  }
+
+  /**
+   * Un transitorio di questo battello, dai dati di piattaforma
+   * (acustica.transitori). `portello` lo usera' F3.
+   * @param {'scafo' | 'portello' | 'pompa' | 'regime' | 'meccanico' | 'emersione'} tipo
+   * @param {number} [scarto] dB da aggiungere al livello dei dati
+   */
+  transitorioDi(tipo, scarto = 0) {
+    const t = this.p.acustica.transitori?.[tipo];
+    if (!t) return;
+    let livello = t.livello ?? 0;
+    if (tipo === 'emersione') {
+      // Il colpo d'inizio del soffiaggio: al livello del soffiaggio stesso.
+      livello = livelloSottomarinoA(this.p, this.ac, 1000, this.velocita, false, 0) + this.ac.sottomarini.soffiaggio_emergenza;
+    }
+    this._nuovoTransitorio({ tipo: tipo === 'regime' ? 'pompa' : tipo, livello: livello + scarto, durata: t.durata });
+  }
+
+  /**
+   * @param {Transitorio} t
+   */
+  _nuovoTransitorio(t) {
+    this.transitoriNuovi.push(t);
+    const tMin = this.ac.transitori?.tempo_integrazione_minimo ?? 0.5;
+    // Per la banda larga (fotogrammi da un secondo) il transitorio pesa per la sua durata.
+    this.transitoriAttivi.push({ livello: t.livello, restante: Math.max(1, t.durata), peso: Math.min(1, Math.max(t.durata, tMin)) });
+  }
+
+  /**
+   * Quali righe a frequenza fissa sono accese a questa velocita': la loro
+   * combinazione e' il «regime», e cambiarlo e' un transitorio.
+   * @returns {string}
+   */
+  _firmaRegime() {
+    const v = Math.abs(this.vElica);
+    return (this.p.acustica.tonali ?? []).map((t) => (v >= t.da_velocita && v < t.a_velocita ? '1' : '0')).join('');
+  }
+
+  /**
+   * F2, a ogni passo: scricchiolii dello scafo, pompe, cambio di regime,
+   * alberi abbassati dall'ufficiale di guardia, transitori che finiscono.
+   * @param {number} dt
+   * @param {number} wZavorra m/s delle casse d'assetto in questo passo
+   */
+  _f2(dt, wZavorra) {
+    const tr = this.p.acustica.transitori;
+    // Scafo: ogni quota_evento metri di cambio di quota, con una probabilita'.
+    const dz = Math.abs(this.z - this._zPrecedente);
+    this._zPrecedente = this.z;
+    const sc = tr?.scafo;
+    if (sc && !this.inSuperficie) {
+      this._quotaAccumulata += dz;
+      if (this._quotaAccumulata >= (sc.quota_evento ?? 15)) {
+        this._quotaAccumulata = 0;
+        const p = Math.min(1, (sc.probabilita ?? 0.5) * (Math.abs(this.wz) > 1 ? 2 : 1));
+        if (this.rngTransitori.uniforme() < p) this.transitorioDi('scafo');
+      }
+    }
+    // Pompe delle casse d'assetto.
+    this._pompaFerma += dt;
+    if (tr?.pompa && Math.abs(wZavorra) > 0.01 && this._pompaFerma >= (tr.pompa.intervallo_minimo ?? 120)) {
+      this._pompaFerma = 0;
+      this.transitorioDi('pompa');
+    }
+    // Cambio di regime delle righe tonali.
+    const regime = this._firmaRegime();
+    if (regime !== this._regime) {
+      this._regime = regime;
+      this.transitorioDi('regime');
+    }
+    // Alberi alzati sotto la quota: li abbassa l'ufficiale di guardia.
+    if ((this.alberi.periscopio || this.alberi.esm || this.alberi.radar) && this.z > this.quotaMassimaAlberi + 3) {
+      for (const quale of /** @type {const} */ (['periscopio', 'esm', 'radar'])) {
+        if (this.alberi[quale]) {
+          this.alberi[quale] = false;
+          this.eventiAlberi.push({ quale, alzato: false, da: 'guardia' });
+        }
+      }
+      if (this.radarAttivo) {
+        this.radarAttivo = false;
+        this.eventiRadar.push({ attivo: false });
+      }
+      this.transitorioDi('meccanico');
+      this._rapporto('guardia', 'guardia.alberi_abbassati', { quota: Math.round(this.z) });
+    }
+    // Transitori in corso.
+    if (this.transitoriAttivi.length > 0) {
+      for (const t of this.transitoriAttivi) t.restante -= dt;
+      this.transitoriAttivi = this.transitoriAttivi.filter((t) => t.restante > 0);
+    }
+    if (this.attivo.ascolto > 0) this.attivo.ascolto = Math.max(0, this.attivo.ascolto - dt);
   }
 
   /**
@@ -391,6 +619,9 @@ export class Battello {
 
     // --- Antenna rimorchiata.
     if (this.towed) this._towed(dt, amb);
+
+    // --- F2: transitori, alberi.
+    this._f2(dt, this._wZavorra);
   }
 
   /** L'ordine «2/3» (o il 50 % sul telegrafo a percentuale). */
@@ -443,9 +674,11 @@ export class Battello {
     const efficacia = Math.min(1, (vMs / NODO_MS / q.velocita_piena_efficacia_timoni) ** 2);
     const tassoAssetto = q.velocita_assetto * efficacia;
     let wZavorra = 0;
+    this._wZavorra = 0;
 
     if (this.modoQuota === 'emersione') {
       // Soffiaggio d'emergenza: si sale comunque, rumorosamente.
+      if (!this.transitorio) this.transitorioDi('emersione');
       this.transitorio = 1;
       this.timoniO = -TIMONI_O_MAX;
       this.assetto = Math.max(-q.assetto_max, this.assetto - q.velocita_assetto * dt);
@@ -488,6 +721,7 @@ export class Battello {
     this.assetto = clamp(this.assetto, -q.assetto_max, q.assetto_max);
 
     this.wz = clamp(vMs * Math.sin(gradiInRadianti(this.assetto)), -q.velocita_verticale_max, q.velocita_verticale_max) + wZavorra;
+    this._wZavorra = wZavorra;
     this.z += this.wz * dt;
     this.transitorio = 0;
     if (this.z < pescaggio) {
@@ -643,8 +877,100 @@ export class Battello {
    * @param {number} cosAspetto
    */
   livello(ac, banda, cosAspetto) {
-    return livelloSottomarino(this.p, ac, banda, this.velocita, this.cavitante, cosAspetto)
+    const sl = livelloSottomarino(this.p, ac, banda, this.velocita, this.cavitante, cosAspetto)
       + (this.transitorio ? ac.sottomarini.soffiaggio_emergenza : 0);
+    return this.transitoriAttivi.length > 0 ? sommaDb(sl, this.livelloTransitori(ac, ac.bande[banda].centro)) : sl;
+  }
+
+  /**
+   * F2: lo spettro a banda larga a una frequenza qualsiasi (LOFAR, DEMON).
+   * @param {ValoriAcustica} ac
+   * @param {number} f Hz
+   * @param {number} cosAspetto
+   */
+  livelloA(ac, f, cosAspetto) {
+    return livelloSottomarinoA(this.p, ac, f, this.velocita, this.cavitante, cosAspetto)
+      + (this.transitorio ? ac.sottomarini.soffiaggio_emergenza : 0);
+  }
+
+  /**
+   * F2: la potenza dei transitori in corso a una frequenza, pesata per la loro
+   * durata dentro il fotogramma da un secondo.
+   * @param {ValoriAcustica} ac
+   * @param {number} f Hz
+   */
+  livelloTransitori(ac, f) {
+    let lin = 0;
+    for (const t of this.transitoriAttivi) lin += t.peso * 10 ** ((t.livello + spostamentoSpettro(ac, f)) / 10);
+    return lin > 0 ? 10 * Math.log10(lin) : -Infinity;
+  }
+
+  /** Giri dell'asse al minuto (modulo). */
+  get giri() {
+    return Math.abs(this.vElica) * this.p.propulsione.giri_per_nodo;
+  }
+
+  /**
+   * F2: le righe irradiate (tonali fisse, righe che seguono i giri, pala e
+   * asse) con il loro livello alla sorgente nella cella di 1 Hz. Le righe
+   * fisse sono riferite allo spettro a banda larga alla velocita' di
+   * riferimento, senza cavitazione e al traverso: hanno un livello fisso. Le
+   * altre seguono la banda larga attuale.
+   * @param {ValoriAcustica} ac
+   * @param {number} cosAspetto
+   * @returns {RigaIrradiata[]}
+   */
+  righe(ac, cosAspetto) {
+    const a = this.p.acustica;
+    const v = Math.abs(this.vElica);
+    /** @type {RigaIrradiata[]} */
+    const out = [];
+    const vRif = a.rumore_irradiato.velocita_rif;
+    for (const t of a.tonali ?? []) {
+      if (v < t.da_velocita || v >= t.a_velocita) continue;
+      out.push({ f: t.frequenza, livello: livelloSottomarinoA(this.p, ac, t.frequenza, vRif, false, 0) + t.sopra_banda_larga, tipo: 'tonale' });
+    }
+    const asse = this.giri / 60;
+    if (asse <= 0) return out;
+    for (const t of a.righe_giri ?? []) {
+      if (v < t.da_velocita || v >= t.a_velocita) continue;
+      const f = t.per_giro * asse;
+      out.push({ f, livello: this.livelloA(ac, f, cosAspetto) + t.sopra_banda_larga, tipo: 'giri' });
+    }
+    const pa = a.pale;
+    if (pa) {
+      const fp = asse * this.p.propulsione.elica_pale;
+      out.push({ f: asse, livello: this.livelloA(ac, asse, cosAspetto) + pa.livello_asse, tipo: 'asse' });
+      for (let k = 1; k <= pa.armoniche; k++) {
+        out.push({ f: k * fp, livello: this.livelloA(ac, k * fp, cosAspetto) + pa.livello - pa.decremento * (k - 1), tipo: 'pala' });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * F2: la modulazione del rumore dell'elica (DEMON).
+   * @returns {Modulazione | null}
+   */
+  modulazione() {
+    const pa = this.p.acustica.pale;
+    if (!pa || this.giri <= 0) return null;
+    const m = this.cavitante ? pa.modulazione_cavitante : pa.modulazione;
+    return {
+      asse: this.giri / 60, pale: this.p.propulsione.elica_pale, assi: this.p.propulsione.assi,
+      m, mAsse: m * pa.modulazione_asse, armoniche: pa.armoniche,
+    };
+  }
+
+  /**
+   * F2: forza di bersaglio per il sonar attivo, interpolata col seno quadro
+   * dell'aspetto fra prua/poppa e traverso (05 §2.3).
+   * @param {number} cosAspetto coseno dell'angolo fra la prua e la direzione verso chi pinga
+   */
+  forzaBersaglio(cosAspetto) {
+    const fb = this.p.acustica.forza_bersaglio;
+    const s2 = 1 - cosAspetto * cosAspetto;
+    return fb.prua_poppa + (fb.traverso - fb.prua_poppa) * s2 + (fb.correzione_rivestimento ?? 0);
   }
 
   // -------------------------------------------------------------------------
@@ -696,6 +1022,13 @@ export class Battello {
       strato: strato ? Math.round(strato.quota) : null,
       avvisi,
       danni: { ...this.danni },
+      alberi: { ...this.alberi },
+      radar_attivo: this.radarAttivo,
+      // I campi che dipendono dalla partita li mette partita.stato (sensors/mondo.js, equipaggio):
+      ascolto_attivo: Math.ceil(this.attivo.ascolto),
+      assistenza: 2,
+      analizzatore: null,
+      designato: null,
     };
   }
 
@@ -715,6 +1048,8 @@ export class Battello {
       macchina: this.macchina,
       timone: arrotonda(this.timone, 2),
       cavitante: this.cavitante,
+      alberi: { ...this.alberi },
+      radar: this.radarAttivo,
       towed: this.towed ? { stato: this.towed.stato, filato: arrotonda(this.towed.filato, 1), quota: this.towed.quota === null ? null : arrotonda(this.towed.quota, 1) } : null,
     };
   }

@@ -9,8 +9,8 @@ import { importa, RADICE } from './ambiente_client.mjs';
 
 const { CATALOGHI, traduci, frasePerRicevuto } = await importa('lingue/indice.js');
 const { perIlFont } = await importa('resa/testo.js');
-const { ERRORI, MOTIVI_ORDINE, CONTESTO_688, QUOTE_SPECIALI } = await import('../../shared/protocol.js');
-const { CHIAVI_RAPPORTO } = await import('../strumenti/finto_server.mjs');
+const { ERRORI, MOTIVI_ORDINE, CONTESTO_688, QUOTE_SPECIALI, RAPPORTI, CHIAVI_RAPPORTO, CLASSI, ALBERI, TIPI_TRANSITORIO } = await import('../../shared/protocol.js');
+const { CHIAVI_RAPPORTO: CHIAVI_FINTO } = await import('../strumenti/finto_server.mjs');
 
 /** Tutti i file .js sotto una cartella. @param {string} dir @returns {string[]} */
 function fileJs(dir) {
@@ -45,13 +45,30 @@ test('ogni rapporto del server vero ha la sua frase', () => {
   }
 });
 
-test('ogni rapporto del finto server ha la sua frase', () => {
-  for (const k of CHIAVI_RAPPORTO) for (const lingua of ['it', 'en']) assert.ok(CATALOGHI[lingua][k], `${lingua}: manca ${k}`);
+test('ogni rapporto del protocollo (RAPPORTI di shared/protocol.js) ha la sua frase, con i soli parametri dichiarati', () => {
+  assert.ok(CHIAVI_RAPPORTO.length >= 38, `solo ${CHIAVI_RAPPORTO.length} chiavi nel protocollo`);
+  for (const k of CHIAVI_RAPPORTO) {
+    for (const lingua of ['it', 'en']) {
+      const frase = CATALOGHI[lingua][k];
+      assert.ok(frase, `${lingua}: manca ${k}`);
+      for (const m of frase.matchAll(/\{([a-z_0-9]+)(?:\|[a-z_]+)?\}/g)) {
+        assert.ok(RAPPORTI[k].includes(m[1]), `${lingua} ${k}: {${m[1]}} non è un parametro del rapporto`);
+      }
+      // con tutti i parametri (anche null) la frase non lascia segnaposto
+      const parametri = Object.fromEntries(RAPPORTI[k].map((p) => [p, p === 'contatto' ? 'S1' : 5]));
+      assert.ok(!/[{}]/.test(traduci(lingua, k, parametri)), `${lingua} ${k}: segnaposto rimasto`);
+    }
+  }
+});
+
+test('ogni rapporto del finto server è nel protocollo', () => {
+  for (const k of CHIAVI_FINTO) assert.ok(CHIAVI_RAPPORTO.includes(k), `${k} non è in RAPPORTI`);
 });
 
 test('codici d\'errore e motivi degli ordini respinti: tutti tradotti', () => {
   for (const c of Object.values(ERRORI)) assert.ok(CATALOGHI.it[`errore.${c}`], `manca errore.${c}`);
-  const rifiuti = ['tempo_bloccato', 'senza_towed', 'towed_stato', 'troppi_waypoint', 'nessun_waypoint', 'fuori_area', 'indice'];
+  const rifiuti = ['tempo_bloccato', 'senza_towed', 'towed_stato', 'troppi_waypoint', 'nessun_waypoint', 'fuori_area', 'indice',
+    'quota', 'albero', 'contatto', 'livello', 'senza_sensore', 'ping_in_corso', 'settore'];
   for (const m of rifiuti) {
     assert.ok(Object.values(MOTIVI_ORDINE).includes(m), `${m} non è più un motivo del protocollo`);
     assert.ok(CATALOGHI.it[`motivo.${m}`], `manca motivo.${m}`);
@@ -67,6 +84,14 @@ test('l\'equipaggio ripete ogni ordine accettato con una frase del catalogo', ()
     ...QUOTE_SPECIALI.map((v) => /** @type {[string, unknown]} */ (['quota', v])),
     ['rotta', 45], ['waypoint', { azione: 'aggiungi', x: 1, y: 2 }], ['waypoint', { azione: 'svuota' }],
     ['autopilota', true], ['autopilota', false], ['scala_tempo', 4], ['pausa', true], ['pausa', false],
+    // v2
+    ['assistenza', 0], ['assistenza', 3], ['analizzatore', null], ['analizzatore', { contatto: 'S2' }],
+    ['analizzatore', { sensore: 'towed', rilevamento: 45.5 }], ['attivo', { rilevamento: null, portata: 'lunga' }],
+    ...ALBERI.flatMap((quale) => [true, false].map((alzato) => /** @type {[string, unknown]} */ (['albero', { quale, alzato }]))),
+    ['radar', true], ['radar', false], ['designa', 'S1'], ['designa', null],
+    ['classifica', { contatto: 'S1', classe: 'forrest_sherman' }], ['classifica', { contatto: 'S1', classe: null }],
+    ['soluzione', { contatto: 'S1', ora: 10, distanza: 5000, rotta: 90, velocita: 10 }], ['soluzione', { contatto: 'S1', cancella: true }],
+    ['abbandona', 'S1'],
   ];
   for (const [cosa, valore] of casi) {
     const f = frasePerRicevuto(cosa, valore);
@@ -110,4 +135,25 @@ test('formati: piedi, gradi a tre cifre, ordinali da uno, speculare dell\'antenn
 
 test('una chiave sconosciuta si mostra comunque, leggibile', () => {
   assert.equal(traduci('it', 'guardia.qualcosa_di_nuovo', { quota: 50 }), 'QUALCOSA DI NUOVO 50');
+});
+
+test('v2: classi del libro e tipi di transitorio hanno il loro nome; designazioni cirilliche nel font', () => {
+  for (const c of CLASSI) {
+    for (const lingua of ['it', 'en']) {
+      for (const k of [`classe.${c}`, `classe_media.${c}`, `ui.tma.classe_breve.${c}`]) assert.ok(CATALOGHI[lingua][k], `${lingua}: manca ${k}`);
+    }
+  }
+  for (const t of TIPI_TRANSITORIO) assert.ok(`fmt.transitorio.${t}` in CATALOGHI.it, `manca fmt.transitorio.${t}`);
+  assert.equal(traduci('it', 'sonar.classificato', { contatto: 'S3', classe: 'forrest_sherman', confidenza: 0.82 }),
+    'S3 CLASSIFICATO: CACCIATORPEDINIERE FORREST SHERMAN (82)');
+  assert.equal(traduci('it', 'sonar.transitorio', { contatto: null, sensore: 'towed', tipo: 'scafo', rilevamento: 7 }),
+    "TRANSITORIO DI SCAFO ALL'ANTENNA PER 007");
+  assert.equal(traduci('en', 'sonar.transitorio', { contatto: 'S2', sensore: 'sfera', tipo: 'pompa', rilevamento: 120 }),
+    'TRANSIENT PUMP BEARING 120 (S2)');
+  assert.equal(traduci('it', 'tma.consiglio_manovra', { contatto: 'S1', accostata: 90, lato: 'sinistra', minuti: 6 }),
+    'PER S1: ACCOSTARE DI 90 GRADI A SINISTRA PER 6 MINUTI');
+  assert.equal(traduci('it', 'sonar.eco', { rilevamento: 45, distanza: 3657.6 }), 'ECO PER 045, 4000 IARDE');
+  // l'equipaggio dell'Alfa designa i contatti in cirillico: nel font diventano i glifi del pseudo-cirillico
+  assert.equal(perIlFont('Ц12'), '\xf012');
+  assert.equal(traduci('it', 'sonar.contatto_perso', { contatto: 'Ц1' }), 'CONTATTO Ц1 PERSO');
 });

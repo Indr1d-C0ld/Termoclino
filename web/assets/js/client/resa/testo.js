@@ -21,8 +21,21 @@ const PRIMO = 0x20;
 export const CIFRA_GRANDE = 0x87;
 
 /**
+ * Le lettere cirilliche (le designazioni dei contatti dell'equipaggio dell'Alfa, 'Ц1', 'Ц2'…) nei glifi
+ * del pseudo-cirillico del font (E7h-F2h: Ъ Д З Б Ж Л И Ф Я Ц Щ Ч) o nella maiuscola latina che ha la
+ * stessa forma; le poche che non hanno né l'uno né l'altra si traslitterano.
+ */
+const CIRILLICO = /** @type {Record<string, string>} */ ({
+  'Ъ': '\xe7', 'Д': '\xe8', 'З': '\xe9', 'Э': '\xe9', 'Б': '\xea', 'Ж': '\xeb', 'Л': '\xec', 'П': '\xec',
+  'И': '\xed', 'Й': '\xed', 'Ф': '\xee', 'Я': '\xef', 'Ц': '\xf0', 'Щ': '\xf1', 'Ш': '\xf1', 'Ч': '\xf2',
+  'А': 'A', 'В': 'B', 'Е': 'E', 'Ё': 'E', 'К': 'K', 'М': 'M', 'Н': 'H', 'О': 'O', 'Р': 'P', 'С': 'C', 'Т': 'T',
+  'У': 'Y', 'Х': 'X', 'Г': 'G', 'Ь': 'B', 'Ы': 'BI', 'Ю': 'IO',
+});
+
+/**
  * Riduce un testo ai caratteri del font: maiuscole, niente accenti (È → E'), niente '@' (che per
- * l'interprete CLS commuta il grassetto), caratteri ignoti → spazio.
+ * l'interprete CLS commuta il grassetto), il cirillico nei glifi del pseudo-cirillico, caratteri ignoti
+ * → spazio.
  * @param {string} s
  */
 export function perIlFont(s) {
@@ -30,6 +43,7 @@ export function perIlFont(s) {
   let out = '';
   for (const ch of s.toUpperCase()) {
     if (accentate[ch]) { out += accentate[ch]; continue; }
+    if (CIRILLICO[ch]) { out += CIRILLICO[ch]; continue; }
     const c = ch.charCodeAt(0);
     if (ch === '@' || c < 0x20 || c > 0x5f) {
       const base = ch.normalize('NFD').charAt(0);

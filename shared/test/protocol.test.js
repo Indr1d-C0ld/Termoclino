@@ -1,8 +1,8 @@
 // @ts-check
 /**
- * Prove del protocollo v1: validazione di ogni ordine (anche malformato),
- * quantizzazione e codifica dei fotogrammi sonar, contesti di validazione
- * ricavati dalle piattaforme.
+ * Prove del protocollo (v2): validazione di ogni ordine (anche malformato),
+ * quantizzazione e codifica dei fotogrammi sonar e degli spettri, contesti di
+ * validazione ricavati dalle piattaforme, catalogo dei rapporti.
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,6 +19,21 @@ import {
   SCALE_TEMPO,
   SONAR,
   WAYPOINT_MAX,
+  ALBERI,
+  ASSISTENZA_PREDEFINITA,
+  CHIAVI_RAPPORTO,
+  CLASSI,
+  LIVELLI_ASSISTENZA,
+  PORTATE_ATTIVO,
+  RAPPORTI,
+  SPETTRO,
+  TIPI_TRANSITORIO,
+  centroCella,
+  codificaByte,
+  contattoValido,
+  decodificaByte,
+  decodificaDemon,
+  decodificaSpettro,
   centroSettore,
   codificaSettori,
   contestoOrdini,
@@ -58,12 +73,38 @@ const no = (cosa, valore, motivo, ctx = ctx688) => {
   if (!v.ok) assert.equal(v.motivo, motivo, `${cosa} ${JSON.stringify(valore)}`);
 };
 
-test('versione 1, tipi e codici stabili', () => {
-  assert.equal(PROTOCOLLO_VERSIONE, 1);
+test('versione 2, tipi e codici stabili', () => {
+  assert.equal(PROTOCOLLO_VERSIONE, 2);
   assert.deepEqual(Object.values(DAL_CLIENT), ['ciao', 'ping', 'entra', 'esci', 'ordine']);
   assert.ok(Object.values(DAL_SERVER).includes('sonar'));
+  for (const t of ['spettro', 'eco', 'intercetto', 'transitorio', 'visivo', 'esm', 'radar', 'tracce', 'soluzione']) {
+    assert.ok((/** @type {string[]} */ (Object.values(DAL_SERVER))).includes(t), `manca il tipo ${t}`);
+  }
   assert.equal(ERRORI.ORDINE_NON_VALIDO, 'ordine_non_valido');
+  assert.equal(ERRORI.ASSISTENZA_NON_VALIDA, 'assistenza_non_valida');
   assert.equal(new Set(Object.values(MOTIVI_ORDINE)).size, Object.values(MOTIVI_ORDINE).length);
+  for (const m of ['quota', 'albero', 'contatto', 'livello', 'senza_sensore', 'ping_in_corso', 'settore']) {
+    assert.ok((/** @type {string[]} */ (Object.values(MOTIVI_ORDINE))).includes(m), `manca il motivo ${m}`);
+  }
+});
+
+test('rapporti: catalogo esportato, parametri senza doppioni, chiavi con il ruolo', () => {
+  assert.deepEqual([...CHIAVI_RAPPORTO], Object.keys(RAPPORTI));
+  assert.ok(CHIAVI_RAPPORTO.length >= 35);
+  for (const [k, p] of Object.entries(RAPPORTI)) {
+    assert.match(k, /^[a-z]+\.[a-z_]+$/, k);
+    assert.equal(new Set(p).size, p.length, `${k}: parametri doppi`);
+    assert.ok(Object.isFrozen(p));
+  }
+  // v1 intatti, v2 dalla bozza (con le rifiniture di PROTOCOLLO.md)
+  assert.deepEqual(RAPPORTI['sonar.nuovo_contatto'], ['contatto', 'sensore', 'rilevamento', 'speculare']);
+  assert.deepEqual(RAPPORTI['sonar.eco'], ['rilevamento', 'distanza']);
+  assert.deepEqual(RAPPORTI['intercetto.ping'], ['rilevamento', 'frequenza_khz']);
+  assert.deepEqual(RAPPORTI['sonar.transitorio'], ['contatto', 'sensore', 'tipo', 'rilevamento']);
+  for (const k of ['periscopio.nave_in_vista', 'periscopio.scia', 'esm.radar', 'sonar.fine_ascolto', 'guardia.alberi_abbassati',
+    'sonar.classificato', 'tma.soluzione', 'tma.consiglio_manovra', 'tma.distanza_non_osservabile', 'tma.ekelund']) {
+    assert.ok(RAPPORTI[k], `manca ${k}`);
+  }
 });
 
 test('il contesto del 688 ricavato dai dati coincide con CONTESTO_688', () => {
@@ -171,17 +212,146 @@ test('cosa sconosciuta, numero d\'ordine e messaggi strani', () => {
     assert.equal(v.ok, false);
     if (!v.ok) assert.equal(v.motivo, MOTIVI_ORDINE.N);
   }
-  // ogni cosa ammessa ha un caso valido qui sopra
-  assert.deepEqual([...ORDINI].sort(), ['autopilota', 'macchina', 'pausa', 'quota', 'rotta', 'scala_tempo', 'timone', 'timoni_o', 'towed', 'waypoint']);
+  // ogni cosa ammessa ha un caso valido in queste prove
+  assert.deepEqual([...ORDINI].sort(), [
+    'abbandona', 'albero', 'analizzatore', 'assistenza', 'attivo', 'autopilota', 'classifica', 'designa', 'macchina',
+    'pausa', 'quota', 'radar', 'rotta', 'scala_tempo', 'soluzione', 'timone', 'timoni_o', 'towed', 'waypoint',
+  ]);
   // un ordine passato per decodifica come arriva dalla rete
   const d = decodifica(JSON.stringify({ t: 'ordine', cosa: 'quota', valore: 'periscopica', n: 1 }));
   assert.equal(d.ok && validaOrdine(d.messaggio).ok, true);
 });
 
-test('entra: solo gli scenari noti', () => {
-  assert.deepEqual(validaEntra({ scenario: 'torpex_palestra' }), { ok: true, scenario: 'torpex_palestra' });
+test('entra: solo gli scenari noti, livello di assistenza facoltativo', () => {
+  assert.deepEqual(validaEntra({ scenario: 'torpex_palestra' }), { ok: true, scenario: 'torpex_palestra', assistenza: ASSISTENZA_PREDEFINITA });
+  assert.equal(ASSISTENZA_PREDEFINITA, 2);
+  for (const l of LIVELLI_ASSISTENZA) assert.deepEqual(validaEntra({ scenario: 'torpex_palestra', assistenza: l }), { ok: true, scenario: 'torpex_palestra', assistenza: l });
+  assert.deepEqual(validaEntra({ scenario: 'torpex_palestra', assistenza: null }), { ok: true, scenario: 'torpex_palestra', assistenza: 2 });
+  for (const a of [4, -1, 1.5, '2', true, {}]) {
+    assert.deepEqual(validaEntra({ scenario: 'torpex_palestra', assistenza: a }), { ok: false, errore: ERRORI.ASSISTENZA_NON_VALIDA }, JSON.stringify(a));
+  }
   assert.equal(validaEntra({ scenario: 'shake_em' }).ok, false);
   assert.equal(validaEntra({}).ok, false);
+});
+
+test('v2: assistenza, radar, designa, abbandona', () => {
+  for (const l of LIVELLI_ASSISTENZA) assert.equal(ok('assistenza', l), l);
+  no('assistenza', 4, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('assistenza', -1, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('assistenza', 1.5, MOTIVI_ORDINE.TIPO);
+  no('assistenza', '2', MOTIVI_ORDINE.TIPO);
+  assert.equal(ok('radar', true), true);
+  assert.equal(ok('radar', false), false);
+  no('radar', 'acceso', MOTIVI_ORDINE.TIPO);
+  no('radar', 1, MOTIVI_ORDINE.TIPO);
+  assert.equal(ok('designa', 'S1'), 'S1');
+  assert.equal(ok('designa', 'Ц12'), 'Ц12');
+  assert.equal(ok('designa', null), null);
+  no('designa', 's1', MOTIVI_ORDINE.VALORE);
+  no('designa', 'S', MOTIVI_ORDINE.VALORE);
+  no('designa', 'S1 ', MOTIVI_ORDINE.VALORE);
+  no('designa', 'SIERRA1', MOTIVI_ORDINE.VALORE);
+  no('designa', 7, MOTIVI_ORDINE.TIPO);
+  assert.equal(ok('abbandona', 'S3'), 'S3');
+  no('abbandona', null, MOTIVI_ORDINE.TIPO);
+  no('abbandona', '3', MOTIVI_ORDINE.VALORE);
+  assert.equal(contattoValido('S9999'), true);
+  assert.equal(contattoValido('S10000'), false);
+  assert.equal(contattoValido('<b>S1</b>'), false);
+});
+
+test('v2: analizzatore', () => {
+  assert.equal(ok('analizzatore', null), null);
+  assert.deepEqual(ok('analizzatore', { sensore: 'towed', rilevamento: 123.456 }), { sensore: 'towed', rilevamento: 123.5 });
+  assert.deepEqual(ok('analizzatore', { sensore: 'sfera', rilevamento: 360 }), { sensore: 'sfera', rilevamento: 0 });
+  assert.deepEqual(ok('analizzatore', { contatto: 'S2' }), { contatto: 'S2' });
+  no('analizzatore', { sensore: 'conforme', rilevamento: 10 }, MOTIVI_ORDINE.VALORE);
+  no('analizzatore', { sensore: 'sfera', rilevamento: 361 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('analizzatore', { sensore: 'sfera', rilevamento: '10' }, MOTIVI_ORDINE.TIPO);
+  no('analizzatore', { sensore: 'sfera' }, MOTIVI_ORDINE.TIPO);
+  no('analizzatore', { sensore: 3, rilevamento: 10 }, MOTIVI_ORDINE.TIPO);
+  no('analizzatore', { contatto: 'S2', sensore: 'sfera', rilevamento: 4 }, MOTIVI_ORDINE.VALORE);
+  no('analizzatore', { contatto: 'x' }, MOTIVI_ORDINE.VALORE);
+  no('analizzatore', { contatto: 2 }, MOTIVI_ORDINE.TIPO);
+  no('analizzatore', { sensore: 'sfera', rilevamento: 4, extra: 1 }, MOTIVI_ORDINE.TIPO);
+  no('analizzatore', 'sfera', MOTIVI_ORDINE.TIPO);
+  no('analizzatore', [1, 2], MOTIVI_ORDINE.TIPO);
+});
+
+test('v2: attivo', () => {
+  for (const p of PORTATE_ATTIVO) assert.deepEqual(ok('attivo', { rilevamento: null, portata: p }), { rilevamento: null, portata: p });
+  assert.deepEqual(ok('attivo', { rilevamento: 359.97, portata: 'lunga' }), { rilevamento: 0, portata: 'lunga' });
+  no('attivo', { rilevamento: null }, MOTIVI_ORDINE.TIPO);
+  no('attivo', { portata: 'corta' }, MOTIVI_ORDINE.TIPO);
+  no('attivo', { rilevamento: null, portata: 'media' }, MOTIVI_ORDINE.VALORE);
+  no('attivo', { rilevamento: null, portata: 1 }, MOTIVI_ORDINE.TIPO);
+  no('attivo', { rilevamento: -5, portata: 'corta' }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('attivo', { rilevamento: 'prua', portata: 'corta' }, MOTIVI_ORDINE.TIPO);
+  no('attivo', { rilevamento: Number.NaN, portata: 'corta' }, MOTIVI_ORDINE.TIPO);
+  no('attivo', true, MOTIVI_ORDINE.TIPO);
+  no('attivo', null, MOTIVI_ORDINE.TIPO);
+});
+
+test('v2: albero', () => {
+  for (const q of ALBERI) {
+    assert.deepEqual(ok('albero', { quale: q, alzato: true }), { quale: q, alzato: true });
+    assert.deepEqual(ok('albero', { quale: q, alzato: false }), { quale: q, alzato: false });
+  }
+  no('albero', { quale: 'snorkel', alzato: true }, MOTIVI_ORDINE.VALORE);
+  no('albero', { quale: 'periscopio', alzato: 1 }, MOTIVI_ORDINE.TIPO);
+  no('albero', { quale: 'periscopio' }, MOTIVI_ORDINE.TIPO);
+  no('albero', { quale: 'periscopio', alzato: true, quota: 3 }, MOTIVI_ORDINE.TIPO);
+  no('albero', 'periscopio', MOTIVI_ORDINE.TIPO);
+});
+
+test('v2: classifica e soluzione', () => {
+  for (const c of CLASSI) assert.deepEqual(ok('classifica', { contatto: 'S1', classe: c }), { contatto: 'S1', classe: c });
+  assert.deepEqual(ok('classifica', { contatto: 'S1', classe: null }), { contatto: 'S1', classe: null });
+  no('classifica', { contatto: 'S1', classe: 'akula' }, MOTIVI_ORDINE.VALORE);
+  no('classifica', { contatto: 'S1' }, MOTIVI_ORDINE.TIPO);
+  no('classifica', { contatto: 'S1', classe: 7 }, MOTIVI_ORDINE.TIPO);
+  no('classifica', { contatto: 'boh', classe: '688' }, MOTIVI_ORDINE.VALORE);
+  const sol = { contatto: 'S1', ora: 123.45, distanza: 9144.4, rotta: 359.99, velocita: 12.34 };
+  assert.deepEqual(ok('soluzione', sol), { contatto: 'S1', ora: 123.5, distanza: 9144, rotta: 0, velocita: 12.3 });
+  assert.deepEqual(ok('soluzione', { ...sol, rilevamento: 45.06 }), { contatto: 'S1', ora: 123.5, distanza: 9144, rotta: 0, velocita: 12.3, rilevamento: 45.1 });
+  assert.deepEqual(ok('soluzione', { contatto: 'S1', cancella: true }), { contatto: 'S1', cancella: true });
+  no('soluzione', { contatto: 'S1', cancella: false }, MOTIVI_ORDINE.VALORE);
+  no('soluzione', { contatto: 'S1', cancella: true, distanza: 3 }, MOTIVI_ORDINE.VALORE);
+  no('soluzione', { ...sol, distanza: 0 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('soluzione', { ...sol, distanza: 600_000 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('soluzione', { ...sol, velocita: -1 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('soluzione', { ...sol, velocita: 61 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('soluzione', { ...sol, rotta: 400 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('soluzione', { ...sol, ora: -1 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('soluzione', { ...sol, rilevamento: 361 }, MOTIVI_ORDINE.FUORI_LIMITI);
+  no('soluzione', { ...sol, rilevamento: '45' }, MOTIVI_ORDINE.TIPO);
+  no('soluzione', { ...sol, velocita: '12' }, MOTIVI_ORDINE.TIPO);
+  no('soluzione', { ...sol, distanza: Infinity }, MOTIVI_ORDINE.TIPO);
+  no('soluzione', { contatto: 'S1', ora: 1 }, MOTIVI_ORDINE.TIPO);
+  no('soluzione', { ...sol, contatto: 'x' }, MOTIVI_ORDINE.VALORE);
+  no('soluzione', { ...sol, q: 80 }, MOTIVI_ORDINE.TIPO);
+  no('soluzione', null, MOTIVI_ORDINE.TIPO);
+});
+
+test('v2: spettri, byte in base64, celle', () => {
+  for (const sensore of /** @type {const} */ (['sfera', 'towed'])) {
+    const f = SPETTRO[sensore];
+    const righe = new Uint8Array(f.RIGHE).map((_, i) => (i * 13) & 255);
+    const demon = new Uint8Array(f.DEMON_RIGHE).map((_, i) => (i * 7) & 255);
+    const m = { sensore, righe: codificaByte(righe), demon: codificaByte(demon) };
+    assert.deepEqual(decodificaSpettro(m), righe);
+    assert.deepEqual(decodificaDemon(m), demon);
+    assert.equal(decodificaSpettro({ ...m, sensore: 'conforme' }), null);
+    assert.equal(decodificaSpettro({ ...m, righe: m.righe.slice(0, -4) }), null);
+    assert.equal(m.righe.length < 1400, true, 'lo spettro sta comodo in 16 KiB');
+  }
+  assert.equal(decodificaByte('AAEC', 3)?.[2], 2);
+  assert.equal(decodificaByte('AAEC', 4), null);
+  assert.equal(decodificaByte('###', 2), null);
+  assert.equal(decodificaByte(12, 2), null);
+  assert.equal(centroCella(0, 1, 60), 60.5);
+  assert.equal(SPETTRO.PERIODO, 4);
+  assert.ok(TIPI_TRANSITORIO.includes('sconosciuto'));
 });
 
 test('sonar: quantizzazione, settori, codifica base64', () => {

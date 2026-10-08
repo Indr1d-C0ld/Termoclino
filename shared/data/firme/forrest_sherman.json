@@ -1,0 +1,129 @@
+{
+  "formato": "termoclino-firma/1",
+  "id": "forrest_sherman",
+  "aggiornato": "2026-10-08",
+  "identita": {
+    "nome": "Forrest Sherman",
+    "designazione": "DD-931",
+    "tipo": "nave",
+    "categoria": "cacciatorpediniere",
+    "nazione": "USA",
+    "lato": "usa",
+    "configurazione": "unita' radiate nel 1982-83 (Edson nel 1988) e usate come bersagli radiocomandati nell'esercitazione TORPEX '89 del gioco del 1989; radar della modernizzazione antisommergibile (SCB 251) del capoclasse: AN/SPS-40 e AN/SPS-10",
+    "radiazione": {"valore": 1982, "unita": "anno", "fonte": "[WP-DD931CL]", "confidenza": "stimato", "nota": "Forrest Sherman, Barry, Bigelow, Blandy il 5/11/1982; le altre fra il 1982 e il 1983, Edson il 15/12/1988. In TORPEX '89 sono scafi radiati e radiocomandati.", "intervallo": [1982, 1988]}
+  },
+  "dimensioni": {
+    "lunghezza": {"valore": 127, "unita": "m", "fonte": "[WP-DD931CL] [NAVYPEDIA-DD931]", "confidenza": "stimato", "nota": "418 ft fuori tutto; Navypedia 127,6 m."},
+    "larghezza": {"valore": 13.7, "unita": "m", "fonte": "[WP-DD931CL] [NAVYPEDIA-DD931]", "confidenza": "stimato", "nota": "45 ft."},
+    "pescaggio": {"valore": 6.7, "unita": "m", "fonte": "[WP-DD931CL] [WP-DD931]", "confidenza": "stimato", "nota": "22 ft dopo le modifiche; 20 ft come costruita.", "intervallo": [6.1, 6.7]},
+    "dislocamento": {"valore": 4050, "unita": "t", "fonte": "[WP-DD931CL] [NAVYPEDIA-DD931]", "confidenza": "stimato", "nota": "A pieno carico; il capoclasse arrivo' a circa 4 600 t dopo le modifiche; Navypedia da' 4 916 t. Il livello a banda larga di F1 (acustica.json, sorgenti.cacciatorpediniere) e' tarato su 4 050 t.", "intervallo": [4050, 4916]}
+  },
+  "propulsione": {
+    "assi": {"valore": 2, "unita": "n", "fonte": "[WP-DD931CL]", "confidenza": "stimato"},
+    "potenza_asse": {"valore": 52200, "unita": "kW", "fonte": "[WP-DD931CL]", "confidenza": "stimato", "nota": "70 000 shp, quattro caldaie a 1 200 psi e due turbine a ingranaggi (Westinghouse sul DD-931, General Electric sulle altre)."},
+    "velocita_max": {"valore": 32.5, "unita": "kt", "fonte": "[WP-DD931CL] [NAVYPEDIA-DD931]", "confidenza": "stimato", "nota": "Navypedia: 33 kt.", "intervallo": [32.5, 33]},
+    "elica_pale": {"valore": 4, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Numero di pale non trovato nelle fonti lette: quattro, valore comune per le eliche dei cacciatorpediniere a due assi del dopoguerra. Conta per la frequenza di pala (DEMON) e per la classificazione: due assi da quattro pale contro l'asse unico del mercantile."},
+    "giri_per_nodo": {"valore": 10, "unita": "giri/min/kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Giri a tutta forza non trovati: circa 325 giri/min a 32,5 kt, ordine di grandezza dei cacciatorpediniere a vapore del periodo. A 10 kt: 100 giri/min, frequenza d'asse 1,7 Hz, di pala 6,7 Hz."},
+    "rete_elettrica": {"valore": 60, "unita": "Hz", "fonte": "[NSTM-320]", "confidenza": "documentato", "nota": "Distribuzione primaria delle navi USN a 450 V trifase 60 Hz; la maggior parte delle navi ha anche una rete a 400 Hz."},
+    "velocita_cavitazione": {"valore": 6, "unita": "kt", "fonte": "[ARX2402] [CONO]", "confidenza": "nozionale", "nota": "Le eliche delle navi di superficie, poco immerse, cavitano gia' a velocita' basse (la legge di Ross in 50·log v lo presuppone): sopra questa velocita' la modulazione del rumore e' quella dell'elica che cavita (DEMON forte)."}
+  },
+  "acustica": {
+    "profilo_banda_larga": "cacciatorpediniere",
+    "velocita_rif": {"valore": 10, "unita": "kt", "fonte": "[ARX2402]", "confidenza": "nozionale", "nota": "Velocita' a cui e' dato il livello a banda larga (acustica.json, sorgenti.cacciatorpediniere.sl_10kt): le righe a frequenza fissa sono riferite allo spettro a banda larga a questa velocita', quindi hanno un livello fisso."},
+    "tonali": [
+      {
+        "nome": "turbogeneratori, rete a 60 Hz",
+        "tipo": "elettrica",
+        "frequenza": {"valore": 60, "unita": "Hz", "fonte": "[NSTM-320]", "confidenza": "documentato", "nota": "Rete primaria a 60 Hz delle navi USN."},
+        "sopra_banda_larga": {"valore": 20, "unita": "dB", "fonte": "[COTE03 p.67] [CONO]", "confidenza": "nozionale", "nota": "Livello delle righe classificato o non trovato. Una nave a vapore degli anni '50 senza zattere d'isolamento ha righe di macchina forti: 20 dB sopra lo spettro a banda larga (che a 60 Hz, sotto il ginocchio di 100 Hz, vale 136 dB re 1 µPa²/Hz): 156 dB re 1 µPa² nella cella di 1 Hz, nella fascia bassa delle righe misurate sulle navi mercantili moderne. Tarato perche' l'antenna rimorchiata scopra il cacciatorpediniere sulle righe prima che la sfera lo scopra a banda larga (F2_ASCOLTARE §3).", "rif": "docs/CALIBRAZIONE_F2.md"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[NSTM-320]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32.5, "unita": "kt", "fonte": "[WP-DD931CL]", "confidenza": "nozionale", "nota": "Sempre presente: i turbogeneratori servono la nave anche ferma."}
+      },
+      {
+        "nome": "turbogeneratori, seconda armonica",
+        "tipo": "elettrica",
+        "frequenza": {"valore": 120, "unita": "Hz", "fonte": "[NSTM-320]", "confidenza": "calcolato", "nota": "Due volte la rete."},
+        "sopra_banda_larga": {"valore": 10, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[NSTM-320]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32.5, "unita": "kt", "fonte": "[WP-DD931CL]", "confidenza": "nozionale"}
+      },
+      {
+        "nome": "rete a 400 Hz delle armi e dell'elettronica",
+        "tipo": "elettrica",
+        "frequenza": {"valore": 400, "unita": "Hz", "fonte": "[NSTM-320]", "confidenza": "documentato", "nota": "«Most ships also have 450V and 120V, 400-Hz power systems»: una riga debole, che non va confusa con la rete principale a 400 Hz dell'Alfa."},
+        "sopra_banda_larga": {"valore": 4, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[NSTM-320]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32.5, "unita": "kt", "fonte": "[WP-DD931CL]", "confidenza": "nozionale"}
+      },
+      {
+        "nome": "ventilatori del tiraggio forzato delle caldaie",
+        "tipo": "ventilazione",
+        "frequenza": {"valore": 145, "unita": "Hz", "fonte": "[WP-DD931CL] [CONO]", "confidenza": "nozionale", "nota": "Quattro caldaie a tiraggio forzato: frequenza di passaggio delle pale dei ventilatori nozionale."},
+        "sopra_banda_larga": {"valore": 10, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[WP-DD931CL]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32.5, "unita": "kt", "fonte": "[WP-DD931CL]", "confidenza": "nozionale"}
+      },
+      {
+        "nome": "pompe d'alimento delle caldaie",
+        "tipo": "pompa",
+        "frequenza": {"valore": 97, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "sopra_banda_larga": {"valore": 8, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32.5, "unita": "kt", "fonte": "[WP-DD931CL]", "confidenza": "nozionale"}
+      }
+    ],
+    "righe_giri": [
+      {
+        "nome": "ingranamento della ruota del riduttore principale",
+        "tipo": "riduttore",
+        "per_giro": {"valore": 120, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Frequenza = 120 · giri/60 (numero di denti nozionale): 200 Hz a 10 kt, 650 Hz a tutta forza. Una riga che segue la velocita': dalla sua frequenza si ricavano i giri, come dalla frequenza di pala."},
+        "sopra_banda_larga": {"valore": 8, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 3, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32.5, "unita": "kt", "fonte": "[WP-DD931CL]", "confidenza": "nozionale"}
+      }
+    ],
+    "pale": {
+      "livello": {"valore": 10, "unita": "dB", "fonte": "[ITTC-02] [CONO]", "confidenza": "nozionale", "nota": "Riga di pala (pale × giri/60, [ITTC-02]) sopra lo spettro a banda larga alla stessa frequenza e alla velocita' attuale: le eliche di superficie che cavitano hanno righe di pala forti."},
+      "armoniche": {"valore": 5, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "decremento": {"valore": 3, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Per armonica."},
+      "livello_asse": {"valore": 0, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "modulazione": {"valore": 0.15, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale", "nota": "Indice di modulazione d'ampiezza del rumore a banda larga alla frequenza di pala, senza cavitazione (DEMON)."},
+      "modulazione_cavitante": {"valore": 0.5, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale", "nota": "Con l'elica che cavita il rumore e' modulato fortemente dal passaggio delle pale: e' cio' che il DEMON demodula."},
+      "modulazione_asse": {"valore": 0.4, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale", "nota": "Frazione della modulazione di pala che cade alla frequenza d'asse (pale non identiche)."}
+    },
+    "forza_bersaglio": {
+      "prua_poppa": {"valore": 25, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "Nessuna fonte letta da' la forza di bersaglio delle navi di superficie: piu' di un sottomarino (15-25 dB, [FUN-8]) per uno scafo di 127 m; fra i due aspetti si interpola col seno quadro."},
+      "traverso": {"valore": 35, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale"}
+    }
+  },
+  "ottica": {
+    "altezza_alberi": {"valore": 30, "unita": "m", "fonte": "[WP-DD931CL] [CONO]", "confidenza": "nozionale", "nota": "Altezza della testa d'albero sulla linea di galleggiamento non trovata. Il traliccio che porta l'antenna dell'AN/SPS-40 sopra la plancia di uno scafo di 127 m, con il bordo libero di circa 6 m: 30 m. E' il numero del «libro» con cui lo stadimetro converte l'angolo in distanza: se il dato fosse sbagliato, sarebbe sbagliato allo stesso modo per il giocatore e per il mondo."},
+    "bordo_libero": {"valore": 6, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Altezza della linea dello scafo sull'acqua (lo scafo e' sotto l'orizzonte quando non se ne vede la linea d'acqua)."},
+    "sagoma": "FOREST",
+    "luci": {"valore": true, "fonte": "[COLREG-22]", "confidenza": "nozionale", "nota": "Scafi radiocomandati ma in navigazione: si suppone che mostrino le luci di navigazione della regola 22 (testa d'albero 6 miglia, fianchi e coronamento 3)."}
+  },
+  "emettitori": [
+    {
+      "nome": "AN/SPS-40",
+      "banda": "B",
+      "frequenza": {"valore": 435000000, "unita": "Hz", "fonte": "[FAS-SPS40] [WP-SPS40]", "confidenza": "stimato", "nota": "Scoperta aerea in UHF, 422,4-447,5 MHz (banda NATO B): centro della banda.", "intervallo": [400000000, 450000000]},
+      "potenza_picco": {"valore": 250, "unita": "kW", "fonte": "[FAS-SPS40] [WP-SPS40]", "confidenza": "stimato", "intervallo": [200, 300]},
+      "guadagno": {"valore": 21, "unita": "dB", "fonte": "[WP-SPS40]", "confidenza": "calcolato", "nota": "Guadagno non trovato: dai fasci di 10,5° × 19°, G ≈ 41 253 / (10,5·19) = 207 (23 dB), meno 2 dB di perdite d'antenna."},
+      "fascio": {"valore": 10.5, "unita": "°", "fonte": "[WP-SPS40]", "confidenza": "stimato"},
+      "periodo": {"valore": 8, "unita": "s", "fonte": "[WP-SPS40] [FAS-SPS40]", "confidenza": "stimato", "nota": "7,5 giri/min nel modo a lunga portata (15 nel modo per i bersagli bassi)."},
+      "altezza": {"valore": 27, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Antenna appena sotto la testa d'albero."},
+      "acceso": {"valore": true, "fonte": "[CONO]", "confidenza": "nozionale", "nota": "In TORPEX '89 gli scafi sono radiocomandati: che i radar trasmettano e' una scelta di gioco, perche' l'ESM abbia qualcosa da sentire oltre l'orizzonte acustico (F2_ASCOLTARE §3)."}
+    },
+    {
+      "nome": "AN/SPS-10",
+      "banda": "G",
+      "frequenza": {"valore": 5637500000, "unita": "Hz", "fonte": "[WP-SPS10]", "confidenza": "stimato", "nota": "Scoperta di superficie, 5,45-5,825 GHz (banda NATO G): centro della banda.", "intervallo": [5450000000, 5825000000]},
+      "potenza_picco": {"valore": 280, "unita": "kW", "fonte": "[WP-SPS10]", "confidenza": "stimato", "nota": "280 kW con l'impulso lungo, 190 kW con quello corto.", "intervallo": [190, 280]},
+      "guadagno": {"valore": 29, "unita": "dB", "fonte": "[WP-SPS10]", "confidenza": "calcolato", "nota": "Guadagno non trovato: dai fasci di 1,9° × 16°, G ≈ 41 253 / (1,9·16) = 1 357 (31 dB), meno 2 dB di perdite."},
+      "fascio": {"valore": 1.9, "unita": "°", "fonte": "[WP-SPS10]", "confidenza": "stimato", "nota": "La voce di Wikipedia scrive «1.9° × 16° vertical, 12° horizontal»: si legge 1,9° orizzontale per 16° verticale."},
+      "periodo": {"valore": 4, "unita": "s", "fonte": "[WP-SPS10]", "confidenza": "stimato", "nota": "15 giri/min fissi."},
+      "altezza": {"valore": 25, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "acceso": {"valore": true, "fonte": "[CONO]", "confidenza": "nozionale"}
+    }
+  ]
+}

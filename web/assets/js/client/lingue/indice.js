@@ -8,11 +8,16 @@
  *   piedi    metri → piedi interi          iarde    metri → iarde intere
  *   gradi    tre cifre (045)               nodi     un decimale
  *   ordinale indice da 0 → numero da 1     oppure   « O 135» se c'è un rilevamento speculare, se no niente
- *   macchina, lato, verso, sensore: parole del catalogo (fmt.<formato>.<valore>)
+ *   macchina, lato, verso, sensore, transitorio: parole del catalogo (fmt.<formato>.<valore>)
+ *   classe   nome della classe del libro (classe.<valore>)
+ *   percento confidenza 0-1 (o già 0-100) → intero
+ *   contatto « (S1)» se c'è una designazione, se no niente
+ *   kyd      metri → kiloiarde con un decimale
  */
 import it from './it.js';
 import en from './en.js';
-import { metriInPiedi, metriInIarde, normalizza360 } from '../../../shared/units.js';
+import { metriInPiedi, metriInIarde, metriInKiloiarde, normalizza360 } from '../../../shared/units.js';
+import { perIlFont } from '../resa/testo.js';
 
 /** @type {Record<string, Record<string, string>>} */
 export const CATALOGHI = { it, en };
@@ -49,7 +54,16 @@ function formatta(cat, formato, v) {
     case 'lato':
     case 'verso':
     case 'sensore':
+    case 'transitorio':
       return parola(`fmt.${formato}.${v}`) ?? String(v).toUpperCase();
+    case 'classe':
+      return parola(`classe.${v}`) ?? perIlFont(String(v).replace(/_/g, ' '));
+    case 'percento':
+      return Number.isFinite(n) ? String(Math.round(n <= 1 ? n * 100 : n)) : String(v);
+    case 'contatto':
+      return v === null || v === undefined || v === '' ? '' : ` (${perIlFont(String(v))})`;
+    case 'kyd':
+      return Number.isFinite(n) ? metriInKiloiarde(n).toFixed(1) : String(v);
     default:
       return String(v);
   }
@@ -70,9 +84,9 @@ export function traduci(lingua, chiave, parametri = {}) {
     const extra = Object.values(parametri).filter((v) => typeof v === 'number' || typeof v === 'string').join(' ');
     return extra ? `${nuda} ${extra}` : nuda;
   }
-  return modello.replace(/\{([a-z_0-9]+)(?:\|([a-z]+))?\}/gi, (_, nome, formato) => {
+  return modello.replace(/\{([a-z_0-9]+)(?:\|([a-z_]+))?\}/gi, (_, nome, formato) => {
     const v = parametri[nome];
-    if (formato === 'oppure' || formato === 'sensore') return formatta(cat, formato, v);
+    if (formato === 'oppure' || formato === 'sensore' || formato === 'contatto') return formatta(cat, formato, v);
     if (v === undefined || v === null) return '';
     return formato ? formatta(cat, formato, v) : String(v);
   });
@@ -113,6 +127,31 @@ export function frasePerRicevuto(cosa, valore) {
       return { chiave: 'ricevuto.scala_tempo', parametri: { valore: v }, chi: '' };
     case 'pausa':
       return { chiave: v ? 'ricevuto.pausa_si' : 'ricevuto.pausa_no', parametri: {}, chi: '' };
+    // v2
+    case 'assistenza':
+      return { chiave: 'ricevuto.assistenza', parametri: { valore: v }, chi: '' };
+    case 'analizzatore':
+      if (v === null || v === undefined) return { chiave: 'ricevuto.analizzatore_spento', parametri: {}, chi: 'sonar' };
+      if (v.contatto) return { chiave: 'ricevuto.analizzatore_contatto', parametri: { contatto: v.contatto }, chi: 'sonar' };
+      return { chiave: 'ricevuto.analizzatore_rilevamento', parametri: { rilevamento: v.rilevamento, sensore: v.sensore }, chi: 'sonar' };
+    case 'attivo':
+      return { chiave: 'ricevuto.attivo', parametri: {}, chi: 'sonar' };
+    case 'albero':
+      return { chiave: `ricevuto.albero_${v?.quale}_${v?.alzato ? 'su' : 'giu'}`, parametri: {}, chi: 'guardia' };
+    case 'radar':
+      return { chiave: v ? 'ricevuto.radar_si' : 'ricevuto.radar_no', parametri: {}, chi: 'guardia' };
+    case 'designa':
+      return v ? { chiave: 'ricevuto.designa', parametri: { contatto: v }, chi: '' } : { chiave: 'ricevuto.designa_nessuno', parametri: {}, chi: '' };
+    case 'classifica':
+      return v?.classe
+        ? { chiave: 'ricevuto.classifica', parametri: { contatto: v.contatto, classe: v.classe }, chi: '' }
+        : { chiave: 'ricevuto.classifica_tolta', parametri: { contatto: v?.contatto }, chi: '' };
+    case 'soluzione':
+      return v?.cancella
+        ? { chiave: 'ricevuto.soluzione_cancellata', parametri: { contatto: v.contatto }, chi: '' }
+        : { chiave: 'ricevuto.soluzione', parametri: { contatto: v?.contatto }, chi: '' };
+    case 'abbandona':
+      return { chiave: 'ricevuto.abbandona', parametri: { contatto: v }, chi: 'sonar' };
     default:
       return null;
   }

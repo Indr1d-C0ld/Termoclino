@@ -1,8 +1,9 @@
 // @ts-check
 /**
- * Le stazioni che arrivano nelle fasi successive: Radio (F2), Status (F3), Periscopio (F5), Controllo
- * armi (F7). Si vedono con il loro pannello originale; dove c'è la finestra della mappa (periscopio e
- * armi) la mappa funziona come altrove, i comandi propri rispondono «non disponibile».
+ * Le stazioni che arrivano nelle fasi successive: Radio (F2), Status (F3), Controllo armi (F7). Si vedono
+ * con il loro pannello originale; dove c'è la finestra della mappa (armi) la mappa funziona come altrove,
+ * i comandi propri rispondono «non disponibile». Il Periscopio (F5) ha la sua stazione da F2
+ * (stazioni/periscopio.js).
  */
 import { attivaComune } from './comune.js';
 

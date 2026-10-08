@@ -1,0 +1,118 @@
+{
+  "formato": "termoclino-firma/1",
+  "id": "mercantile_generico",
+  "aggiornato": "2026-10-08",
+  "identita": {
+    "nome": "mercantile",
+    "designazione": "nave da carico a motore",
+    "tipo": "nave",
+    "categoria": "mercantile",
+    "nazione": "neutrale",
+    "lato": "neutrale",
+    "configurazione": "nave da carico neutrale ad asse unico, motore diesel lento a due tempi accoppiato direttamente all'elica, radar di navigazione in banda X; una classe generica, non una nave vera"
+  },
+  "dimensioni": {
+    "lunghezza": {"valore": 130, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Ordine di grandezza di una nave da carico da 10 000 t."},
+    "larghezza": {"valore": 19, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+    "pescaggio": {"valore": 7.5, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+    "dislocamento": {"valore": 10000, "unita": "t", "fonte": "[ARX2402]", "confidenza": "nozionale", "nota": "Lo stesso dislocamento con cui F1 ha calcolato il livello a banda larga con la formula di Ross (acustica.json, sorgenti.mercantile.sl_10kt = 132 dB)."}
+  },
+  "propulsione": {
+    "assi": {"valore": 1, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Asse unico, la regola per le navi da carico: l'asse unico e le quattro pale lo distinguono dal cacciatorpediniere a due assi."},
+    "potenza_asse": {"valore": 5500, "unita": "kW", "fonte": "[CONO]", "confidenza": "nozionale"},
+    "velocita_max": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Come acustica.json, sorgenti.mercantile.velocita_max."},
+    "elica_pale": {"valore": 4, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale"},
+    "giri_per_nodo": {"valore": 9, "unita": "giri/min/kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Diesel lento accoppiato direttamente: circa 135 giri/min a 15 kt. A 12 kt: 108 giri/min, asse 1,8 Hz, pala 7,2 Hz."},
+    "cilindri": {"valore": 6, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Motore a due tempi: un'accensione per cilindro a ogni giro, frequenza d'accensione = cilindri · giri/60."},
+    "rete_elettrica": {"valore": 60, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Rete di bordo a 60 Hz (440 V), comune sulle navi mercantili anche europee; non verificato per una nave precisa."},
+    "velocita_cavitazione": {"valore": 6, "unita": "kt", "fonte": "[ARX2402] [CONO]", "confidenza": "nozionale", "nota": "Come per il cacciatorpediniere: l'elica di una nave di superficie cavita gia' a velocita' basse."}
+  },
+  "acustica": {
+    "profilo_banda_larga": "mercantile",
+    "velocita_rif": {"valore": 10, "unita": "kt", "fonte": "[ARX2402]", "confidenza": "nozionale", "nota": "Velocita' a cui e' dato il livello a banda larga di F1 (sl_10kt)."},
+    "tonali": [
+      {
+        "nome": "generatori diesel, rete a 60 Hz",
+        "tipo": "elettrica",
+        "frequenza": {"valore": 60, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "sopra_banda_larga": {"valore": 12, "unita": "dB", "fonte": "[MCK12] [CONO]", "confidenza": "nozionale", "nota": "Le navi mercantili hanno righe forti nella bassa frequenza (McKenna et al. 2012 misurano livelli di cella oltre i 170 dB re 1 µPa² a 1 m sulle navi portacontainer moderne, molto piu' grandi): 12 dB sopra uno spettro a banda larga che a 60 Hz vale 152 dB re 1 µPa²/Hz danno 164 dB."},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      {
+        "nome": "accensioni dei generatori diesel (4 tempi, 900 giri/min, 6 cilindri)",
+        "tipo": "diesel",
+        "frequenza": {"valore": 45, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "900 · 6 / 120 = 45 Hz."},
+        "sopra_banda_larga": {"valore": 10, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      {
+        "nome": "ventilazione della sala macchine",
+        "tipo": "ventilazione",
+        "frequenza": {"valore": 88, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "sopra_banda_larga": {"valore": 6, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      }
+    ],
+    "righe_giri": [
+      {
+        "nome": "accensioni del motore principale",
+        "tipo": "diesel",
+        "per_giro": {"valore": 6, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Sei cilindri a due tempi: 6 · giri/60, 10,8 Hz a 12 kt (sotto la banda della TB-16: si vede soprattutto nelle armoniche)."},
+        "sopra_banda_larga": {"valore": 12, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 2, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      {
+        "nome": "accensioni del motore principale, terza armonica",
+        "tipo": "diesel",
+        "per_giro": {"valore": 18, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "32 Hz a 12 kt."},
+        "sopra_banda_larga": {"valore": 9, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 2, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      {
+        "nome": "accensioni del motore principale, sesta armonica",
+        "tipo": "diesel",
+        "per_giro": {"valore": 36, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "65 Hz a 12 kt."},
+        "sopra_banda_larga": {"valore": 6, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "da_velocita": {"valore": 2, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      }
+    ],
+    "pale": {
+      "livello": {"valore": 12, "unita": "dB", "fonte": "[MCK12] [ITTC-02]", "confidenza": "nozionale", "nota": "Le righe di pala dominano lo spettro basso delle navi mercantili [MCK12]."},
+      "armoniche": {"valore": 5, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "decremento": {"valore": 3, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "livello_asse": {"valore": -3, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "modulazione": {"valore": 0.15, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale"},
+      "modulazione_cavitante": {"valore": 0.5, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale"},
+      "modulazione_asse": {"valore": 0.3, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale"}
+    },
+    "forza_bersaglio": {
+      "prua_poppa": {"valore": 30, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "Scafo grande e pieno: qualche dB piu' del cacciatorpediniere."},
+      "traverso": {"valore": 40, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale"}
+    }
+  },
+  "ottica": {
+    "altezza_alberi": {"valore": 25, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Testa d'albero di una nave da carico media: il numero del «libro» per lo stadimetro."},
+    "bordo_libero": {"valore": 5, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+    "sagoma": "MERCH",
+    "luci": {"valore": true, "fonte": "[COLREG-22]", "confidenza": "documentato", "nota": "Una nave mercantile in navigazione mostra le luci della regola 22."}
+  },
+  "emettitori": [
+    {
+      "nome": "navigazione",
+      "banda": "I",
+      "frequenza": {"valore": 9410000000, "unita": "Hz", "fonte": "[ITU-M1313]", "confidenza": "stimato", "nota": "Radar di navigazione in banda X (9 200-9 500 MHz, banda NATO I); tipici 9 375-9 445 MHz.", "intervallo": [9200000000, 9500000000]},
+      "potenza_picco": {"valore": 25, "unita": "kW", "fonte": "[ITU-M1313]", "confidenza": "stimato", "nota": "Fra i 5 e i 50 kW dei radar IMO in banda X.", "intervallo": [5, 50]},
+      "guadagno": {"valore": 30, "unita": "dB", "fonte": "[ITU-M1313]", "confidenza": "stimato", "intervallo": [27, 32]},
+      "fascio": {"valore": 1.2, "unita": "°", "fonte": "[ITU-M1313]", "confidenza": "stimato", "intervallo": [0.75, 2.3]},
+      "periodo": {"valore": 2.5, "unita": "s", "fonte": "[ITU-M1313]", "confidenza": "stimato", "nota": "24 giri/min (20-60 per i radar IMO).", "intervallo": [1, 3]},
+      "altezza": {"valore": 18, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "acceso": {"valore": true, "fonte": "[ITU-M1313]", "confidenza": "nozionale", "nota": "Una nave in navigazione tiene acceso il radar di navigazione."}
+    }
+  ]
+}

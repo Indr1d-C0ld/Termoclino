@@ -236,3 +236,287 @@ battello e la vecchia riceve `uscita {motivo: 'altra_connessione'}`.
 | nessuna risposta agli ordini | `ricevuto` / `errore` con `n` | il client sa quale ordine è stato respinto e perché |
 | — | `tempo`, `uscita`, `rapporto.chi` | cambi di scala in una partita condivisa, perdita del battello, ritratto di chi parla |
 | `quota` solo in metri, `periscopica`, `emersione` | più `automatica` | il tasto «150 FT» della pulsantiera del 1989 |
+
+## Versione 2 (F2) — «Ascoltare»
+
+Bozza della sessione principale (`docs/F2_ASCOLTARE.md`), rifinita da chi l'ha implementata: le
+differenze, con il perché, sono nella tabella in fondo. Tutto quello che non è scritto qui resta come
+nella v1. `PROTOCOLLO_VERSIONE` = 2: un client v1 riceve `versione_protocollo` e la chiusura 4426.
+
+**Regola che non cambia**: ogni campo è una **misura** dei propri sensori o un'**ipotesi** del
+proprio equipaggio, mai la verità di un'altra entità. Unica eccezione dichiarata: al livello di
+assistenza 3, la soluzione «esatta» dei contatti **non umani** (`soluzione.esatta: true`). La prova
+`server/test/nebbia.test.js` controlla ogni tipo di messaggio qui sotto.
+
+I modelli fisici che producono le misure (righe tonali, LOFAR, DEMON, attivo, riverberazione,
+intercettazione, transitori, ottica, ESM, radar) e le loro portate sono in
+`docs/CALIBRAZIONE_F2.md`; le firme delle piattaforme in `shared/data/piattaforme/*.json` e
+`shared/data/firme/*.json` (formato in `shared/data/SCHEMA.md` §8).
+
+### `entra`
+
+`entra {scenario, assistenza?}`: `assistenza` è il livello 0-3 (PROGETTO §5.6), predefinito 2. Un
+valore malformato riceve l'errore `assistenza_non_valida` e non si entra; un livello ben scritto ma non
+ammesso in quella partita lo decide il server (vedi l'ordine `assistenza`).
+
+### Ordini nuovi
+
+| `cosa` | `valore` | Effetto |
+|--------|----------|---------|
+| `assistenza` | intero 0, 1, 2, 3 | livello di assistenza; `ordine_rifiutato {motivo: 'livello'}` se non è ammesso in questa partita |
+| `analizzatore` | `{sensore: 'sfera'\|'towed', rilevamento}`, oppure `{contatto}`, oppure `null` (spento) | punta il fascio dell'analizzatore su un rilevamento vero (0…360, al decimo) o lo aggancia a un contatto dell'equipaggio, che ne aggiorna il rilevamento a ogni `spettro`; da qui arrivano gli `spettro`. `senza_towed` se si chiede l'antenna a un battello che non l'ha; `contatto` se l'equipaggio non tiene quel contatto |
+| `attivo` | `{rilevamento: gradi \| null, portata: 'corta'\|'lunga'}` (entrambi obbligatori) | un ping (TRGT PULSE). `null` = tutto il settore di trasmissione di prua (±60° sul 688 e sull'Alfa); un rilevamento = fascio puntato su quel rilevamento vero, che deve stare nel settore (altrimenti `settore`). `corta`: impulso breve, ascolto fino a 10.000 yd; `lunga`: impulso lungo, ascolto fino a 40.000 yd. Gli echi arrivano come `eco`, e tutti gli intercettatori nella portata lo sentono (`intercetto`). Rifiuti: `senza_sensore`, `ping_in_corso` (si ascolta ancora il ping precedente: vedi `stato.ascolto_attivo`) |
+| `albero` | `{quale: 'periscopio'\|'esm'\|'radar', alzato: true\|false}` | alza o abbassa un albero. Per alzarlo la chiglia deve stare entro la quota massima degli alberi (quota periscopica + 3 m: 21 m sul 688, 19 m sull'Alfa), altrimenti `quota`; `senza_sensore` se il battello non ha quell'albero. Abbassare si può sempre. Se il battello scende oltre la quota massima + 3 m l'ufficiale di guardia abbassa tutto (`guardia.alberi_abbassati`) |
+| `radar` | `true` / `false` | trasmette o tace; serve l'albero del radar alzato (`albero`), abbassarlo spegne il radar |
+| `designa` | `contatto` (`'S1'`…) oppure `null` | il contatto di riferimento delle stazioni (barra del bersaglio, analizzatore, TMA) |
+| `classifica` | `{contatto, classe}` (`classe` fra le `CLASSI` della biblioteca, o `null` per togliere) | la classificazione del comandante prevale su quella dell'equipaggio |
+| `soluzione` | `{contatto, ora, distanza, rotta, velocita, rilevamento?}` oppure `{contatto, cancella: true}` | la soluzione del comandante (livelli 0-1): `ora` s di gioco ≥ 0, `distanza` m (0 < d ≤ 500 km, intera), `rotta` 0…360 al decimo, `velocita` 0…60 kt al decimo, `rilevamento` (facoltativo, 0…360 al decimo) il rilevamento vero del bersaglio all'`ora`: se manca l'equipaggio usa il proprio rilevamento misurato a quell'ora |
+| `abbandona` | `contatto` | l'equipaggio smette di tenere la traccia |
+
+Un **contatto** è una designazione dell'equipaggio: da una a tre lettere maiuscole (anche cirilliche)
+e un numero, `CONTATTO_RE` in `shared/protocol.js`. Le `CLASSI` della biblioteca sono `688`, `alfa`,
+`forrest_sherman`, `mercantile_generico`, `biologico` (i file di `shared/data/piattaforme/` e
+`shared/data/firme/`, che il client può leggere: sono il «libro» con righe tonali, numero di pale,
+altezza d'albero e radar di ogni classe).
+
+**Validazione.** `validaOrdine()` copre tutti gli ordini nuovi con gli stessi motivi della v1:
+`tipo` (forma sbagliata: non un oggetto, chiavi in più o mancanti, tipi diversi), `valore` (testo fuori
+elenco, contatto scritto male, classe sconosciuta, `analizzatore` con contatto **e** sensore),
+`fuori_limiti` (numeri fuori intervallo). `ricevuto.valore` è quello normalizzato.
+
+Nuovi motivi di `ordine_rifiutato`: `quota` (albero sotto la quota massima degli alberi), `albero`
+(radar senza l'albero alzato), `contatto` (contatto che l'equipaggio non tiene), `livello` (livello di
+assistenza non ammesso in questa partita), `senza_sensore` (il battello non ha quel sensore o
+quell'albero), `ping_in_corso`, `settore`.
+
+### `stato`: campi nuovi
+
+| Campo | Significato |
+|-------|-------------|
+| `alberi` | `{periscopio, esm, radar}`: booleani, alzati o no |
+| `radar_attivo` | il proprio radar trasmette |
+| `ascolto_attivo` | s di gioco che restano della finestra d'ascolto dell'ultimo ping (0 = si può pingare) |
+| `assistenza` | livello di assistenza in vigore |
+| `analizzatore` | `null` (spento) o `{sensore, rilevamento, contatto}`: dove punta il fascio adesso (rilevamento vero al decimo) e il contatto che segue (`null` se puntato a mano) |
+| `designato` | il contatto designato, o `null` |
+
+`avvisi` aggiunge `periscopio_scia`: periscopio alzato oltre i 10 kt (si vede il pennacchio, vedi
+`periscopio.scia`).
+
+### Messaggi nuovi dal server
+
+| Tipo | Campi | Quando |
+|------|-------|--------|
+| `sonar` con `banda: 'stretta'` | come i fotogrammi `sonar` della v1, più `banda: 'stretta'`: nel settore k l'eccesso di segnale della **riga tonale più forte** della finestra del sensore (righe di macchina, rete elettrica, pale), con il fascio alla frequenza di quella riga | ogni 4 s di gioco (ora multipla di `SPETTRO.PERIODO`) per ogni sensore in acqua. I fotogrammi a banda larga restano quelli della v1, uno al secondo e **senza** il campo `banda` |
+| `spettro` | `ora`, `sensore`, `rilevamento` (vero, del fascio), `contatto` (o `null`), `da_hz`, `passo_hz`, `righe` (base64), `demon_da_hz`, `demon_passo_hz`, `demon` (base64), e per l'antenna `asse` e `sorda` | ogni 4 s di gioco con l'analizzatore acceso e il sensore in acqua |
+| `eco` | `ora` (arrivo), `ping` (numero del proprio ping), `rilevamento` (al decimo), `distanza` (m), `forza` (dB), `riverbero` (dB) | uno per ogni eco sopra soglia, al tempo d'andata e ritorno del suono; a finestra chiusa l'equipaggio dice `sonar.fine_ascolto` |
+| `intercetto` | `ora` (arrivo), `rilevamento` (intero), `tipo` (`ping`; da F3 anche `siluro`), `frequenza_khz` (misurata, al decimo), `livello` (dB sopra soglia, intero) | quando il ricevitore d'intercettazione (WLR-9 sul 688, «Enisej» sull'Alfa) sente un ping altrui, al tempo di un solo percorso |
+| `transitorio` | `ora` (arrivo), `sensore`, `rilevamento` (intero), `speculare` (solo antenna, altrimenti `null`), `tipo`, `forza` (dB, intero) | quando un transitorio altrui supera la soglia di un sensore (un messaggio per sensore che lo sente) |
+| `visivo` | `ora`, `luce` (`giorno` \| `notte`: quella dello scenario, per il cielo e la palette), `oggetti: [{vista, rilevamento, aspetto, sagoma, elevazione_alberi, luci, sotto_orizzonte, scia}]` | ogni secondo di gioco con il periscopio alzato (anche con `oggetti` vuoto) |
+| `esm` | `ora`, `emissioni: [{rilevamento, tipo, banda, livello}]` | ogni secondo di gioco con l'albero ESM alzato (anche vuoto) |
+| `radar` | `ora`, `echi: [{rilevamento, distanza}]` | a ogni giro d'antenna (6 s sul 688, 5 sull'Alfa) con il radar che trasmette |
+| `storia` | `ora`, `contatto`, `punti: [{ora, rilevamento, x, y, rotta}]`: i punti tempo-rilevamento (ogni 10 s) di una traccia tenuta e risolta, con la posizione del sensore e la rotta propria in quel momento | a chi rientra (`entra` che riprende il battello), una per traccia: la pila della TMA non riparte da zero |
+| `tracce` | `ora`, `tracce: [{contatto, sensori, rilevamento, variazione (°/min), classe, confidenza, stato: 'nuova'\|'tenuta'\|'persa', speculare?}]` | ogni 4 s di gioco; solo misure e ipotesi dell'equipaggio (filone I: forma della bozza) |
+| `soluzione` | `contatto`, `ora`, `rilevamento` (vero, all'`ora`, dalla propria posizione), `distanza`, `rotta`, `velocita`, `q` (0-100), `ellisse` `{asse_lungo, asse_corto, orientamento}` (m, gradi), `origine` (`equipaggio`\|`comandante`), `esatta` (solo livello 3, solo contatti non umani); `q` ed `ellisse` sono `null` nell'eco della soluzione del comandante | ai livelli 2-3 ogni 10 s di gioco per le tracce con una soluzione; ai livelli 0-1 solo l'eco di quella del comandante (filone I) |
+
+#### `spettro` (analizzatore: LOFAR e DEMON)
+
+Due spettri del fascio puntato, ogni 4 s:
+
+- **LOFAR** (`righe`): la cella k copre le frequenze `[da_hz + k·passo_hz, da_hz + (k+1)·passo_hz)`.
+  Finestre (`SPETTRO` in `shared/protocol.js`): antenna 0-1024 Hz in celle da 1 Hz, sfera 0-2048 Hz in
+  celle da 2 Hz, 1024 celle (1368 caratteri base64). Ci sono le righe tonali di tutte le sorgenti che
+  il fascio sente (anche quelle dello speculare, per l'antenna), spostate per effetto Doppler dalla
+  velocità radiale, e il loro fondo a banda larga; fuori dalla banda del sensore (TB-16 30-1000 Hz,
+  sfera 500-5000 Hz) la risposta cala di 40 dB per decade.
+- **DEMON** (`demon`): lo spettro della **modulazione d'ampiezza** del rumore a banda larga del fascio,
+  celle da 0,1 Hz da 0 a 51,2 Hz (512 celle). Ci stanno la frequenza d'asse (giri/60) e la frequenza
+  di pala (giri × pale / 60) con le armoniche: forti quando l'elica cavita (navi di superficie, sempre),
+  deboli altrimenti. Dalla frequenza di pala si contano le pale e si stima la velocità.
+
+Quantizzazione **come `sonar`**: `SE = −30 + 0,5·q` (dB, 0 = soglia), fondo intorno a −10 dB con
+il suo grano. Funzioni: `decodificaSpettro(m)`, `decodificaDemon(m)`, `decodificaByte(testo, n)`,
+`codificaByte`, `centroCella(da_hz, passo_hz, k)`.
+
+#### `eco`, `intercetto` e la controscoperta
+
+Un ping dà la distanza ma si fa sentire molto più lontano: l'eco fa due volte il percorso (e paga la
+forza del bersaglio e la riverberazione), l'intercettatore lo sente dopo un percorso solo. La
+distanza misurata è `1500 m/s × tempo d'andata e ritorno / 2` con l'errore della lunghezza
+dell'impulso e del segnale; `riverbero` è il livello della riverberazione (superficie, fondo, volume)
+rispetto al rumore alla distanza dell'eco: quando è alto, gli echi deboli si perdono nel fondo. Chi
+pinga riceve `eco` solo per gli echi sopra soglia; gli altri battelli, se il loro ricevitore
+d'intercettazione sente il ping, ricevono `intercetto` e il rapporto `intercetto.ping`.
+
+#### `transitorio`
+
+I transitori sono rumori brevi delle altre entità: `scafo` (lo scafo che lavora nei cambi di quota),
+`portello` (portelli dei tubi, da F3), `pompa` (pompe d'assetto e cambio di regime delle pompe del
+refrigerante), `emersione` (soffiaggio d'emergenza), `meccanico` (alberi idraulici, macchinari),
+`biologico` (scatti dei cetacei). Il sonarista li riconosce se superano la soglia di almeno 6 dB,
+altrimenti `sconosciuto`. Durano poco ma alzano anche il livello a banda larga della sorgente per la
+loro durata: si vedono come lampi sul waterfall.
+
+#### `visivo` (periscopio)
+
+Per ogni nave in vista (entro la portata ottica, che dipende dal giorno o dalla notte, dallo stato del
+mare e dall'orizzonte: testa d'albero sopra l'orizzonte dell'occhio):
+
+| Campo | Significato |
+|-------|-------------|
+| `vista` | numero di vista, lo stesso finché l'oggetto resta in vista; un oggetto perso e ritrovato ha un numero nuovo. Non è un'identità |
+| `rilevamento` | gradi veri, misurato (σ 0,3° di giorno), al decimo |
+| `aspetto` | angolo sulla prua stimato dall'osservatore, −180…180 (positivo = si vede il fianco di dritta) |
+| `sagoma` | nome dell'immagine originale da disegnare: famiglia della classe (`FOREST`, `MERCH`) più l'indice 0-4 dell'aspetto (0 di prua, 2 al traverso, 4 di poppa; il lato lo dà il segno di `aspetto`). `null` = un albero o un periscopio, senza sagoma |
+| `elevazione_alberi` | angolo fra linea d'acqua e testa d'albero, gradi con tre decimali, con l'errore dell'osservatore (σ 3,5 %): con l'altezza d'albero della classe giusta, `distanza = altezza / tan(elevazione)` cade entro il ±7 % (stadimetro). `null` se lo scafo è sotto l'orizzonte o di notte senza sagoma |
+| `luci` | di notte, le luci di navigazione viste (`testa_d_albero`, `fianco_dritta`, `fianco_sinistra`, `coronamento`); di giorno `null` |
+| `sotto_orizzonte` | la linea d'acqua è sotto l'orizzonte dell'occhio: si vede solo la parte alta |
+| `scia` | si vede la scia (onda di prua di una nave in moto, o il pennacchio di un periscopio) |
+
+Gli alberi alzati di un altro battello (periscopio, ESM, radar) si vedono solo da vicino, di più se
+quel battello corre: sono oggetti con `sagoma: null`, `aspetto: null`, `elevazione_alberi: null`.
+
+#### `esm` e `radar`
+
+`esm.emissioni`: per ogni radar che l'ESM sente (oltre l'orizzonte acustico: il segnale fa un
+percorso solo, e oltre l'orizzonte radio cala per diffrazione), `rilevamento` misurato (σ 4°),
+`tipo` riconosciuto (la designazione del radar: `AN/SPS-40`, `AN/SPS-10`, `navigazione`, `AN/BPS-15`,
+`MRK-50`; `sconosciuto` sotto i 6 dB sopra la soglia), `banda` (lettera NATO: `B`, `G`, `I`…), `livello`
+(dB sopra la soglia). Il proprio radar,
+quando trasmette, è un'emissione che gli ESM altrui sentono; `radar.echi` sono le navi (e gli alberi
+alzati vicini) che il proprio radar vede: rilevamento al decimo, distanza in metri, misurati.
+
+### Rapporti nuovi
+
+L'elenco completo, con i parametri esatti di ogni chiave, lo esporta `shared/protocol.js`
+(`RAPPORTI`, `CHIAVI_RAPPORTO`): i cataloghi delle lingue devono avere una frase per ognuna. `chi`
+aggiunge `tiro`, la centrale di tiro (TMA).
+
+| `chi` | `chiave` | `parametri` |
+|-------|----------|-------------|
+| sonar | `sonar.transitorio` | `contatto` (o `null`), `sensore`, `tipo`, `rilevamento` |
+| sonar | `sonar.eco` | `rilevamento`, `distanza` (m) |
+| sonar | `sonar.fine_ascolto` | `echi` (quanti) — la finestra d'ascolto del ping si è chiusa |
+| sonar | `intercetto.ping` | `rilevamento`, `frequenza_khz` |
+| guardia | `periscopio.nave_in_vista` | `rilevamento`, `sagoma` |
+| guardia | `periscopio.scia` | `velocita` (kt) — periscopio alzato oltre i 10 kt |
+| guardia | `guardia.alberi_abbassati` | `quota` (m) — si è scesi oltre la quota degli alberi |
+| guardia | `esm.radar` | `rilevamento`, `tipo`, `banda` — un radar nuovo all'ESM |
+| sonar | `sonar.classificato` | `contatto`, `classe`, `confidenza` (filone I) |
+| tiro | `tma.soluzione` | `contatto`, `q` (filone I) |
+| tiro | `tma.consiglio_manovra` | `contatto`, `accostata`, `lato`, `minuti` (filone I) |
+| tiro | `tma.distanza_non_osservabile` | `contatto` (filone I) |
+| tiro | `tma.ekelund` | `contatto`, `distanza` (m) — distanza di Ekelund a ogni cambio di gamba, livello 1 (filone I) |
+
+### Diario della partita (interno, non va ai client)
+
+Righe `{ora, evento, …}` nelle istantanee, accanto alla verità al secondo, scritte con
+`partita.diario.emetti()` (`server/src/match/diario.js`, che ne elenca i campi obbligatori in
+`EVENTI`). Ogni evento porta la verità che servirà alle statistiche (PROGETTO §7.9); gli
+identificativi sono quelli interni (`b1`, `n2`, `q1`). Quelli dei sensori e delle emissioni:
+
+| `evento` | Campi | Quando |
+|----------|-------|--------|
+| `ping` | `sorgente`, `rilevamento` (`null` = settore), `portata`, `ping` (numero), `frequenza` (Hz) | a ogni ping |
+| `eco` | `osservatore`, `sorgente`, `distanza_vera`, `ping`, `distanza_misurata`, `se` | per ogni eco sopra soglia, all'ora d'arrivo |
+| `intercetto` | `osservatore`, `emettitore`, `tipo` (`ping`), `distanza_vera`, `livello` | quando un ricevitore d'intercettazione sente un ping, all'ora d'arrivo |
+| `controscoperta` | `ascoltatore`, `sorgente`, `causa` (`ping`, `radar`, `transitorio`, `albero`), `distanza_vera`, `sensore` | la stessa cosa vista da chi è stato sentito: per `intercetto`, per ogni radar nuovo all'ESM, per ogni transitorio sentito, per ogni albero visto al periscopio o al radar |
+| `transitorio` | `sorgente`, `tipo` | a ogni transitorio, sentito o no |
+| `albero` | `battello`, `quale`, `alzato`, `da` (`ordine` o `guardia`) | a ogni alzata e abbassata |
+| `radar` | `battello`, `attivo` | quando il radar comincia o smette di trasmettere |
+| `esm` | `osservatore`, `emettitore`, `distanza_vera`, `tipo` | quando un ESM sente un radar per la prima volta (o di nuovo dopo 60 s senza) |
+| `periscopio` | `osservatore`, `oggetto`, `distanza_vera`, `sagoma` | quando un oggetto entra in vista al periscopio |
+
+Gli eventi dell'equipaggio (`scoperta`, `perdita`, `classificazione`, `soluzione`, `assistenza`…) li
+scrive il filone I. `scoperta {osservatore, sorgente, contatto, sensore, distanza_vera, se}` si
+ricava dai **contributi** che ogni fotogramma porta con sé sul server (mai inviati): per ogni sorgente
+sentita `{sorgente, rilevamento (misurato), se (con la fluttuazione), se_medio, distanza_vera}`.
+
+### Tracce, soluzioni e livelli di assistenza (filone I, come implementati)
+
+Il codice: `server/src/sim/crew/` (`tracce.js` il tracciatore, `classificazione.js`, `centrale.js` la
+TMA per livello, `equipaggio.js`), `shared/tma.js` (la matematica, comune al client),
+`server/src/match/arbitro.js` (la verità dietro le tracce: solo per il diario e il livello 3).
+
+**Tracce.** Le designazioni sono dell'equipaggio, in ordine di scoperta: `S1`, `S2`… sul 688, `Ц1`,
+`Ц2`… sull'Alfa («цель»); un contatto perso e ritrovato è un contatto nuovo (regola di F1). Una
+traccia nasce da 5 picchi in 8 s a banda larga o da 3 in 16 s a banda stretta, su qualunque schiera;
+le misure di sfera e antenna dello stesso bersaglio vanno nella stessa traccia. `stato` è `nuova` nei
+primi 30 s, poi `tenuta`; `persa` quando per 60 s (fino a 240 s per una traccia tenuta da molto:
++0,5 s per secondo di traccia) nessun sensore che avrebbe potuto sentirla l'ha sentita — i secondi
+ciechi (antenna sorda dopo un'accostata, baffles) non contano, fino a 10 minuti; una traccia persa
+resta nell'elenco 5 minuti. `sensori` sono le schiere che l'hanno sentita negli ultimi 30 s;
+`rilevamento` (al decimo) e `variazione` (°/min, al centesimo) vengono dalla retta pesata degli ultimi
+due minuti di misure della sfera se recenti, altrimenti dell'antenna; `speculare` c'è solo finché
+la traccia è dell'antenna e **ambigua**: sparisce quando un'accostata (lo speculare salta di 2Δ, il
+vero no) o la sfera decidono il lato. `classe` e `confidenza` (0-100) sono dell'equipaggio;
+`confidenza` è `null` se la classe l'ha data il comandante. Al più 40 tracce per messaggio.
+
+**Classificazione.** Dalle righe stabili dello spettro del fascio puntato su ogni traccia (uno sguardo
+ogni 8 s, con un sotto-flusso proprio dei sensori: non sposta i numeri dell'analizzatore del
+giocatore) e dal DEMON (pale e asse), contro la biblioteca delle firme: 3 minuti dalla prima riga
+stabile con l'evidenza netta (errore 5 %), 6 con quella discreta (15 %), 10 con quella debole (30 %);
+niente classe se niente somiglia alla biblioteca. Rapporto `sonar.classificato`.
+
+**Soluzioni.** `distanza` al metro, `rotta` al grado, `velocita` al decimo di nodo, `rilevamento`
+al decimo dalla propria posizione all'`ora`; `ellisse`: semiassi al 90 % (m) e rilevamento vero
+del semiasse maggiore (0-179); `q` 0-100 come definita in testa a `shared/tma.js` (dalle incertezze
+di distanza, rotta e velocità; Q ≥ 70 è la soluzione di tiro). Si mandano solo le soluzioni con la
+distanza osservabile (con una manovra propria nei dati).
+
+| Livello | Cosa manda l'equipaggio |
+|---------|-------------------------|
+| 0 — Manuale | `tracce` (misure e classi); nessuna soluzione: solo l'eco di quella del comandante (ordine `soluzione`), subito e poi ogni 10 s portata avanti all'ora del messaggio |
+| 1 — MATE | come lo 0, più `tma.ekelund` a ogni cambio di gamba e `tma.distanza_non_osservabile` dopo 3 minuti di gamba dritta, sul contatto designato (o il più vecchio tenuto) |
+| 2 — Auto-TMA | `soluzione` ogni 10 s per ogni traccia risolta con la distanza osservabile, `tma.soluzione` quando Q arriva a 70, `tma.distanza_non_osservabile` e `tma.consiglio_manovra` («accosti di 90° a sinistra per 6 minuti», l'accostata e la durata che portano prima il limite di Cramér-Rao della distanza sotto il 10 %) |
+| 3 — 1989 | come il 2; dopo il «fix» (traccia tenuta 3 minuti senza interruzioni) la soluzione **esatta** (`esatta: true`, `q: 100`, ellisse nulla) ma **solo** se l'arbitro attribuisce la traccia a una sorgente **non umana**; i battelli dei giocatori restano alla soluzione stimata |
+
+La soluzione del comandante prevale su quella dell'equipaggio a ogni livello finché non la cancella.
+Chi rientra dopo una caduta di linea riceve di nuovo le soluzioni del comandante in vigore. I
+rapporti della TMA li dice la centrale di tiro: `chi: 'tiro'`.
+
+**Diario (eventi dell'equipaggio).** Con la verità dell'arbitro (dai `contributi` dei fotogrammi
+di quel secondo, o dall'equazione del sonar se non c'è un contributo vicino):
+
+| `evento` | Campi | Quando |
+|----------|-------|--------|
+| `scoperta` | `osservatore`, `contatto`, `sensore`, `banda`, `sorgente` (`null` = falso contatto), `distanza_vera`, `se` (medio vero), `se_misurato`, `rilevamento`, `speculare`, `rilevamento_vero`, `prima`, `umano` | alla designazione (`prima: true`) e quando un'altra schiera comincia a sentire la traccia |
+| `controscoperta` | `ascoltatore`, `sorgente`, `causa` (`cavitazione`, `transitorio`, `velocita` oltre 10 kt, `rumore`), `distanza_vera`, `sensore`, `contatto` | con ogni `scoperta` passiva di un sottomarino, dalla parte di chi è stato sentito |
+| `perdita` | `osservatore`, `contatto`, `sorgente`, `distanza_vera`, `durata` | traccia persa |
+| `ambiguita` | `osservatore`, `contatto`, `risolta_da` (`accostata` \| `sfera`), `giusta`, `sorgente` | quando si decide il lato dell'antenna |
+| `classificazione` | `osservatore`, `contatto`, `sorgente`, `classe`, `classe_vera`, `corretta`, `da`, `confidenza`, `secondi` (dalla designazione) | a ogni classificazione dell'equipaggio o del comandante |
+| `soluzione` | `osservatore`, `contatto`, `sorgente`, `q`, `errore_distanza_pct`, `errore_rotta`, `errore_velocita`, `errore_rilevamento`, `distanza_vera`, `origine`, `livello`, `esatta`, `motivo` (`prima`, `soglia`, `campione`, `comandante`, `esatta`) | la prima soluzione, quando Q attraversa 30-50-70-90, al più ogni 60 s come campione, a ogni soluzione del comandante, alla prima esatta |
+| `consiglio` | `osservatore`, `contatto`, `accostata`, `lato`, `minuti` | a ogni consiglio di manovra |
+| `abbandono`, `assistenza` | `osservatore`, `contatto`; `battello`, `livello` | ordini `abbandona`, `assistenza` |
+| `cavitazione`, `strato`, `periscopica` | `battello`, `attiva`, `velocita`, `quota`; `battello`, `sotto`, `quota`, `quota_strato`; `battello`, `attiva` | cambi di stato (cavitazione con 3 s di conferma, strato con 2 m d'isteresi) di ogni sottomarino |
+
+`entra` porta `uid`, `piattaforma`, `lato`, `assistenza`, `umano`. Le statistiche della partita si
+calcolano da questi eventi e dalla verità al secondo (`server/src/match/statistiche.js`).
+
+### Cosa cambia rispetto alla bozza, e perché
+
+| Bozza | Ora | Perché |
+|-------|-----|--------|
+| solo `spettro` per la banda stretta | in più `sonar` con `banda: 'stretta'` ogni 4 s, su tutti i fasci | senza una presentazione della banda stretta su tutti i rilevamenti né l'equipaggio né il giocatore possono **scoprire** un contatto dalle righe tonali: l'analizzatore guarda un fascio solo, e il vantaggio dell'antenna (le righe basse oltre la portata a banda larga) resterebbe invisibile. I fotogrammi a banda larga restano identici alla v1 |
+| `spettro {ora, sensore, rilevamento, da_hz, passo_hz, righe, demon, demon_da_hz, demon_passo_hz}` | più `contatto`, e per l'antenna `asse` e `sorda`; finestre fisse per sensore in `SPETTRO` | `contatto` dice al client che il fascio segue una traccia; senza `asse` il client non sa che lo spettro dell'antenna contiene anche lo speculare; finestre diverse perché la sfera sente sopra i 500 Hz e l'antenna sotto i 1000 |
+| `eco {ora, rilevamento, distanza, forza} per ogni eco; riverbero` | un messaggio per eco, con `ping` e `riverbero` (dB sul rumore a quella distanza); a finestra chiusa il rapporto `sonar.fine_ascolto` | gli echi arrivano a tempi diversi; senza la fine della finestra un ping senza echi sarebbe indistinguibile da un ping ancora in ascolto |
+| `attivo {rilevamento: null}` = omnidirezionale | `null` = tutto il **settore di prua** di trasmissione (±60°); un rilevamento deve stare nel settore (`settore`); `portata` obbligatoria | la sfera del 688 trasmette verso prua (dato `sensori.sfera_attiva.settore`); un default implicito della portata avrebbe nascosto una scelta tattica |
+| — | `stato.ascolto_attivo`, motivo `ping_in_corso` | un ping alla volta: la finestra d'ascolto dell'eco del precedente |
+| `transitorio {…, tipo, forza}` | più `speculare` (antenna); tipi `biologico` e `sconosciuto` | l'antenna non distingue i lati; i cetacei fanno scatti; un transitorio debole non si riconosce |
+| `visivo {vista, rilevamento, aspetto, sagoma, elevazione_alberi, luci?}` | `luci` sempre presente (`null` di giorno), più `sotto_orizzonte` e `scia`; e `visivo.luce` (giorno o notte); `sagoma: null` per gli alberi dei battelli | campi sempre presenti sono più facili da validare; oltre l'orizzonte lo stadimetro mente e il giocatore deve saperlo; la scia è ciò che rende pericoloso il periscopio in velocità; senza `luce` il client indovinava la notte dalle luci, e col mare vuoto sbagliava |
+| `esm {rilevamento, tipo, banda, livello}` | uguale; `tipo` è la designazione del radar riconosciuto, `banda` la lettera NATO | — |
+| il radar proprio: solo un'emissione | più il messaggio `radar` con gli echi | un radar che trasmette e non mostra niente non avrebbe senso; resta un'emissione che gli ESM altrui sentono |
+| `albero`: serve la quota periscopica | la quota massima degli alberi è la periscopica + 3 m; scendendo oltre altri 3 m l'ufficiale di guardia li abbassa (`guardia.alberi_abbassati`) | l'auto-quota oscilla di qualche metro intorno alla periscopica; un albero alzato a 100 m non ha senso |
+| motivi `quota`, `albero`, `contatto`, `livello` | più `senza_sensore`, `ping_in_corso`, `settore` | l'Alfa non ha tutto quello che ha il 688; un ping alla volta; il settore di trasmissione |
+| `entra {scenario, assistenza}` | un `assistenza` malformato è l'errore `assistenza_non_valida` | come uno scenario sconosciuto: meglio un errore che un livello diverso da quello voluto |
+| rapporti `intercetto.ping (rilevamento)`, `esm.radar (rilevamento, tipo)`, `sonar.transitorio (contatto?, …)` | `intercetto.ping` con `frequenza_khz`, `esm.radar` con `banda`, `sonar.transitorio` con `sensore` e `contatto` sempre presente (`null` se non è di una traccia); nuovi `sonar.fine_ascolto` e `guardia.alberi_abbassati` | parametri facoltativi complicano i cataloghi e la prova di nebbia, che chiede i parametri esatti |
+| `periscopio.scia` senza parametri | `periscopio.scia {velocita}` | l'ufficiale dice a che velocità si sta andando |
+| contatti `'S1'…` | `CONTATTO_RE`: 1-3 maiuscole (anche cirilliche: `Ц1`) e un numero | le designazioni sovietiche dell'equipaggio dell'Alfa |
+| `soluzione {contatto, ora, distanza, rotta, velocita}` (ordine e messaggio) | più `rilevamento` (facoltativo nell'ordine, sempre nel messaggio) | senza il rilevamento all'ora della soluzione il client non sa dove mettere la soluzione e la sua ellisse; il comandante che lo omette usa quello misurato dall'equipaggio |
+| — | rapporto `tma.ekelund` | al livello 1 l'equipaggio dice la distanza di Ekelund a ogni cambio di gamba |
+| `tracce[].speculare?` | presente solo finché la traccia è ambigua | lo speculare non ha senso dopo che un'accostata o la sfera hanno deciso il lato; il client lo disegna solo quando c'è |
+| `tracce[].confidenza` | `null` se la classe è del comandante | la classificazione del comandante non è una probabilità dell'equipaggio |
+| rapporti della TMA dal sonarista | `chi: 'tiro'` (centrale di tiro) | la TMA la fa la squadra di tiro, non il sonar; il client sceglie il ritratto per ruolo |
+| `soluzione` ai livelli 2-3 per ogni traccia con una soluzione | solo con la distanza osservabile (Q > 0) | senza manovra la distanza è un'ipotesi del priore, non una soluzione: l'equipaggio lo dice con `tma.distanza_non_osservabile` |
+| diario `scoperta {…, se}` | più `banda`, `se_misurato`, `rilevamento`, `speculare`, `rilevamento_vero`, `umano`; `controscoperta` passiva con `causa` dallo stato vero di chi è stato sentito | servono alle statistiche (falsi contatti, vantaggio di rilevamento, «ti hanno sentito per colpa di…») |
+

@@ -199,7 +199,7 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
         };
         c.canale = canale; // prima dell'attesa: un secondo `entra` trova gia' il posto preso
         try {
-          const r = await palestra.entra(uid, c.utente.nome, canale);
+          const r = await palestra.entra(uid, c.utente.nome, canale, { assistenza: v.assistenza });
           if (!r.ok) {
             c.canale = null;
             manda(c, DAL_SERVER.ERRORE, { codice: r.errore });

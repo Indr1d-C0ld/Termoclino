@@ -7,6 +7,11 @@
  *   node server/strumenti/taratura.js                 ambiente dello scenario torpex_palestra
  *   node server/strumenti/taratura.js --provvisorio   ambiente provvisorio (strato 60 m, 12 dB)
  *   ... [--strato 60] [--fondale 1000] [--mare 3]     per cambiare una voce
+ *   node server/strumenti/taratura.js --tabelle --fondale 190
+ *                       F2: la TL dalle tabelle del tracciatore di raggi dello scenario
+ *                       (server/src/sim/world/propagazione.js) su un fondale piatto di
+ *                       quella profondita' (fra due classi di fondale si interpola);
+ *                       e' la tabella di docs/CALIBRAZIONE_F2.md
  */
 import { parseArgs } from 'node:util';
 import { caricaTutte } from '../../shared/data/piattaforme.js';
@@ -14,6 +19,7 @@ import { caricaAcustica } from '../src/sim/sensors/acustica.js';
 import { ambienteProvvisorio } from '../src/sim/world/ambiente.js';
 import { tabellaPortate } from '../src/sim/sensors/taratura.js';
 import { caricaScenario } from '../src/match/scenario.js';
+import { caricaPropagazione } from '../src/sim/world/propagazione.js';
 
 const { values } = parseArgs({
   options: {
@@ -21,6 +27,7 @@ const { values } = parseArgs({
     strato: { type: 'string' },
     fondale: { type: 'string', default: '1000' },
     mare: { type: 'string' },
+    tabelle: { type: 'boolean', default: false },
   },
 });
 const scenario = await caricaScenario('torpex_palestra');
@@ -29,11 +36,19 @@ const opzioni = values.provvisorio ? {} : { ...(scenario.ambiente ?? {}) };
 opzioni.fondale = Number(values.fondale);
 if (values.strato !== undefined) opzioni.strato = values.strato === 'no' ? null : Number(values.strato);
 if (values.mare !== undefined) opzioni.statoMare = Number(values.mare);
+/** @type {import('../src/sim/world/ambiente.js').Ambiente} */
 const amb = ambienteProvvisorio(opzioni);
+if (values.tabelle) {
+  const fondale = Number(values.fondale);
+  const p = await caricaPropagazione('torpex_palestra', { fondale: () => fondale });
+  if (!p) throw new Error('lo scenario torpex_palestra non ha tabelle di propagazione (python3 tools/acustica/tabelle.py)');
+  amb.propagazione = p;
+}
 const righe = tabellaPortate(await caricaAcustica(), amb, await caricaTutte());
 const fmt = (/** @type {number} */ v) => (Number.isFinite(v) ? v.toFixed(1).replace('.', ',') : 'oltre 270');
 const strato = amb.strato(0, 0);
 console.log(`Ambiente: ${values.provvisorio ? 'provvisorio' : `scenario ${scenario.id} (${scenario.fonte})`}; fondale ${opzioni.fondale} m; ` +
+  `TL ${values.tabelle ? 'dalle tabelle di propagazione' : 'analitica di F1'}; ` +
   `strato ${strato ? `${strato.quota} m, ${strato.perdita ?? 'perdita di acustica.json'} dB` : 'assente'}; mare forza ${opzioni.statoMare ?? 3}; ` +
   `traffico ${opzioni.traffico ?? 0.5}; rumore ${amb.rumore(2000).toFixed(1)} dB a 2 kHz, ${amb.rumore(300).toFixed(1)} dB a 300 Hz.\n`);
 console.log('| Caso | Sensore | kyd | miglia |');

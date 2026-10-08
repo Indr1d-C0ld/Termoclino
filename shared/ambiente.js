@@ -13,6 +13,7 @@
  *   strato()                            lo strato: profondita', perdita nell'attraversarlo, salto di velocita'
  *   rumoreAmbiente(f, statoMare?)       rumore ambiente, dB re 1 µPa²/Hz (Coates)
  *   assorbimento(f)                     assorbimento, dB/km (Ainslie & McColm)
+ *   regioneAcustica(x, y)               la classe di fondale delle tabelle di propagazione (F2) nel punto
  *   inPiano(lat, lon) / inGeografiche(x, y)   conversioni con la proiezione dello scenario (shared/geo.js)
  *
  * GRIGLIA. `colonne` x `righe` nodi, righe da nord a sud e colonne da ovest a est: il nodo (riga i,
@@ -24,7 +25,8 @@
  * PROVENIENZA. Come i dati di piattaforma (shared/data/SCHEMA.md), ogni numero dello scenario ha fonte
  * e confidenza: o e' un *dato* {valore, unita, fonte, confidenza, nota?, rif?}, o fa parte di una
  * *serie* {serie: [numeri], unita, fonte, confidenza, nota?} (profili, tabelle). Fanno eccezione solo i
- * campi strutturali del file binario (`batimetria.colonne`, `righe`, `byte`). `ambiente.valori` e' lo
+ * campi strutturali dei file binari (`batimetria.colonne`, `righe`, `byte`, `propagazione.tabella.byte`).
+ * `ambiente.valori` e' lo
  * scenario con dati e serie ridotti ai loro numeri; `ambiente.provenienza(percorso)` restituisce il dato
  * o la serie completi.
  *
@@ -54,10 +56,11 @@ export const UNITA_SCENARIO = new Set([
   'psu', // salinita'
   'dB/km', // assorbimento
   'dB re 1 µPa²/Hz', // livello spettrale del rumore
+  'dB/λ', // attenuazione nei sedimenti del fondo (blocco `propagazione`, F2)
 ]);
 
-/** Campi numerici strutturali ammessi senza provenienza (descrivono il file, non il mondo). */
-const NUMERI_STRUTTURALI = new Set(['batimetria.colonne', 'batimetria.righe', 'batimetria.byte']);
+/** Campi numerici strutturali ammessi senza provenienza (descrivono i file, non il mondo). */
+const NUMERI_STRUTTURALI = new Set(['batimetria.colonne', 'batimetria.righe', 'batimetria.byte', 'propagazione.tabella.byte']);
 
 /** Chiavi ammesse in un dato e in una serie. */
 const CHIAVI_DATO = new Set(['valore', 'unita', 'fonte', 'confidenza', 'nota', 'rif', 'intervallo']);
@@ -163,6 +166,26 @@ export function validaScenario(grezzi) {
   }
   for (const p of ['ambiente.profilo.quota', 'ambiente.profilo.velocita_suono', 'ambiente.mare.vento_per_stato']) {
     if (!isSerie(a(grezzi, p))) errori.push(`${p}: manca (serie)`);
+  }
+  // Il blocco `propagazione` (F2, tools/acustica/tabelle.py) e' facoltativo; se c'e', la sua forma minima.
+  const pr = r.propagazione;
+  if (pr !== undefined) {
+    if (pr === null || typeof pr !== 'object' || pr.formato !== 'termoclino-tl/1') errori.push('propagazione: formato atteso termoclino-tl/1');
+    else {
+      if (!Array.isArray(pr.regioni) || pr.regioni.length === 0) errori.push('propagazione.regioni: manca');
+      else {
+        let prima = 0;
+        for (const reg of pr.regioni) {
+          const h = isDato(reg?.fondale) ? reg.fondale.valore : NaN;
+          if (!(typeof h === 'number' && h > prima)) errori.push(`propagazione.regioni: fondali non crescenti (${String(reg?.id)})`);
+          prima = typeof h === 'number' ? h : prima;
+          if (!pr.fondi || !(reg?.fondo in pr.fondi)) errori.push(`propagazione.regioni: fondo «${String(reg?.fondo)}» non descritto`);
+        }
+      }
+      const t = pr.tabella;
+      if (!t || typeof t.file !== 'string' || !/^[\w.-]+\.tl\.bin$/.test(t.file)) errori.push('propagazione.tabella.file non valido');
+      else if (!Number.isInteger(t.byte) || t.byte <= 0 || typeof t.sha256 !== 'string') errori.push('propagazione.tabella: byte o sha256 mancanti');
+    }
   }
   const zq = a(grezzi, 'ambiente.profilo.quota');
   const zc = a(grezzi, 'ambiente.profilo.velocita_suono');
@@ -407,6 +430,33 @@ export function rumoreCoates(frequenzaHz, traffico, vento) {
  * @property {number} distanza_minima_partenze
  * @property {NaveScenario[]} navi
  * @property {BiologicoScenario[]} biologici
+ * @property {ValoriPropagazione} [propagazione]  F2: tabelle di propagazione (tools/acustica/tabelle.py)
+ */
+
+/**
+ * Il blocco `propagazione` ridotto ai valori (F2; la lettura delle tabelle sta nel server,
+ * server/src/sim/world/propagazione.js).
+ * @typedef {object} ValoriPropagazione
+ * @property {string} formato
+ * @property {Array<RegioneAcustica & {da: number, a?: number, area: number}>} regioni
+ * @property {Record<string, {nome: string, velocita: number, densita: number, attenuazione: number, angolo_critico: number}>} fondi
+ * @property {Array<{id: string, uso: string, centro: number, da: number, a: number, alfa: number}>} bande
+ * @property {number[]} quote
+ * @property {{prima: number, rapporto: number, numero: number}} distanze
+ * @property {{passo: number, zero: number}} codifica
+ * @property {{campioni: number, soglia_terra: number, perdita_terra: number}} percorso
+ * @property {{file: string, codifica: string, byte: number, sha256: string}} tabella
+ */
+
+/**
+ * Una classe di fondale delle tabelle di propagazione («regione»).
+ * @typedef {object} RegioneAcustica
+ * @property {string} id
+ * @property {string} nome
+ * @property {string} gruppo  'costa' | 'piattaforma' | 'scarpata' | 'canale'
+ * @property {number} fondale  m, profondita' della tabella
+ * @property {string} fondo  chiave di `propagazione.fondi`
+ * @property {'rimescolato' | 'stratificato'} profilo
  */
 
 /**
@@ -571,6 +621,28 @@ export class Ambiente {
    */
   strato(_x, _y) {
     return this.datiStrato;
+  }
+
+  /**
+   * La classe di fondale delle tabelle di propagazione (F2) piu' vicina, nel logaritmo della
+   * profondita', al fondale del punto: gruppo (costa, piattaforma, scarpata, canale), tipo di fondo e
+   * profilo (rimescolato dentro il fronte di marea, stratificato fuori). null sulla terra, fuori dalla
+   * griglia o se lo scenario non ha tabelle. Il motore non la usa per la TL (che media le classi lungo
+   * il percorso): serve alla mappa e a chi vuole dire «qui siamo sulla piattaforma».
+   * @param {number} x
+   * @param {number} y
+   * @returns {RegioneAcustica | null}
+   */
+  regioneAcustica(x, y) {
+    const regioni = this.valori.propagazione?.regioni;
+    const h = this.fondale(x, y);
+    if (!regioni || regioni.length === 0 || !(h > 0)) return null;
+    let migliore = regioni[0];
+    for (const r of regioni) {
+      if (Math.abs(Math.log(h / r.fondale)) < Math.abs(Math.log(h / migliore.fondale))) migliore = r;
+    }
+    const { id, nome, gruppo, fondale, fondo, profilo } = migliore;
+    return { id, nome, gruppo, fondale, fondo, profilo };
   }
 
   /**

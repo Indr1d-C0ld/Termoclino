@@ -1,0 +1,28 @@
+{
+  "formato": "termoclino-sensori/1",
+  "aggiornato": "2026-10-08",
+  "descrizione": "Costanti dei sensori non acustici di F2: l'ottica del periscopio (portate, orizzonte, luci, visibilita' degli alberi altrui) e la propagazione radio dell'ESM e del radar. Le costanti di piattaforma (altezza dell'occhio, sensibilita' dell'ESM, radar di bordo) stanno nei file delle piattaforme e delle firme; i modelli e le portate risultanti in docs/CALIBRAZIONE_F2.md. Stesse regole di provenienza di shared/data/SCHEMA.md.",
+  "ottica": {
+    "orizzonte": {"valore": 3.86, "unita": "1", "fonte": "[WP-ORIZZONTE]", "confidenza": "documentato", "nota": "Distanza dell'orizzonte ottico con la rifrazione: d (km) = 3,86·√h (m). Un oggetto si vede se la sua testa d'albero sta sopra l'orizzonte dell'occhio: d ≤ 3,86·(√h_occhio + √h_albero)."},
+    "visibilita_giorno": {"valore": 18520, "unita": "m", "fonte": "[NSL02]", "confidenza": "nozionale", "nota": "Portata ottica di giorno con buona visibilita' e mare fino a forza 3: 10 miglia (04 §4.6.3: identificazione visiva entro 8-12 nm). Un periscopio alzato di 20 ft vedeva una corazzata a 10 000 yd [NSL02].", "rif": "04_sensori.md §4.6.3"},
+    "visibilita_notte": {"valore": 3704, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Di notte la sagoma si distingue solo entro 2 miglia; piu' lontano si vedono solo le luci di navigazione."},
+    "luce_testa_albero": {"valore": 11112, "unita": "m", "fonte": "[COLREG-22]", "confidenza": "documentato", "nota": "6 miglia per le navi di 50 m e oltre (regola 22)."},
+    "luce_fianco": {"valore": 5556, "unita": "m", "fonte": "[COLREG-22]", "confidenza": "documentato", "nota": "3 miglia."},
+    "luce_coronamento": {"valore": 5556, "unita": "m", "fonte": "[COLREG-22]", "confidenza": "documentato", "nota": "3 miglia."},
+    "stato_mare_limpido": {"valore": 3, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Fino a questo stato del mare il periscopio vede alla portata piena."},
+    "riduzione_stato_mare": {"valore": 0.2, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Frazione di portata ottica persa per ogni grado di stato del mare oltre stato_mare_limpido (onde che coprono la testa del periscopio, spruzzi): a forza 5 si vede al 60 %."},
+    "albero_giorno": {"valore": 1800, "unita": "m", "fonte": "[NSL02] [WP-PERISCOPE]", "confidenza": "nozionale", "nota": "Distanza a cui un periscopio (o un altro albero) alzato e fermo si vede da un altro periscopio, di giorno: le fonti dicono che la scia lo tradisce, non a che distanza."},
+    "albero_notte": {"valore": 400, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+    "fattore_scia": {"valore": 2.5, "unita": "1", "fonte": "[NSL02] [WP-PERISCOPE]", "confidenza": "nozionale", "nota": "Quanto si allunga quella distanza se il battello corre oltre la velocita_scia del suo periscopio (il pennacchio bianco si vede molto piu' del tubo)."},
+    "velocita_onda_prua": {"valore": 5, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Oltre questa velocita' una nave mostra l'onda di prua (`scia` nel messaggio `visivo`)."}
+  },
+  "radio": {
+    "raggio_terra_equivalente": {"valore": 8500000, "unita": "m", "fonte": "[ITU-P526] [WP-ORIZZONTE]", "confidenza": "documentato", "nota": "Raggio terrestre per 4/3, l'atmosfera standard delle onde radio: orizzonte radio 4,12·√h km. Entra nella diffrazione sulla terra sferica liscia di ITU-R P.526 oltre l'orizzonte."},
+    "perdite": {"valore": 6, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Perdite del collegamento radar → ESM (polarizzazione, cavi, antenna ESM a guadagno 0 dB, mare)."},
+    "ricomparsa": {"valore": 60, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Un radar che l'ESM non sente da piu' di questo tempo, se ricompare, e' un radar «nuovo» (rapporto esm.radar ed evento del diario)."},
+    "soglia_riconoscimento": {"valore": 6, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "L'ESM riconosce il tipo di radar se ne riceve almeno 6 dB sopra la soglia; sotto dice «sconosciuto»."},
+    "rcs_albero": {"valore": 0, "unita": "dB", "fonte": "[WP-PERISCOPE] [CONO]", "confidenza": "nozionale", "nota": "Sezione radar di un albero alzato, dBsm (1 m²): il radar proprio lo vede a una frazione della portata su una nave (radice quarta della sezione)."},
+    "rcs_scia": {"valore": 6, "unita": "dB", "fonte": "[WP-PERISCOPE] [CONO]", "confidenza": "nozionale", "nota": "Quanto cresce la sezione radar dell'albero con il pennacchio oltre la velocita_scia."},
+    "rcs_nave": {"valore": 40, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Sezione radar di una nave di 100-130 m, dBsm (10 000 m²)."}
+  }
+}

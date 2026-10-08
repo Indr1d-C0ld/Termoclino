@@ -880,6 +880,16 @@ def main():
         'navi': navi,
         'biologici': biologici,
     }
+    # Il blocco `propagazione` (regioni acustiche e tabelle di perdita di trasmissione) lo scrive
+    # tools/acustica/tabelle.py: qui si conserva com'e'. Se cambiano batimetria o oceanografia, va rifatto
+    # anche quello (python3 tools/acustica/tabelle.py).
+    try:
+        with open(json_path, encoding='utf-8') as fi:
+            vecchio = json.load(fi)
+        if isinstance(vecchio, dict) and 'propagazione' in vecchio:
+            sc['propagazione'] = vecchio['propagazione']
+    except (OSError, ValueError):
+        pass
     with open(json_path, 'w', encoding='utf-8') as fo:
         json.dump(sc, fo, ensure_ascii=False, indent=1)
         fo.write('\n')

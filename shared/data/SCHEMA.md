@@ -99,8 +99,10 @@ dinamica        velocita_max, velocita_max_superficie, telegrafo, ordini_macchin
                       velocita_verticale_max, velocita_verticale_zavorra,
                       velocita_emersione_emergenza}
 profondita      periscopica, automatica, operativa, collaudo, collasso
-acustica        rumore_irradiato{…}, cavitazione{…}, rumore_proprio{…}, tonali[], forza_bersaglio{…}
-sensori         sfera, sfera_attiva, conforme, rimorchiata, intercettazione, alta_frequenza, periscopio
+acustica        rumore_irradiato{…}, cavitazione{…}, rumore_proprio{…}, tonali[], forza_bersaglio{…},
+                F2: righe_giri[], pale{…}, transitori{…}
+sensori         sfera, sfera_attiva, conforme, rimorchiata, intercettazione, alta_frequenza, periscopio,
+                F2: esm, radar
 armi            tubi{…}, capacita, vls, filoguida, dotazioni[], contromisure{…}
 varianti        (facoltativo) sotto-classi con le sole differenze, per anno
 riferimento_1989  i valori del gioco originale, per il preset «regolamento 1989» (decisione D3)
@@ -134,6 +136,49 @@ I campi delle sezioni che il motore usa in F1 sono tipizzati in `ValoriPiattafor
   con la geometria.
 - `varianti.<nome>`: solo ciò che cambia rispetto alla configurazione di base, più `dal_anno` e
   `operativi_per_anno` della variante.
+
+### 4.2 I blocchi di F2
+
+Usati dai sensori di F2 (`server/src/sim/sensors/`, modelli e taratura in `docs/CALIBRAZIONE_F2.md`).
+
+- `acustica.tonali[].tipo` (testo): `elettrica`, `pompa`, `turbina`, `riduttore`, `ventilazione`,
+  `diesel`… Serve alla biblioteca delle firme e al giocatore che classifica. Il livello delle righe
+  a frequenza fissa (`sopra_banda_larga`) è riferito allo spettro a banda larga **alla velocità di
+  riferimento** (`rumore_irradiato.velocita_rif`, 5 kt), senza cavitazione e al traverso: è un
+  livello fisso, che non segue la velocità. A velocità alte la banda larga sale e può coprirle.
+- `acustica.righe_giri[]`: righe che seguono i giri dell'asse (ingranamento dei riduttori,
+  accensioni dei diesel): `nome`, `tipo`, `per_giro` (frequenza = `per_giro` · giri/60, giri =
+  velocità dei giri · `propulsione.giri_per_nodo`), `sopra_banda_larga` (sopra la banda larga
+  **attuale**, alla stessa frequenza), `da_velocita`, `a_velocita`.
+- `acustica.pale`: le righe di pala (frequenza = pale · giri/60, [ITTC-02]) e d'asse e la
+  modulazione del rumore per il DEMON. `livello` (dB sopra la banda larga attuale alla frequenza di
+  pala, cella di 1 Hz), `armoniche` (n, fondamentale compresa), `decremento` (dB per armonica),
+  `livello_asse` (dB, frequenza d'asse), `modulazione` e `modulazione_cavitante` (indice di
+  modulazione d'ampiezza alla frequenza di pala, senza e con l'elica che cavita),
+  `modulazione_asse` (frazione della modulazione di pala alla frequenza d'asse).
+- `acustica.transitori.<tipo>`: `scafo` (`livello`, `durata`, `quota_evento`: ogni quanti metri di
+  cambio di quota, `probabilita`), `pompa` (pompe d'assetto: `livello`, `durata`,
+  `intervallo_minimo`), `regime` (le righe che cambiano con la velocità: transitorio `pompa`),
+  `meccanico` (idraulica degli alberi), `portello` (F3), `emersione` (solo `durata`: il livello è
+  quello del soffiaggio). `livello` è un livello spettrale **equivalente a 1 kHz**, dB re
+  1 µPa²/Hz a 1 m, che i sensori portano al centro della loro banda con lo spettro di Ross.
+- `sensori.sfera_attiva`: oltre a `frequenza` e `settore` (semiampiezza del settore di prua in cui
+  si trasmette): `livello_sorgente` (dB re 1 µPa a 1 m sull'asse), `fascio` (larghezza del fascio
+  attivo, gradi), `perdita_settore` (dB in meno trasmettendo su tutto il settore), `durata_corta` e
+  `durata_lunga` (impulsi, s), `ascolto_corta` e `ascolto_lunga` (finestre d'ascolto, m),
+  `sigma_min` (errore minimo di rilevamento dell'eco).
+- `sensori.intercettazione`: in più `banda_canale` (Hz, nella soglia 5·log(d/(B·τ))) e
+  `indice_direttivita`.
+- `sensori.periscopio`: in più `errore_elevazione` (σ relativo dell'angolo d'albero, %: due sigma
+  fanno `errore_stadimetro`), `altezza_occhio` (m sopra l'acqua), `margine_quota` (gli alberi si
+  alzano con la chiglia entro `profondita.periscopica` + margine), `velocita_scia` (kt),
+  `sigma_rilevamento` e `sigma_aspetto` (gradi).
+- `sensori.esm`: `presente`, `nome`, `banda_min`/`banda_max` (Hz), `sensibilita` (dB re 1 mW, con
+  l'unità `dB`), `sigma` (gradi), `altezza` (m).
+- `sensori.radar`: `presente`, `nome` (la designazione che gli ESM altrui riconoscono), `banda`
+  (lettera NATO, testo), `frequenza` (Hz), `potenza_picco` (kW), `guadagno` (dB), `fascio` (gradi),
+  `periodo` (s per giro d'antenna), `altezza` (m), `portata_rif` (m: distanza a cui vede 1 000 m²),
+  `sigma_rilevamento` (gradi), `sigma_distanza` (%).
 
 ## 5. Modelli di riferimento
 
@@ -206,8 +251,65 @@ stessa di queste pagine, con due aggiunte:
 - la **serie**, `{"serie": [numeri], "unita", "fonte", "confidenza", "nota"?}`, per i profili e le
   tabelle (temperatura, salinità e velocità del suono per quota, rumore per banda), dove un dato per
   numero sarebbe solo rumore;
-- le unità dell'ambiente oltre a quelle del §2: `°C`, `psu`, `dB/km`, `dB re 1 µPa²/Hz`.
+- le unità dell'ambiente oltre a quelle del §2: `°C`, `psu`, `dB/km`, `dB re 1 µPa²/Hz`, `dB/λ`
+  (attenuazione nei sedimenti).
 
-Gli unici numeri senza provenienza ammessi sono quelli che descrivono il file binario
-(`batimetria.colonne`, `righe`, `byte`). Le prove (`shared/test/ambiente.test.js`) controllano
-provenienza, chiavi di `FONTI.md`, integrità della griglia e coerenza fisica.
+Gli unici numeri senza provenienza ammessi sono quelli che descrivono i file binari
+(`batimetria.colonne`, `righe`, `byte`; `propagazione.tabella.byte`). Le prove
+(`shared/test/ambiente.test.js`) controllano provenienza, chiavi di `FONTI.md`, integrità della griglia
+e coerenza fisica.
+
+**Propagazione (F2).** Il blocco `propagazione` (formato `termoclino-tl/1`) e il file accanto
+`<id>.tl.bin` li scrive `tools/acustica/tabelle.py` (`scarica.py` conserva il blocco quando rigenera lo
+scenario): le classi di fondale («regioni», con fondo e profilo), i fondi, la superficie, le bande, le
+quote e le distanze delle tabelle, i parametri della lettura in linea (`percorso`) e l'impronta del file.
+Il formato del file è in testa a `tabelle.py`; lo legge il server
+(`server/src/sim/world/propagazione.js`), e `shared/ambiente.js` ne espone solo
+`regioneAcustica(x, y)`. Metodo e convalida: `docs/CALIBRAZIONE_F2.md`, parte G.
+
+## 8. Firme (F2)
+
+Le firme stanno in `shared/data/firme/<id>.json` (formato `termoclino-firma/1`), lette da
+`shared/data/firme.js` nel server e nel browser: le navi di superficie (`forrest_sherman`), il
+mercantile (`mercantile_generico`) e le sorgenti biologiche (`biologico`). Stesse regole di
+provenienza delle piattaforme (§1-3: ogni numero è un dato con fonte e confidenza, le prove sono in
+`shared/test/firme.test.js`). Il livello a banda larga resta nel profilo di F1 di
+`shared/data/acustica.json` (`sorgenti`): la firma aggiunge ciò che serve ai sensori di F2.
+
+```
+formato, id, aggiornato
+identita        nome, designazione, tipo ("nave" | "biologico"), categoria, nazione, lato, configurazione
+dimensioni      lunghezza, larghezza, pescaggio, dislocamento
+propulsione     assi, potenza_asse, velocita_max, elica_pale, giri_per_nodo, rete_elettrica,
+                velocita_cavitazione (sopra, la modulazione e' quella dell'elica che cavita), cilindri
+acustica        profilo_banda_larga (testo: la voce di acustica.json, sorgenti), velocita_rif,
+                tonali[], righe_giri[], pale{…}, forza_bersaglio{prua_poppa, traverso}
+ottica          altezza_alberi (m, il «libro» dello stadimetro), bordo_libero (m),
+                sagoma (testo: la famiglia delle immagini originali, FOREST → FOREST0…FOREST4), luci
+emettitori[]    radar: nome, banda, frequenza, potenza_picco, guadagno, fascio, periodo, altezza, acceso
+specie{}        solo i biologici: <specie>{nome, canto{f_min, f_max, livello, durata_unita} | null,
+                scatti{livello, durata, intervallo} | null, forza_bersaglio}
+```
+
+- Le righe di una nave sono come quelle dei sottomarini (§4.2), con la velocità di riferimento
+  della firma (`acustica.velocita_rif`, 10 kt: quella del livello a banda larga di F1).
+- `ottica.sagoma` è solo un **nome**: le immagini originali (gli ENC estratti in
+  `web/assets/originali/`, `docs/ASSET.md`) non entrano mai nel repository. L'indice 0-4 lo sceglie
+  il server dall'angolo sulla prua (0 di prua, 2 al traverso, 4 di poppa); il lato lo dice il segno
+  di `visivo.aspetto`.
+- `canto.livello` è il livello di una riga del canto (dB re 1 µPa² a 1 m); `scatti.livello` un
+  livello spettrale equivalente a 1 kHz, come i transitori dei battelli.
+- La **biblioteca delle firme** (`biblioteca()` di `shared/data/firme.js`) mette insieme
+  piattaforme e firme in una voce per classe (righe, righe che seguono i giri, pale, assi, altezza
+  d'albero, sagoma, radar, canto): la usano l'equipaggio per classificare e il client per il
+  giocatore che classifica da sé. Le classi sono le `CLASSI` di `shared/protocol.js`.
+
+## 9. Sensori non acustici (F2)
+
+`shared/data/sensori.json` (formato `termoclino-sensori/1`, stesse regole) tiene le costanti dei
+modelli dell'ottica (`ottica`: orizzonte, visibilità di giorno e di notte, luci della regola 22,
+stato del mare, visibilità degli alberi altrui) e della radio (`radio`: raggio terrestre
+equivalente, perdite, sezioni radar, soglie dell'ESM). Le carica, con le firme, `caricaAcustica()`
+(`server/src/sim/sensors/acustica.js`): `ac.ottica`, `ac.radio`, `ac.firme`. Le costanti acustiche
+nuove di F2 (banda stretta, DEMON, attivo, riverberazione, transitori) stanno in
+`shared/data/acustica.json`.

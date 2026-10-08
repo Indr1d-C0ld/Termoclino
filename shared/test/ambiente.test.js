@@ -80,7 +80,7 @@ test('lo scenario e\' valido e ogni numero ha fonte e confidenza', () => {
     }
   };
   cammina(grezzi, '');
-  assert.deepEqual(nudi.sort(), ['batimetria.byte', 'batimetria.colonne', 'batimetria.righe']);
+  assert.deepEqual(nudi.sort(), ['batimetria.byte', 'batimetria.colonne', 'batimetria.righe', 'propagazione.tabella.byte']);
   let voci = 0;
   visitaProvenienze(grezzi, (p, d) => {
     voci++;
@@ -420,4 +420,53 @@ test('assorbimento: tabella per banda, formula di Ainslie & McColm, ordini di gr
   // In quest'acqua (circa 9 °C): bassa frequenza quasi trasparente, alta frequenza assorbita.
   assert.ok(amb.assorbimento(300) < 0.02);
   assert.ok(amb.assorbimento(25000) > 3);
+});
+
+// ---------------------------------------------------------------------------
+// Propagazione (F2): il blocco delle tabelle e le classi di fondale
+// ---------------------------------------------------------------------------
+
+test('propagazione: il file delle tabelle e\' quello dello scenario, le classi coprono il mare', async () => {
+  const p = /** @type {import('../ambiente.js').ValoriPropagazione} */ (v.propagazione);
+  assert.ok(p, 'manca il blocco propagazione (python3 tools/acustica/tabelle.py)');
+  assert.equal(p.formato, 'termoclino-tl/1');
+  const byte = await readFile(new URL(p.tabella.file, DIR));
+  assert.equal(byte.length, p.tabella.byte);
+  assert.equal(createHash('sha256').update(byte).digest('hex'), p.tabella.sha256);
+  assert.ok(byte.length < 5 * 1024 * 1024, 'le tabelle restano sotto i 5 MB');
+  // classi di fondale crescenti, ciascuna con un fondo descritto e un profilo; le aree fanno il 100 %
+  let prima = 0;
+  let area = 0;
+  for (const r of p.regioni) {
+    assert.ok(r.fondale > prima, r.id);
+    prima = r.fondale;
+    assert.ok(r.fondo in p.fondi, r.id);
+    assert.ok(['rimescolato', 'stratificato'].includes(r.profilo), r.id);
+    area += r.area;
+  }
+  vicino(area, 100, 0.5, 'aree delle classi');
+  assert.ok((p.regioni.at(-1)?.fondale ?? 0) > 0.8 * v.batimetria.fondale_massimo, 'la classe piu\' profonda copre i canali');
+  // dentro il fronte di marea l'acqua e' rimescolata, fuori stratificata (Larsen et al. 2009)
+  assert.equal(p.regioni[0].profilo, 'rimescolato');
+  assert.equal(p.regioni.at(-1)?.profilo, 'stratificato');
+  // le quote cominciano vicino alla superficie e sono crescenti; le bande dei sensori ci sono
+  assert.ok(p.quote[0] <= 5 && p.quote.every((q, i) => i === 0 || q > p.quote[i - 1]));
+  for (const id of ['sfera', 'towed', 'f50', 'f300', 'f3500']) assert.ok(p.bande.some((b) => b.id === id), id);
+  for (const b of p.bande) vicino(b.alfa, amb.assorbimento(b.centro), Math.max(1e-5, 1e-4 * b.alfa), b.id);
+});
+
+test('regioneAcustica: canale, piattaforma e terra nei punti noti', () => {
+  // soglia del Canale delle Faer Oer (~846 m): la classe del canale
+  const soglia = amb.inPiano(61.42, -8.33);
+  assert.equal(amb.regioneAcustica(soglia.x, soglia.y)?.gruppo, 'canale');
+  // le partenze della palestra stanno sulla piattaforma stratificata (180-220 m)
+  for (const s of v.partenze) {
+    const r = amb.regioneAcustica(s.x, s.y);
+    assert.equal(r?.gruppo, 'piattaforma', s.id);
+    assert.equal(r?.profilo, 'stratificato', s.id);
+  }
+  // sulla terra e fuori dalla griglia: nessuna classe
+  const torshavn = amb.inPiano(62.01, -6.77);
+  assert.equal(amb.regioneAcustica(torshavn.x, torshavn.y), null);
+  assert.equal(amb.regioneAcustica(v.area.x1 + 1000, 0), null);
 });

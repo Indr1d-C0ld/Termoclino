@@ -271,6 +271,7 @@ function congela(nodo) {
 /**
  * @typedef {object} Tonale
  * @property {string} nome
+ * @property {string} [tipo]  F2: elettrica, pompa, turbina, riduttore…
  * @property {number} frequenza Hz
  * @property {number} sopra_banda_larga dB sopra lo spettro a banda larga, cella di 1 Hz
  * @property {number} da_velocita kt
@@ -342,17 +343,31 @@ function congela(nodo) {
  *     velocita_soglia_sfera: number, velocita_soglia_conforme: number,
  *     velocita_soglia_rimorchiata: number},
  *   tonali: Tonale[],
+ *   righe_giri?: import('./firme.js').RigaGiri[],
+ *   pale?: import('./firme.js').Pale,
+ *   transitori?: Record<string, {livello?: number, durata: number, quota_evento?: number,
+ *     probabilita?: number, intervallo_minimo?: number}>,
  *   forza_bersaglio: {prua_poppa: number, traverso: number, correzione_rivestimento: number}
  * }} acustica
  * @property {{
  *   sfera: SensoreDirettivo,
- *   sfera_attiva: {presente: boolean, frequenza?: number, settore?: number},
+ *   sfera_attiva: {presente: boolean, frequenza?: number, settore?: number, livello_sorgente?: number,
+ *     fascio?: number, perdita_settore?: number, durata_corta?: number, durata_lunga?: number,
+ *     ascolto_corta?: number, ascolto_lunga?: number, sigma_min?: number},
  *   conforme: SensoreDirettivo & {settore_da?: number, settore_a?: number},
  *   rimorchiata: AntennaRimorchiata,
  *   intercettazione: {presente: boolean, nome?: string, banda_min?: number, banda_max?: number,
- *     sigma_bassa?: number, sigma_media?: number, sigma_alta?: number},
+ *     sigma_bassa?: number, sigma_media?: number, sigma_alta?: number, banda_canale?: number,
+ *     indice_direttivita?: number},
  *   alta_frequenza: {presente: boolean, nome?: string},
- *   periscopio: {presente: boolean, numero?: number, errore_stadimetro?: number}
+ *   periscopio: {presente: boolean, numero?: number, errore_stadimetro?: number, errore_elevazione?: number,
+ *     altezza_occhio?: number, margine_quota?: number, velocita_scia?: number, sigma_rilevamento?: number,
+ *     sigma_aspetto?: number},
+ *   esm?: {presente: boolean, nome?: string, banda_min?: number, banda_max?: number, sensibilita?: number,
+ *     sigma?: number, altezza?: number},
+ *   radar?: {presente: boolean, nome?: string, banda?: string, frequenza?: number, potenza_picco?: number,
+ *     guadagno?: number, fascio?: number, periodo?: number, altezza?: number, portata_rif?: number,
+ *     sigma_rilevamento?: number, sigma_distanza?: number}
  * }} sensori
  * @property {{
  *   tubi: {numero: number, calibro: number, posizione: string, tempo_ricarica: number},

@@ -119,6 +119,7 @@
     "tonali": [
       {
         "nome": "rete elettrica a 400 Hz",
+        "tipo": "elettrica",
         "frequenza": {"valore": 400, "unita": "Hz", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Due generatori sincroni trifase da 1 500 kW, 400 V, 400 Hz: il primo SSN sovietico con la rete a frequenza elevata. Riga che distingue l'Alfa dai battelli a 50 Hz."},
         "sopra_banda_larga": {"valore": 12, "unita": "dB", "fonte": "[COTE03 p.67]", "confidenza": "nozionale", "nota": "Le classi sovietiche di 2ª generazione hanno righe marcate (01 §3.3, avvertenza 2)."},
         "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"},
@@ -126,6 +127,7 @@
       },
       {
         "nome": "turbopompe del metallo liquido",
+        "tipo": "pompa",
         "frequenza": {"valore": 47, "unita": "Hz", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Pompe di circolazione del primo circuito (tre sul 705, due turbopompe in parallelo sul 705K): frequenza nozionale."},
         "sopra_banda_larga": {"valore": 10, "unita": "dB", "fonte": "[COTE03 p.67]", "confidenza": "nozionale"},
         "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"},
@@ -133,12 +135,60 @@
       },
       {
         "nome": "turbina e riduttore ad alta potenza",
+        "tipo": "turbina",
         "frequenza": {"valore": 165, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
         "sopra_banda_larga": {"valore": 8, "unita": "dB", "fonte": "[FAS-705]", "confidenza": "nozionale"},
         "da_velocita": {"valore": 25, "unita": "kt", "fonte": "[FAS-705]", "confidenza": "nozionale", "nota": "Cambio di regime oltre i 25 kt: la riga che annuncia lo scatto."},
         "a_velocita": {"valore": 41, "unita": "kt", "fonte": "[FAS-705]", "confidenza": "nozionale"}
       }
     ],
+    "righe_giri": [
+      {
+        "nome": "ingranamento del riduttore",
+        "tipo": "riduttore",
+        "per_giro": {"valore": 150, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Frequenza = 150 · giri/60: 100 Hz a 5 kt, 820 Hz a 41 kt."},
+        "sopra_banda_larga": {"valore": 3, "unita": "dB", "fonte": "[COTE03 p.67] [CW23]", "confidenza": "nozionale", "nota": "Macchinario su zattera ad anello, meno isolato: riga piu' marcata del 688 (+3 contro 0)... ma non tanto da fare dell'Alfa lento un contatto da 20 miglia (docs/CALIBRAZIONE_F2.md)."},
+        "da_velocita": {"valore": 2, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 41, "unita": "kt", "fonte": "[DS-705]", "confidenza": "nozionale"}
+      }
+    ],
+    "pale": {
+      "livello": {"valore": 6, "unita": "dB", "fonte": "[ITTC-02] [CONO]", "confidenza": "nozionale", "nota": "Elica a cinque pale ad alto numero di giri: righe di pala piu' forti del 688."},
+      "armoniche": {"valore": 4, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "decremento": {"valore": 3, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "livello_asse": {"valore": -3, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "modulazione": {"valore": 0.05, "unita": "1", "fonte": "[SENS21] [CONO]", "confidenza": "nozionale"},
+      "modulazione_cavitante": {"valore": 0.4, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale", "nota": "L'Alfa cavita gia' a 6 kt sotto i 20 m: il suo DEMON e' quasi sempre pieno."},
+      "modulazione_asse": {"valore": 0.3, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale"}
+    },
+    "transitori": {
+      "scafo": {
+        "livello": {"valore": 115, "unita": "dB", "fonte": "[DS-705] [CONO]", "confidenza": "nozionale", "nota": "Come il 688, 3 dB in piu': scafo piccolo e rigido in titanio, macchinario meno isolato."},
+        "durata": {"valore": 0.3, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "quota_evento": {"valore": 15, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "probabilita": {"valore": 0.5, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "pompa": {
+        "livello": {"valore": 108, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "durata": {"valore": 8, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "intervallo_minimo": {"valore": 120, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "regime": {
+        "livello": {"valore": 112, "unita": "dB", "fonte": "[FAS-705] [CONO]", "confidenza": "nozionale", "nota": "Il cambio di regime oltre i 25 kt (riga della turbina ad alta potenza): l'annuncio dello scatto."},
+        "durata": {"valore": 2, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "meccanico": {
+        "livello": {"valore": 106, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "durata": {"valore": 4, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "portello": {
+        "livello": {"valore": 119, "unita": "dB", "fonte": "[DSTORM-705] [CONO]", "confidenza": "nozionale", "nota": "Tubi pneumoidraulici a caricamento rapido: la usera' F3."},
+        "durata": {"valore": 1.5, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "emersione": {
+        "durata": {"valore": 5, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      }
+    },
     "forza_bersaglio": {
       "prua_poppa": {"valore": 10, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "rif": "05_acustica.md §2.3"},
       "traverso": {"valore": 25, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale"},
@@ -162,7 +212,15 @@
     "sfera_attiva": {
       "presente": {"valore": true, "fonte": "[FAS-705]", "confidenza": "stimato", "nota": "«Okean active/passive sonar»."},
       "frequenza": {"valore": 3000, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
-      "settore": {"valore": 60, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"}
+      "settore": {"valore": 60, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "livello_sorgente": {"valore": 222, "unita": "dB", "fonte": "[FAS-705] [CONO]", "confidenza": "nozionale", "nota": "dB re 1 µPa a 1 m: «Okean» attivo/passivo, potenza non trovata; 6 dB sotto il BQQ-5 per una sfera piu' piccola."},
+      "fascio": {"valore": 10, "unita": "°", "fonte": "[DS-705]", "confidenza": "calcolato", "nota": "59°·λ/D con il diametro nozionale di 3 m a 3 kHz."},
+      "perdita_settore": {"valore": 8, "unita": "dB", "fonte": "[DS-705]", "confidenza": "nozionale", "nota": "Fascio piu' largo del 688: meno perdita a trasmettere su tutto il settore."},
+      "durata_corta": {"valore": 0.1, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "durata_lunga": {"valore": 1, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "ascolto_corta": {"valore": 9144, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Le finestre d'ascolto sono quelle del protocollo (10 000 e 40 000 yd), uguali per i due lati."},
+      "ascolto_lunga": {"valore": 36576, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "sigma_min": {"valore": 1.5, "unita": "°", "fonte": "[COLL94]", "confidenza": "nozionale", "nota": "1° del 688 + 50 % (R1, σ sovietico)."}
     },
     "conforme": {
       "presente": {"valore": false, "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Nessuna antenna di fianco nell'elenco del materiale (le avranno gli Akula con lo Skat-3)."}
@@ -177,7 +235,9 @@
       "banda_max": {"valore": 60000, "unita": "Hz", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
       "sigma_bassa": {"valore": 5, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
       "sigma_media": {"valore": 10, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
-      "sigma_alta": {"valore": 45, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale"}
+      "sigma_alta": {"valore": 45, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
+      "banda_canale": {"valore": 100, "unita": "Hz", "fonte": "[OP-400EM] [CONO]", "confidenza": "nozionale"},
+      "indice_direttivita": {"valore": 0, "unita": "dB", "fonte": "[OP-400EM]", "confidenza": "nozionale"}
     },
     "alta_frequenza": {
       "presente": {"valore": false, "fonte": "[MAN-688 pp. 38–39]", "confidenza": "nozionale", "nota": "Niente contour imaging sull'Alfa, come nel 1989. FAS elenca un sonar per mine «MG-24 Luch»: non verificato, fuori da F1."}
@@ -185,7 +245,36 @@
     "periscopio": {
       "presente": {"valore": true, "fonte": "[DS-705]", "confidenza": "stimato"},
       "numero": {"valore": 1, "unita": "n", "fonte": "[DS-705]", "confidenza": "stimato", "nota": "Periscopio universale «Signal»."},
-      "errore_stadimetro": {"valore": 7, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Come il 688 (CONTRADDIZIONI C10)."}
+      "errore_stadimetro": {"valore": 7, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Come il 688 (CONTRADDIZIONI C10)."},
+      "errore_elevazione": {"valore": 3.5, "unita": "%", "fonte": "[NSL10] [CONO]", "confidenza": "nozionale", "nota": "Come il 688: due sigma fanno il ±7 %."},
+      "altezza_occhio": {"valore": 2, "unita": "m", "fonte": "[NSL02] [CONO]", "confidenza": "nozionale"},
+      "margine_quota": {"valore": 3, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Alberi alzati con la chiglia entro 19 m."},
+      "velocita_scia": {"valore": 10, "unita": "kt", "fonte": "[NSL02] [WP-PERISCOPE]", "confidenza": "nozionale"},
+      "sigma_rilevamento": {"valore": 0.4, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "sigma_aspetto": {"valore": 10, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"}
+    },
+    "esm": {
+      "presente": {"valore": true, "fonte": "[DS-671RTM] [CONO]", "confidenza": "nozionale", "nota": "L'elenco del materiale del 705 [DS-705] cita solo il radiogoniometro «Весло-П»; il ricevitore d'allarme radar «Залив-П» e' documentato sul 671RTM coevo [DS-671RTM]: per il gioco l'Alfa ne ha uno equivalente."},
+      "nome": "«Zaliv-P» (nozionale)",
+      "banda_min": {"valore": 50000000, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "banda_max": {"valore": 18000000000, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "sensibilita": {"valore": -65, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "dB re 1 mW: 5 dB meno sensibile del WLR-8."},
+      "sigma": {"valore": 6, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "rif": "04_sensori.md §4.6.3"},
+      "altezza": {"valore": 3, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"}
+    },
+    "radar": {
+      "presente": {"valore": true, "fonte": "[DS-705] [WP-ALFA]", "confidenza": "stimato", "nota": "«Чибис» per deepstorm, «Topol MRK-50 (Snoop Tray)» per Wikipedia: fonti in conflitto (04 §4.3.4)."},
+      "nome": "MRK-50",
+      "banda": "I",
+      "frequenza": {"valore": 9400000000, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Bande, potenze e portate dei radar sovietici non trovate (04 §4.3.4): banda X nozionale, come «Snoop Tray»."},
+      "potenza_picco": {"valore": 30, "unita": "kW", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "guadagno": {"valore": 27, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "fascio": {"valore": 3.5, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "periodo": {"valore": 5, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "altezza": {"valore": 2.5, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "portata_rif": {"valore": 18000, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "sigma_rilevamento": {"valore": 1.5, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "sigma_distanza": {"valore": 1.5, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale"}
     }
   },
   "armi": {

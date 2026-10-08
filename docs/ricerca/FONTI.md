@@ -18,6 +18,8 @@ Data di consultazione di tutte le voci: **2026-10-07**, salvo diversa indicazion
 | 08 688 Attack Sub originale | `08_688_originale.md` (15:09) | `_fonti_04_08.md` (15:09) | fuso, Parte D |
 | Revisione incrociata | `CONTRADDIZIONI.md` (15:23) | `_fonti_integrazioni.md` (15:22) | fuso, Parte E |
 | Ambiente degli scenari (F1) | `shared/data/scenari/`, `tools/batimetria/scarica.py` | — | scritta qui, Parte F |
+| Firme e sensori (F2) | `shared/data/firme/`, `shared/data/sensori.json`, blocchi F2 di `shared/data/piattaforme/` e `acustica.json` | — | scritta qui, Parte G |
+| Propagazione (F2) | `tools/acustica/`, blocco `propagazione` di `shared/data/scenari/torpex_palestra.json` | — | scritta qui, Parte H |
 
 **Verifica delle chiavi.** Sezioni controllate: `01_piattaforme.md`, `02_armi.md`, `03_contromisure.md`, `04_sensori.md`, `05_acustica.md`, `06_tma.md`, `07_dottrina_siluri.md`, `08_688_originale.md`, `CONTRADDIZIONI.md`. Chiavi distinte citate: **211**; chiavi definite qui: **229**; chiavi citate **senza voce: 0**. Chiavi definite ma non citate in nessuna sezione (fonti di contesto, calcoli, segnaposto): [NA81], [CALC-CZ], [CALC-ABS], [CALC-TMA], [CALC-CHASE], [CP-01], [CMP110], [GI15], [FAS-BSY2], [FAS-BQG5], [GAO-92-50], [RUWP-945], [RUWP-705], [WP-VICTOR], [ARMY2020-R].
 
@@ -766,6 +768,164 @@ ricerca, non letto` (quest'ultima modalità non è mai usata come base per un nu
 
 ---
 
+## Parte G — Firme e sensori di F2 (navi, biologici, radar, ottica, attivo)
+
+*Aggiunta il 2026-10-08 con le firme di F2 (`shared/data/firme/*.json`, i blocchi acustici e dei sensori di
+`shared/data/piattaforme/*.json`, `shared/data/sensori.json`, le sezioni nuove di `shared/data/acustica.json`).
+Consultazione: 2026-10-08. Modo: **testo letto** (pagina scaricata e letta) salvo diversa indicazione; i valori
+che venivano solo da un riassunto del motore di ricerca non sono stati usati come fonte (nei dati restano
+`[CONO]` e `nozionale`, con la nota che lo dice).*
+
+### Navi di superficie
+
+- **[WP-DD931CL]** Wikipedia (en), «Forrest Sherman-class destroyer», https://en.wikipedia.org/wiki/Forrest_Sherman-class_destroyer
+  — testo letto: 4 050 t a pieno carico, 418 ft × 45 ft × 22 ft, 2 assi, 70 000 shp, 32,5 kt, caldaie Foster-Wheeler
+  (Babcock & Wilcox su alcune unità), turbine General Electric (Westinghouse sul DD-931); conversioni SCB 240 (DDG) e
+  SCB 251 (antisommergibile); date di radiazione 1982-1983 (Edson 1988).
+- **[WP-DD931]** Wikipedia (en), «USS Forrest Sherman (DD-931)», https://en.wikipedia.org/wiki/USS_Forrest_Sherman_(DD-931)
+  — testo letto: dislocamento salito a circa 4 600 t, pescaggio 20 ft come costruita e 22 ft dopo le modifiche.
+- **[NAVYPEDIA-DD931]** Navypedia, «FORREST SHERMAN destroyers (1955 - 1959)», https://navypedia.org/ships/usa/us_dd_forrest_sherman.htm
+  — testo letto: 4 916 t a pieno carico, 127,6 × 13,7 m, 33 kt; radar d'origine SPS-6, SPS-10, SPG-53A; nella
+  modernizzazione antisommergibile Forrest Sherman e Hull ricevono l'SPS-40. Dà le date di cancellazione dai ruoli
+  (1983-1990) invece di quelle di radiazione.
+- **[NSTM-320]** NAVSEA, *Naval Ships' Technical Manual*, cap. 320 «Electric Power Distribution Systems»,
+  S9086-KY-STM-010/CH-320R2, 21/4/1998, https://legacy.maritime.org/doc/nstm/ch320.pdf — testo letto: distribuzione
+  primaria «450 volts (V), three-phase, 60 hertz (Hz)», utilizzatori a 440 V e 115 V; «Most ships also have 450V and
+  120V, 400-Hz power systems».
+- **[WP-SPS40]** Wikipedia (en), «AN/SPS-40», https://en.wikipedia.org/wiki/AN/SPS-40 — testo letto (la scheda cita
+  NAVEDTRA 12969): 400-450 MHz, 200-300 kW di picco, fascio 10,5° × 19°, 7,5 giri/min (15 nel modo per i bersagli
+  bassi), 250 nm; classe Forrest Sherman fra le navi dotate.
+- **[FAS-SPS40]** FAS (corso EMO della US Navy), «Radar Set AN/SPS-40B, C, D»,
+  https://man.fas.org/dod-101/navy/docs/swos/e1/MOD4LES2.html — testo letto: 422,4-447,5 MHz, 200-300 kW, antenna da
+  7,5 a 15 giri/min.
+- **[WP-SPS10]** Wikipedia (en), «AN/SPS-10», https://en.wikipedia.org/wiki/AN/SPS-10 — testo letto: 5,45-5,825 GHz,
+  190 kW (impulso corto) e 280 kW (lungo) di picco, «1.9° × 16° vertical, 12° horizontal» (lettura ambigua: si prende
+  1,9° in orizzontale), 15 giri/min fissi, PRF 650 Hz.
+- **[ITU-M1313]** ITU-R, Raccomandazione M.1313-1, «Technical characteristics of maritime radionavigation radars»,
+  2000, https://www.itu.int/dms_pubrec/itu-r/rec/m/R-REC-M.1313-1-200005-W!!PDF-E.pdf — testo letto (tabella 2): radar
+  IMO in banda X (9 200-9 500 MHz): 5-50 kW di picco, fascio orizzontale 0,75-2,3°, 20-60 giri/min, guadagno 27-32 dB;
+  in banda S (2 900-3 100 MHz) 30-75 kW.
+- **[COLREG-22]** USCG Navigation Center, «Navigation Rules» (testo amalgamato, regola 22),
+  https://www.navcen.uscg.gov/navigation-rules-amalgamated — testo letto: per le navi di 50 m e oltre luce di testa
+  d'albero visibile a 6 miglia, luci di fianco e di coronamento a 3 miglia.
+
+### Ottica, radio, periscopio
+
+- **[WP-ORIZZONTE]** Wikipedia (en), «Horizon», https://en.wikipedia.org/wiki/Horizon — testo letto: d ≈ 3,57·√h km
+  (geometrico, h in m), circa 3,86·√h con la rifrazione ottica, 4,12·√h per il radar (raggio terrestre per 4/3).
+- **[ITU-P526]** ITU-R, Raccomandazione P.526-15 (10/2019), «Propagation by diffraction», §3.1.1.2,
+  https://www.itu.int/dms_pubrec/itu-r/rec/p/R-REC-P.526-15-201910-S!!PDF-E.pdf — testo letto: diffrazione sulla terra
+  sferica liscia, 20·log(E/E0) = F(X) + G(Y1) + G(Y2), X = 2,188·β·f^(1/3)·a_e^(−2/3)·d, Y = 9,575·10⁻³·β·f^(2/3)·a_e^(−1/3)·h
+  (f in MHz, d e a_e in km, h in m), F(X) = 11 + 10·log X − 17,6·X per X ≥ 1,6 e −20·log X − 5,6488·X^1,425 sotto,
+  G(Y) ≅ 17,6·(B − 1,1)^½ − 5·log(B − 1,1) − 8 per B > 2 e 20·log(B + 0,1·B³) sotto, β = 1 in polarizzazione orizzontale
+  (e verticale sul mare oltre 300 MHz). L'estrazione del testo dal PDF perde i segni meno: le formule sono state lette
+  dall'impaginazione e coincidono con la forma nota.
+- **[NSL02]** Naval Submarine League, «Looking Around: A Short History of Submarine Periscopes, Part 1» (2002),
+  https://archive.navalsubleague.org/2002/looking-around-a-short-history-of-submarine-periscopes-part-1 — testo letto:
+  lo stadimetro misura l'angolo fra orizzonte (linea d'acqua) e testa d'albero; la scia («feather») del tubo del
+  periscopio tradisce il battello e aiuta gli aerei; un periscopio alzato di 20 ft vede una corazzata a 10 000 yd.
+- **[NSL10]** J. Walsh (LCDR USN), «Close-Aboard Ranging with the Periscope», Naval Submarine League (2010),
+  https://archive.navalsubleague.org/2010/close-aboard-ranging-with-the-periscope — testo letto: l'altezza d'albero è il
+  cateto corto del triangolo; distanza (yd) = 20 · altezza d'albero (ft) / divisioni a basso ingrandimento (80 ad alto).
+- **[WP-PERISCOPE]** Wikipedia (en), «Periscope», https://en.wikipedia.org/wiki/Periscope — testo letto: il periscopio
+  alzato «creates a visible wake (and may also become detectable by radar)».
+
+### Acustica: biologici, riverberazione, attivo, DEMON
+
+- **[AU06]** W. W. L. Au, A. A. Pack, M. O. Lammers, L. M. Herman, M. H. Deakos, K. Andrews, «Acoustic properties of
+  humpback whale songs», *J. Acoust. Soc. Am.* 120(2), 1103-1110, 2006, https://oceanwidescience.org/PDF/Au%20et%20al.%202006.pdf
+  — testo letto: livelli di sorgente del canto fra 151 e 173 dB re 1 µPa, armoniche oltre i 24 kHz.
+- **[WP-HUMPBACK]** Wikipedia (en), «Humpback whale» — testo letto: canto fra 100 Hz e 4 kHz.
+- **[WP-FINWHALE]** Wikipedia (en), «Fin whale» — testo letto: impulsi infrasonici discendenti da 16 a 40 Hz, fino a
+  160-186 dB re 1 µPa a 1 m.
+- **[WP-PILOT]** Wikipedia (en), «Long-finned pilot whale» — testo letto: fischi da meno di 1 kHz a circa 20 kHz.
+- **[ESK11]** I. G. Eskesen, J. Tougaard, P. T. Madsen et al., «Comparison of echolocation clicks from geographically
+  sympatric killer whales and long-finned pilot whales (L)», *J. Acoust. Soc. Am.* 130(1), 9-12, 2011,
+  https://pubmed.ncbi.nlm.nih.gov/21786872/ — riassunto letto: livello apparente medio 196 dB re 1 µPa picco-picco,
+  centroide 55 kHz, durata 23 µs.
+- **[BERN13]** M. Bernasconi et al., «Fin whale (*Balaenoptera physalus*) target strength measurements», *Marine Mammal
+  Science*, 2013, doi:10.1111/mms.12032 — riassunto letto (api.crossref.org): forza di bersaglio media −11,4 dB su
+  tutti gli aspetti, −5,6 dB al traverso, a 110 kHz.
+- **[OIK07]** H. Oikawa et al., «Estimation of sea surface and bottom scattering strengths from measured and modeled
+  reverberation levels», *Acoust. Sci. & Tech.* 28(6), 2007, https://www.jstage.jst.go.jp/article/ast/28/6/28_6_375/_pdf
+  — testo letto: coefficiente della legge di Lambert per il fondo pari a −27 dB, «as determined empirically by
+  Mackenzie» (Mackenzie, *JASA* 1961/1964: anno non riverificato).
+- **[ZHANG04]** Y. Zhang (DSTO), «Modeling bistatic surface scattering strength including a forward scattering lobe
+  with shadowing effects», *Acoustics 2004* (Australian Acoustical Society),
+  https://www.acoustics.asn.au/conference_proceedings/AAS2004/ACOUSTIC/PDF/AUTHOR/AC040093.PDF — testo letto: forma di
+  Chapman-Harris della retrodiffusione di superficie, BS = 3,3·β·log(θ/30) − 42,4·log β + 2,6 con
+  β = 107·(U·f^(1/3))^(−0,58) (θ radenza in gradi, U vento in m/s, f in Hz), ricavata fra 0,4 e 6,4 kHz.
+- **[WP-SONAR]** Wikipedia (en), «Sonar» — testo letto: il sonar attivo fa scoprire chi lo usa «at a far greater
+  range», fino a «many times farther than twice the range of the sonar».
+- **[SENS21]** «Classification of Surface Vehicle Propeller Cavitation Noise Using Spectrogram Processing in Combination
+  with Convolution Neural Network», *Sensors* 21, 2021, https://pmc.ncbi.nlm.nih.gov/articles/PMC8151462/ — testo letto:
+  il rumore di cavitazione dell'elica come inviluppo di una modulazione d'ampiezza; il DEMON (Nielsen 1991) ne ricava
+  il numero di assi e di pale.
+- **[ITTC-02]** ITTC, Recommended Procedure 7.5-02-03-03.3, «Cavitation Induced Pressure Fluctuations», 2002,
+  https://ittc.info/media/2049/75-02-03-033.pdf — testo letto: la frequenza di pala è il numero di pale per la
+  frequenza di rotazione (in Hz: pale · giri/min / 60).
+
+## Parte H — Propagazione (F2: tracciatore di raggi e tabelle)
+
+*Aggiunta il 2026-10-08 con le tabelle di propagazione di F2 (`tools/acustica/`, il blocco `propagazione` di
+`shared/data/scenari/torpex_palestra.json`, `docs/CALIBRAZIONE_F2.md`). Consultazione: 2026-10-08. Le opere di
+acustica sottomarina sono **riferimenti bibliografici da conoscenza pregressa, non riverificati sul testo**: le
+formule e i casi canonici che se ne usano sono riprodotti e controllati dalle prove di
+`tools/acustica/test_convalida.py`, non presi in fiducia; i valori numerici che ne vengono sono `stimato`.*
+
+### Acustica sottomarina: metodi e casi canonici
+
+- **[JKPS11]** F. B. Jensen, W. A. Kuperman, M. B. Porter, H. Schmidt, *Computational Ocean Acoustics*, 2ª ed.,
+  Springer, 2011 — **da conoscenza pregressa, non riverificato**. Usati: la tabella 1.3 dei parametri geoacustici tipici
+  dei fondi (velocità di compressione per acqua a 1500 m/s, densità, attenuazione in dB per lunghezza d'onda: ghiaia
+  1800 m/s, 2,0, 0,6; sabbia 1650, 1,9, 0,8; limo 1575, 1,7, 1,0), il coefficiente di Rayleigh di un semispazio fluido,
+  la guida di Pekeris e la normalizzazione dei modi normali (cap. 2 e 5), il profilo di Munk come caso canonico delle zone
+  di convergenza e i metodi a raggi e a fasci (cap. 3).
+- **[MUNK74]** W. H. Munk, "Sound channel in an exponentially stratified ocean, with application to SOFAR",
+  *J. Acoust. Soc. Am.* 55(2), 220-226, 1974 — **da conoscenza pregressa, non riverificato**: il profilo canonico
+  c = 1500 (1 + ε (η + e^-η − 1)), η = 2 (z − 1300)/1300, ε = 0,00737.
+- **[PEK48]** C. L. Pekeris, "Theory of propagation of explosive sound in shallow water", *Geol. Soc. Am. Memoir* 27,
+  1948 — **da conoscenza pregressa, non riverificato**: la guida d'onda isovelocità su un semispazio fluido.
+- **[PB87]** M. B. Porter, H. P. Bucker, "Gaussian beam tracing for computing ocean acoustic fields", *J. Acoust. Soc.
+  Am.* 82(4), 1349-1359, 1987, e M. B. Porter, *The BELLHOP Manual and User's Guide*, HLS Research, 2011 — **da
+  conoscenza pregressa, non riverificati**: i fasci con larghezza dal tubo di raggi e l'opzione "semicoerente" (la
+  somma incoerente con il diagramma dello specchio di Lloyd alla sorgente), da cui viene il metodo di `tools/acustica`.
+- **[ECK53]** C. Eckart, "The scattering of sound from the sea surface", *J. Acoust. Soc. Am.* 25(3), 566-570, 1953 —
+  **da conoscenza pregressa, non riverificato**: la riflessione coerente da una superficie rugosa gaussiana,
+  exp(−2 (k σ sin θ)²).
+- **[SCH68]** M. Schulkin, "Surface-coupled losses in surface sound channels", *J. Acoust. Soc. Am.* 44(4),
+  1152-1154, 1968 — **da conoscenza pregressa, non riverificato** (citato tramite [URICK83]): la perdita per rimbalzo
+  dei raggi radenti nei canali superficiali, 1,64 √(f H) dB con f in kHz e H l'altezza delle onde in piedi.
+- **[PM64]** W. J. Pierson, L. Moskowitz, "A proposed spectral form for fully developed wind seas based on the
+  similarity theory of S. A. Kitaigorodskii", *J. Geophys. Res.* 69(24), 5181-5190, 1964 — **da conoscenza pregressa,
+  non riverificato**: altezza significativa del mare completamente sviluppato, H1/3 ≈ 0,0246 U10² (m, m/s).
+
+### Fondali e oceanografia delle Fær Øer
+
+- **[MASSON03]** D. G. Masson (con T. P. Le Bas, B. J. Bett, V. Hühnerbach, C. L. Jacobs, R. B. Wynn), *Seafloor
+  sediments and sedimentary processes on the outer continental shelf, continental slope and basin floor*, Southampton
+  Oceanography Centre, rapporto tecnico per la Strategic Environmental Assessment SEA4 del DTI britannico, s.d. (2003).
+  https://assets.publishing.service.gov.uk/media/5a7b088de5274a319e77c867/SEA4_TR_Sediments_SOC.pdf — **testo
+  integrale scaricato e letto** (copia di lavoro fuori dal repo). Usati: ghiaia e sabbia mescolate sulla scarpata
+  superiore con sabbie mobili su un substrato di ghiaia sotto i 500 m («mobile sand bedforms move over a predominantly
+  gravel substrate»); sabbie e sabbie fangose depositate dalle correnti sulla scarpata inferiore e sul fondo dei canali
+  meridionali; ghiaia solcata fra 750 e 1200 m lungo il bordo settentrionale del Canale delle Fær Øer, ai piedi della
+  piattaforma; ghiaia residuale dove le correnti di fondo superano 1 m/s.
+- **[LHS09]** K. M. H. Larsen, B. Hansen, H. Svendsen, "Faroe Shelf Water", *Continental Shelf Research* 29, 2009, e
+  "The Faroe Shelf Front: Properties and exchange", *Journal of Marine Systems* 78, 9-29, 2009 — **letti solo gli
+  abstract tramite il motore di ricerca** (ScienceDirect e ResearchGate: HTTP 403): le correnti di marea rimescolano la
+  piattaforma in una massa d'acqua omogenea, verticalmente omogenea tutto l'anno dentro l'isobata dei 100 m; un fronte
+  di marea intorno ai 100-150 m di fondale la separa dall'acqua stratificata d'estate della piattaforma esterna.
+
+### Calcoli propri
+
+- **[CALC-TL]** `tools/acustica/` (tracciatore di raggi `raggi.py`, modi di Pekeris `modi.py`, ambiente `ambiente.py`,
+  tabelle `tabelle.py`, convalida `test_convalida.py`): le tabelle di perdita di trasmissione e le scelte di metodo
+  (quote, distanze, bande, codifica, classi di fondale, perdite nozionali), con la convalida in
+  `docs/CALIBRAZIONE_F2.md`.
+
+---
+
 ## Indice delle chiavi
 
 Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le Parti in cui la stessa chiave compare di nuovo come rimando.
@@ -779,14 +939,17 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [APL-671RTM] | D |  | 04 |
 | [ARMY2020-R] | D |  | — |
 | [ARX2402] | A |  | 05 |
+| [AU06] | G |  | 05, firme (F2) |
 | [AW-BE12] | B |  | 01 |
 | [AW-IL38] | B |  | 01 |
 | [AW-TU142M] | B |  | 01 |
 | [AW-xxx] | B |  | — |
+| [BERN13] | G |  | firme (F2) |
 | [BJ82] | A |  | 05 |
 | [CALC-ABS] | A |  | — |
 | [CALC-CHASE] | A |  | — |
 | [CALC-CZ] | A |  | — |
+| [CALC-TL] | H |  | scenari (propagazione), CALIBRAZIONE_F2 |
 | [CALC-TMA] | A |  | — |
 | [CFW86] | B |  | 01, CONTRADDIZIONI |
 | [CGW114] | D |  | 08 |
@@ -797,6 +960,7 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [CMP110] | D |  | — |
 | [CMP111] | D |  | 08 |
 | [COLL94] | A |  | 06, 07, CONTRADDIZIONI |
+| [COLREG-22] | G |  | firme, sensori (F2) |
 | [CONO] | D |  | 04, 08 |
 | [COTE-2003] | D |  | 04, 08, CONTRADDIZIONI |
 | [COTE03] | A | B, C | 01, 02, 03, 06, 07, CONTRADDIZIONI |
@@ -830,8 +994,10 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [DSTORM-671RTM] | C |  | 02, 03, CONTRADDIZIONI |
 | [DSTORM-705] | C |  | 02, 03, CONTRADDIZIONI |
 | [DSTORM-971] | C |  | 02, 03 |
+| [ECK53] | H |  | scenari (propagazione) |
 | [EMODNET-DTM] | F |  | scenari, PROGETTO §5.1 |
 | [EPA-UNDS99] | E |  | CONTRADDIZIONI |
+| [ESK11] | G |  | firme (F2) |
 | [EST-688] | F |  | scenari |
 | [ETOPO22] | F |  | scenari, PROGETTO §5.1 |
 | [FAS-1135] | B |  | 01 |
@@ -868,6 +1034,7 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [FAS-S3] | B |  | 01 |
 | [FAS-SH60] | B |  | 01 |
 | [FAS-SLQ25] | C |  | 03 |
+| [FAS-SPS40] | G |  | firme (F2) |
 | [FAS-SSN688] | D |  | 04, 08, CONTRADDIZIONI |
 | [FAS-SSQ53] | B |  | 01 |
 | [FAS-TB16] | D |  | 04 |
@@ -895,15 +1062,21 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [GS-MK60] | C |  | 02 |
 | [GS-TOWED] | D |  | 04 |
 | [GUS-GAK] | D |  | 04, CONTRADDIZIONI |
+| [ITTC-02] | G |  | piattaforme, firme (F2) |
+| [ITU-M1313] | G |  | firme (F2) |
+| [ITU-P526] | G |  | sensori (F2) |
 | [JFS90] | B |  | 01 |
+| [JKPS11] | H |  | scenari (propagazione), CALIBRAZIONE_F2 |
 | [KG08] | A |  | 05 |
 | [KORZH10] | E |  | CONTRADDIZIONI |
 | [KRAS14] | E |  | CONTRADDIZIONI |
 | [KREM-ARMS] | E |  | CONTRADDIZIONI |
 | [KREM-MG74] | E |  | CONTRADDIZIONI |
+| [LHS09] | H |  | scenari (propagazione) |
 | [LONG89] | A | C | 02, 03, 07 |
 | [MACK81] | A |  | 05 |
 | [MAN-688] | D |  | 04, 08, CONTRADDIZIONI |
+| [MASSON03] | H |  | scenari (propagazione) |
 | [MCK12] | A |  | 05 |
 | [MILAERO-2022] | C |  | 03 |
 | [MR-5365K] | C |  | 02 |
@@ -924,6 +1097,7 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [MR-VETER] | C |  | 02 |
 | [MR-VODOPAD] | C |  | 02, 03 |
 | [MR-VYUGA] | C |  | 02 |
+| [MUNK74] | H |  | CALIBRAZIONE_F2 |
 | [NA81] | A |  | — |
 | [NAVOPS-11] | A |  | 06 |
 | [NAVY-MINES] | C |  | 02 |
@@ -933,25 +1107,33 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [NAVY-TLAM2003] | C |  | 02 |
 | [NAVY-TLAM2021] | C |  | 02 |
 | [NAVY-TORP2005] | C |  | 02 |
+| [NAVYPEDIA-DD931] | G |  | firme (F2) |
 | [NCEP-R1] | F |  | scenari |
 | [NLG84] | A |  | 06 |
 | [NPL-ABS] | A |  | 05 |
 | [NPL-SS] | A |  | 05 |
+| [NSL02] | G |  | piattaforme, sensori (F2) |
+| [NSL10] | G |  | piattaforme (F2) |
+| [NSTM-320] | G |  | firme (F2) |
 | [NTSP98] | B |  | 01 |
 | [NVO-2018] | D |  | 04 |
 | [NW-RU] | C |  | 02 |
 | [NW-US] | C |  | 02, 03 |
 | [NWA-ALLBOMBS] | C |  | 02 |
+| [OIK07] | G |  | acustica (F2) |
 | [ONI09] | B |  | 01 |
 | [ONI96] | B |  | 01, CONTRADDIZIONI |
 | [ONI97] | B |  | 01 |
 | [OP-400EM] | D |  | 04, 08, CONTRADDIZIONI |
 | [PAT3676802] | A |  | 05 |
+| [PB87] | H |  | CALIBRAZIONE_F2 |
+| [PEK48] | H |  | CALIBRAZIONE_F2 |
 | [PEP89] | A | C | 03, 07 |
 | [PHX84a] | A | C | 03, 07 |
 | [PHX84b] | A |  | 07 |
 | [PHX90] | A | C | 02, 07 |
 | [PM04] | B |  | 01 |
+| [PM64] | H |  | scenari (propagazione) |
 | [POL-1979] | D |  | 04 |
 | [POL-1981] | D |  | 04, 08, CONTRADDIZIONI |
 | [REEVES17] | A |  | 05 |
@@ -968,6 +1150,8 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [RUWP-945] | D |  | — |
 | [RUWP-971] | D |  | 04 |
 | [RUWP-SKAT] | D |  | 04, CONTRADDIZIONI |
+| [SCH68] | H |  | scenari (propagazione) |
+| [SENS21] | G |  | piattaforme, firme (F2) |
 | [SID-688] | D |  | 08 |
 | [SM194] | A |  | 05 |
 | [SMP-1985] | C |  | 02 |
@@ -989,23 +1173,34 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [WP-688I] | D |  | 08 |
 | [WP-AKULA] | D |  | 04, CONTRADDIZIONI |
 | [WP-ALFA] | D |  | 04, 08 |
+| [WP-DD931] | G |  | firme (F2) |
+| [WP-DD931CL] | G |  | firme (F2) |
 | [WP-EN-ALFA] | C |  | 02, 03 |
 | [WP-EN-BAFFLES] | C |  | 03 |
 | [WP-EN-MOSS] | E |  | CONTRADDIZIONI |
 | [WP-EN-SHKVAL] | C |  | 02 |
 | [WP-EN-SUBROC] | C |  | 02 |
 | [WP-EN-VYUGA] | C |  | 02 |
+| [WP-FINWHALE] | G |  | firme (F2) |
+| [WP-HUMPBACK] | G |  | firme (F2) |
 | [WP-LA] | D |  | 04 |
+| [WP-ORIZZONTE] | G |  | sensori (F2) |
+| [WP-PERISCOPE] | G |  | piattaforme (F2) |
+| [WP-PILOT] | G |  | firme (F2) |
 | [WP-RU-971] | C |  | 03 |
 | [WP-RU-GRANIT] | C |  | 02 |
 | [WP-RU-MOSKIT] | C |  | 02 |
 | [WP-RU-RM2] | C |  | 02 |
-| [WP-RU-SLOVNAZ] | C |  | 03, CONTRADDIZIONI |
 | [WP-RU-SLOVNAZ-E] | E |  | CONTRADDIZIONI |
+| [WP-RU-SLOVNAZ] | C |  | 03, CONTRADDIZIONI |
 | [WP-SIERRA] | D |  | 04 |
+| [WP-SONAR] | G |  | acustica (F2) |
+| [WP-SPS10] | G |  | firme (F2) |
+| [WP-SPS40] | G |  | firme (F2) |
 | [WP-SWIFT] | B |  | 01 |
 | [WP-TAS] | D |  | 04 |
 | [WP-TRAF] | B |  | 01 |
 | [WP-VICTOR] | D |  | — |
 | [WWH-SON] | D |  | 04, CONTRADDIZIONI |
+| [ZHANG04] | G |  | acustica (F2) |
 

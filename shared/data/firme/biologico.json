@@ -1,0 +1,39 @@
+{
+  "formato": "termoclino-firma/1",
+  "id": "biologico",
+  "aggiornato": "2026-10-08",
+  "identita": {
+    "nome": "sorgenti biologiche",
+    "tipo": "biologico",
+    "categoria": "cetacei",
+    "configurazione": "cetacei delle acque delle Fær Øer in estate: una balena che canta (misticeto) e un branco di globicefali (odontoceti) che fischiano e scattano. Il livello a banda larga resta quello di F1 (acustica.json, sorgenti.biologico); qui ci sono le righe del canto e gli scatti, e la forza di bersaglio per il sonar attivo."
+  },
+  "specie": {
+    "balena": {
+      "nome": "balena (misticeto)",
+      "canto": {
+        "f_min": {"valore": 150, "unita": "Hz", "fonte": "[AU06] [WP-HUMPBACK]", "confidenza": "nozionale", "nota": "Il canto della megattera va da 100 Hz a 4 kHz con armoniche oltre i 24 kHz; per il gioco le fondamentali delle unita' cadono fra 150 e 600 Hz, nella finestra LOFAR dell'antenna. I richiami da 16-40 Hz della balenottera comune [WP-FINWHALE] stanno sotto la banda della TB-16 e non si modellano."},
+        "f_max": {"valore": 600, "unita": "Hz", "fonte": "[AU06] [WP-HUMPBACK]", "confidenza": "nozionale"},
+        "livello": {"valore": 151, "unita": "dB", "fonte": "[AU06]", "confidenza": "stimato", "nota": "Livello della riga di un'unita' del canto, dB re 1 µPa² a 1 m: il minimo dei 151-173 dB misurati da Au et al. (2006), perche' una riga sola porta solo una parte dell'energia di un'unita'. Anche cosi' una balena che canta si sente all'antenna da molte miglia: e' vero, ed e' il rumore biologico con cui la banda stretta deve fare i conti.", "intervallo": [151, 173]},
+        "durata_unita": {"valore": 3, "unita": "s", "fonte": "[AU06] [CONO]", "confidenza": "nozionale", "nota": "Ogni unita' tiene la sua frequenza qualche secondo, poi il canto passa a un'altra: sul LOFAR righe che saltano, il segno di un biologico."}
+      },
+      "scatti": null,
+      "forza_bersaglio": {"valore": 0, "unita": "dB", "fonte": "[BERN13]", "confidenza": "nozionale", "nota": "Bernasconi et al. (2013) misurano −5,6 dB al traverso su una balenottera comune a 110 kHz; a 3,5 kHz il polmone pesa di piu': 0 dB nozionale. Un'eco debole, ma un'eco."}
+    },
+    "globicefali": {
+      "nome": "globicefali (odontoceti, branco)",
+      "canto": {
+        "f_min": {"valore": 1000, "unita": "Hz", "fonte": "[WP-PILOT]", "confidenza": "stimato", "nota": "Fischi da meno di 1 kHz a circa 20 kHz: sul LOFAR della sfera (fino a 2 kHz) se ne vede la parte bassa."},
+        "f_max": {"valore": 2000, "unita": "Hz", "fonte": "[WP-PILOT]", "confidenza": "nozionale", "nota": "Limitata alla finestra LOFAR della sfera: i fischi piu' alti non si vedono."},
+        "livello": {"valore": 140, "unita": "dB", "fonte": "[WP-PILOT] [CONO]", "confidenza": "nozionale", "nota": "Livello dei fischi non trovato: nozionale."},
+        "durata_unita": {"valore": 1, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "scatti": {
+        "livello": {"valore": 120, "unita": "dB", "fonte": "[ESK11] [CONO]", "confidenza": "nozionale", "nota": "Livello spettrale equivalente a 1 kHz (dB re 1 µPa²/Hz a 1 m, spettro −20·log f) di un treno di scatti d'ecolocalizzazione: gli scatti dei globicefali arrivano a 196 dB re 1 µPa picco-picco [ESK11] ma durano 23 µs con il centroide a 55 kHz, e nella banda della sfera ne resta poco."},
+        "durata": {"valore": 2, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Un treno di scatti e' un transitorio `biologico`."},
+        "intervallo": {"valore": 40, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Intervallo medio fra due treni mentre il branco e' attivo (esponenziale)."}
+      },
+      "forza_bersaglio": {"valore": -5, "unita": "dB", "fonte": "[BERN13] [CONO]", "confidenza": "nozionale", "nota": "Animali piu' piccoli di una balena, in gruppo."}
+    }
+  }
+}

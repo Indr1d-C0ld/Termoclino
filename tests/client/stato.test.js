@@ -38,7 +38,7 @@ test('partita e stato: i campi del protocollo v1 arrivano nello stato del client
   assert.deepEqual(s.nave.autopilota.waypoint, [{ x: 1000, y: 2000 }, { x: 3000, y: 4000 }]);
   assert.equal(s.nave.towed.stato, 'filata');
   // lo specchio degli ordini segue il server
-  assert.deepEqual(s.ordinati, { autopilota: true, waypoint: [{ x: 1000, y: 2000 }, { x: 3000, y: 4000 }] });
+  assert.deepEqual(s.ordinati, { autopilota: true, waypoint: [{ x: 1000, y: 2000 }, { x: 3000, y: 4000 }], designato: null, classifiche: {} });
 });
 
 test('partita: una partita nuova azzera cascata e traccia, la stessa no', () => {
@@ -102,7 +102,7 @@ test('ordini: in viaggio fino a ricevuto o errore, con lo specchio di autopilota
   let s = riduci(statoIniziale(), PARTITA);
   s = riduci(s, { t: 'ordine', cosa: 'waypoint', valore: { azione: 'aggiungi', x: 10, y: 20 }, n: 1 });
   s = riduci(s, { t: 'ordine', cosa: 'autopilota', valore: true, n: 2 });
-  assert.deepEqual(s.ordinati, { autopilota: true, waypoint: [{ x: 10, y: 20 }] });
+  assert.deepEqual(s.ordinati, { autopilota: true, waypoint: [{ x: 10, y: 20 }], designato: null, classifiche: {} });
   assert.deepEqual(s.inViaggio.map((o) => o.n), [1, 2]);
   assert.equal(s.prossimoOrdine, 3);
   s = riduci(s, { t: 'ricevuto', n: 1, cosa: 'waypoint', valore: { azione: 'aggiungi', x: 10, y: 20 } });
@@ -133,6 +133,155 @@ test('uscita: il battello non è più nostro', () => {
 
 test('nebbia di guerra: lo stato del client non ha posti per altri battelli', () => {
   const s = tutti(statoIniziale(), [PARTITA, stato()]);
-  // le sole posizioni sono le proprie (nave, traccia) e quelle ordinate (waypoint)
-  assert.deepEqual(Object.keys(s).sort(), ['errore', 'inViaggio', 'nave', 'ordinati', 'partita', 'prossimoOrdine', 'prossimoRapporto', 'rapporti', 'sonar', 'traccia', 'uscita', 'utente']);
+  // le sole posizioni sono le proprie (nave, traccia) e quelle ordinate (waypoint); il resto sono misure
+  // (sonar, spettri, echi, intercettazioni, transitori, periscopio, ESM, radar) e ipotesi dell'equipaggio
+  // (tracce, storia dei rilevamenti, soluzioni)
+  assert.deepEqual(Object.keys(s).sort(), [
+    'errore', 'esm', 'inViaggio', 'intercetti', 'nave', 'oraTracce', 'ordinati', 'partita', 'ping', 'prossimoOrdine',
+    'prossimoRapporto', 'radar', 'rapporti', 'soluzioni', 'sonar', 'sonarStretta', 'spettri', 'storia', 'tracce', 'traccia',
+    'transitori', 'uscita', 'utente', 'visivo',
+  ]);
+});
+
+// ------------------------------------------------------------------------------------ protocollo v2
+
+const { codificaByte, SPETTRO } = await import('../../shared/protocol.js');
+
+/** @param {number} n @param {number} [v] */
+const byte = (n, v = 40) => new Uint8Array(n).fill(v);
+
+test('v2, stato: alberi, radar, ascolto del ping, assistenza, analizzatore, designato', () => {
+  const s = tutti(statoIniziale(), [PARTITA, stato({
+    alberi: { periscopio: true, esm: false, radar: false }, radar_attivo: false, ascolto_attivo: 12.5, assistenza: 1,
+    analizzatore: { sensore: 'towed', rilevamento: 45.3, contatto: 'S2' }, designato: 'S2',
+  })]);
+  assert.deepEqual(s.nave.alberi, { periscopio: true, esm: false, radar: false });
+  assert.equal(s.nave.ascolto_attivo, 12.5);
+  assert.equal(s.nave.assistenza, 1);
+  assert.deepEqual(s.nave.analizzatore, { sensore: 'towed', rilevamento: 45.3, contatto: 'S2' });
+  assert.equal(s.ordinati.designato, 'S2');
+  // un server che non dice il designato non cancella lo specchio dell'ordine appena dato
+  const senza = stato();
+  delete senza.designato;
+  const t = riduci(riduci(s, { t: 'ordine', cosa: 'designa', valore: 'S3', n: 9 }), senza);
+  assert.equal(t.ordinati.designato, 'S3');
+});
+
+test('v2, sonar a banda stretta: una storia separata da quella a banda larga', () => {
+  let s = tutti(statoIniziale(), [PARTITA, stato()]);
+  s = riduci(s, { t: 'sonar', ora: 12, sensore: 'sfera', settori: codificaSettori(byte(180)), ciechi: [] });
+  s = riduci(s, { t: 'sonar', ora: 12, sensore: 'towed', banda: 'stretta', settori: codificaSettori(byte(180, 90)), ciechi: [], asse: 270 });
+  assert.equal(s.sonar.length, 1);
+  assert.equal(s.sonarStretta.length, 1);
+  assert.equal(s.sonarStretta[0].towed.settori[0], 90);
+  assert.equal(s.sonar[0].towed, null);
+});
+
+test('v2, spettro: righe e DEMON della finestra del sensore; lunghezze sbagliate si scartano', () => {
+  const f = SPETTRO.towed;
+  const m = {
+    t: 'spettro', ora: 16, sensore: 'towed', rilevamento: 123.4, contatto: 'S1', da_hz: f.DA_HZ, passo_hz: f.PASSO_HZ,
+    righe: codificaByte(byte(f.RIGHE, 70)), demon_da_hz: f.DEMON_DA_HZ, demon_passo_hz: f.DEMON_PASSO_HZ,
+    demon: codificaByte(byte(f.DEMON_RIGHE, 41)), asse: 90, sorda: false,
+  };
+  let s = riduci(statoIniziale(), m);
+  assert.equal(s.spettri.length, 1);
+  assert.equal(s.spettri[0].righe.length, f.RIGHE);
+  assert.equal(s.spettri[0].demon[3], 41);
+  assert.equal(s.spettri[0].contatto, 'S1');
+  assert.equal(s.spettri[0].asse, 90);
+  s = riduci(s, { ...m, righe: codificaByte(byte(10)) });
+  assert.equal(s.spettri.length, 1);
+});
+
+test('v2, eco: un messaggio per eco, raccolti per numero di ping', () => {
+  let s = tutti(statoIniziale(), [PARTITA, stato()]);
+  s = riduci(s, { t: 'eco', ora: 20.5, ping: 3, rilevamento: 44.5, distanza: 4200, forza: 12, riverbero: -3 });
+  s = riduci(s, { t: 'eco', ora: 31.2, ping: 3, rilevamento: 50.1, distanza: 12000, forza: 4, riverbero: 2 });
+  s = riduci(s, { t: 'eco', ora: 80, ping: 4, rilevamento: 10, distanza: 900, forza: 30, riverbero: 0 });
+  assert.equal(s.ping.length, 2);
+  assert.equal(s.ping[0].numero, 4);
+  assert.deepEqual(s.ping[1].echi.map((e) => e.distanza), [4200, 12000]);
+  assert.equal(s.ping[1].riverbero, 2);
+});
+
+test('v2, intercettazioni, transitori, ESM e radar: dal più recente', () => {
+  let s = riduci(statoIniziale(), { t: 'intercetto', ora: 5, rilevamento: 300, tipo: 'ping', frequenza_khz: 3.5, livello: 40 });
+  s = riduci(s, { t: 'transitorio', ora: 6, sensore: 'towed', rilevamento: 30, speculare: 330, tipo: 'scafo', forza: 9 });
+  s = riduci(s, { t: 'esm', ora: 7, emissioni: [{ rilevamento: 280, tipo: 'AN/SPS-40', banda: 'B', livello: 33 }] });
+  s = riduci(s, { t: 'radar', ora: 8, echi: [{ rilevamento: 12.5, distanza: 15000 }] });
+  assert.equal(s.intercetti[0].frequenza_khz, 3.5);
+  assert.equal(s.transitori[0].speculare, 330);
+  assert.equal(s.esm.emissioni[0].tipo, 'AN/SPS-40');
+  assert.deepEqual(s.radar.echi, [{ rilevamento: 12.5, distanza: 15000 }]);
+});
+
+test('v2, visivo: luci null di giorno, sagoma null per gli alberi, sotto l\'orizzonte e scia', () => {
+  const s = riduci(statoIniziale(), {
+    t: 'visivo', ora: 9, oggetti: [
+      { vista: 1, rilevamento: 10.2, aspetto: -95, sagoma: 'FOREST2', elevazione_alberi: 0.312, luci: null, sotto_orizzonte: false, scia: true },
+      { vista: 2, rilevamento: 200, aspetto: null, sagoma: null, elevazione_alberi: null, luci: null, sotto_orizzonte: false, scia: false },
+    ],
+  });
+  assert.equal(s.visivo.oggetti.length, 2);
+  assert.equal(s.visivo.oggetti[0].luci, null);
+  assert.equal(s.visivo.oggetti[0].aspetto, -95);
+  assert.equal(s.visivo.oggetti[1].sagoma, null);
+  assert.equal(s.visivo.oggetti[1].elevazione_alberi, null);
+});
+
+test('v2, tracce: la storia tempo-rilevamento con la posizione propria; le soluzioni delle tracce perse se ne vanno', () => {
+  let s = tutti(statoIniziale(), [PARTITA, stato({ ora: 100, x: 0, y: 0, rotta: 90, velocita: 10 })]);
+  s = riduci(s, { t: 'tracce', ora: 104, tracce: [{ contatto: 'S1', sensori: ['sfera'], rilevamento: 45, variazione: 0.5, classe: null, confidenza: null, stato: 'nuova' }] });
+  s = riduci(s, { t: 'soluzione', contatto: 'S1', ora: 104, rilevamento: 45, distanza: 8000, rotta: 180, velocita: 12, q: 40,
+    ellisse: { asse_lungo: 3000, asse_corto: 200, orientamento: 45 }, origine: 'equipaggio', esatta: false });
+  const p = s.storia.S1[0];
+  assert.equal(p.rilevamento, 45);
+  // 4 s a 10 nodi verso est dall'ultimo stato
+  assert.ok(Math.abs(p.x - 4 * 10 * 1852 / 3600) < 1e-6 && Math.abs(p.y) < 1e-9);
+  assert.equal(s.soluzioni.S1.q, 40);
+  assert.equal(s.soluzioni.S1.rilevamento, 45);
+  // la stessa ora non aggiunge un punto; una traccia che sparisce porta via la sua soluzione, non la storia
+  s = riduci(s, { t: 'tracce', ora: 104, tracce: [{ contatto: 'S1', sensori: ['sfera'], rilevamento: 46, stato: 'tenuta' }] });
+  assert.equal(s.storia.S1.length, 1);
+  s = riduci(s, { t: 'tracce', ora: 108, tracce: [] });
+  assert.equal(s.soluzioni.S1, undefined);
+  assert.equal(s.storia.S1.length, 1);
+});
+
+test('v2, ordini: designa, classifica (anche tolta), abbandona; la soluzione del comandante cancellata', () => {
+  let s = tutti(statoIniziale(), [PARTITA, stato()]);
+  s = riduci(s, { t: 'ordine', cosa: 'designa', valore: 'S1', n: 1 });
+  s = riduci(s, { t: 'ordine', cosa: 'classifica', valore: { contatto: 'S1', classe: 'forrest_sherman' }, n: 2 });
+  assert.equal(s.ordinati.designato, 'S1');
+  assert.equal(s.ordinati.classifiche.S1, 'forrest_sherman');
+  s = riduci(s, { t: 'ordine', cosa: 'classifica', valore: { contatto: 'S1', classe: null }, n: 3 });
+  assert.equal(s.ordinati.classifiche.S1, null);
+  s = riduci(s, { t: 'soluzione', contatto: 'S1', ora: 10, rilevamento: 5, distanza: 5000, rotta: 0, velocita: 5, q: null, ellisse: null, origine: 'comandante', esatta: false });
+  s = riduci(s, { t: 'ricevuto', n: 4, cosa: 'soluzione', valore: { contatto: 'S1', cancella: true } });
+  assert.equal(s.soluzioni.S1, undefined);
+  s = riduci(s, { t: 'ordine', cosa: 'abbandona', valore: 'S1', n: 5 });
+  assert.equal(s.ordinati.designato, null);
+  assert.equal(Object.hasOwn(s.ordinati.classifiche, 'S1'), false);
+});
+
+test('v2, partita nuova: misure e ipotesi della partita vecchia se ne vanno', () => {
+  let s = tutti(statoIniziale(), [PARTITA, stato()]);
+  s = riduci(s, { t: 'intercetto', ora: 5, rilevamento: 300, tipo: 'ping', frequenza_khz: 3.5, livello: 40 });
+  s = riduci(s, { t: 'tracce', ora: 12, tracce: [{ contatto: 'S1', sensori: ['sfera'], rilevamento: 45, stato: 'nuova' }] });
+  s = riduci(s, { ...PARTITA, id: 'p9' });
+  assert.deepEqual([s.intercetti.length, s.tracce.length, Object.keys(s.storia).length, s.oraTracce], [0, 0, 0, null]);
+});
+
+test('storia: chi rientra ritrova i punti tempo-rilevamento, fusi senza doppioni e in ordine', () => {
+  let s = statoIniziale();
+  s = riduci(s, { t: 'storia', ora: 300, contatto: 'S1', punti: [
+    { ora: 120, rilevamento: 45.2, x: 0, y: 0, rotta: 90 },
+    { ora: 100, rilevamento: 44.1, x: -50, y: 0, rotta: 90 },
+    { ora: 110, rilevamento: 'x', x: 0, y: 0, rotta: 90 },
+  ] });
+  assert.deepEqual(s.storia.S1.map((p) => p.ora), [100, 120], 'ordinati, quelli malformati scartati');
+  s = riduci(s, { t: 'storia', ora: 310, contatto: 'S1', punti: [{ ora: 120, rilevamento: 99, x: 1, y: 1, rotta: 0 }, { ora: 130, rilevamento: 46, x: 50, y: 0, rotta: 90 }] });
+  assert.deepEqual(s.storia.S1.map((p) => [p.ora, p.rilevamento]), [[100, 44.1], [120, 45.2], [130, 46]], 'un punto già noto non si sovrascrive');
+  assert.equal(riduci(s, { t: 'storia', ora: 1, punti: [] }), s, 'senza contatto non cambia niente');
 });

@@ -28,13 +28,13 @@ import { rilevamento } from '../../../../shared/geo.js';
 import { SONAR, centroSettore, quantizzaSE } from '../../../../shared/protocol.js';
 import {
   guadagnoFascio,
-  perditaTrasmissione,
   rumoreProprioSfera,
   rumoreProprioTowed,
   sigmaRilevamento,
   sogliaRivelazione,
   sommaDb,
 } from './acustica.js';
+import { perdita } from './perdita.js';
 
 /** @typedef {import('./acustica.js').ValoriAcustica} ValoriAcustica */
 /** @typedef {import('./acustica.js').NomeBanda} NomeBanda */
@@ -53,11 +53,25 @@ import {
  */
 
 /**
+ * Il contributo di una sorgente a un fotogramma: la verita' dietro la misura,
+ * per l'arbitro e il diario (F2). NON va mai ai client.
+ * @typedef {object} Contributo
+ * @property {string} sorgente  id interno
+ * @property {number} rilevamento  misurato, gradi veri
+ * @property {number} se  eccesso di segnale con la fluttuazione, dB
+ * @property {number} se_medio  senza la fluttuazione, dB
+ * @property {number} distanza_vera  m
+ * @property {number} [frequenza]  banda stretta: la riga piu' forte, Hz (osservata)
+ */
+
+/**
  * @typedef {object} Fotogramma
  * @property {Uint8Array} settori
  * @property {[number, number][]} ciechi
  * @property {number} [asse]
  * @property {boolean} [sorda]
+ * @property {'stretta'} [banda]  F2: fotogramma a banda stretta (bandastretta.js)
+ * @property {Contributo[]} [contributi]  F2: solo sul server, per l'arbitro
  */
 
 /** Sotto questo SE (dB) una sorgente non lascia traccia nel fotogramma. */
@@ -153,7 +167,7 @@ export class SensorePassivo {
    * @param {Sorgente} s
    * @param {Ambiente} amb
    * @param {NonNullable<ReturnType<SensorePassivo['geometria']>>} g
-   * @returns {{se: number, theta: number, rel: number} | null}
+   * @returns {{se: number, theta: number, rel: number, d: number} | null}
    */
   eccesso(s, amb, g) {
     const ac = this.ac;
@@ -170,8 +184,9 @@ export class SensorePassivo {
     } else if (Math.abs(normalizza180(rel - 180)) < (this.b.p.sensori.sfera.arco_baffles ?? 60) / 2) {
       return null;
     }
-    const tl = perditaTrasmissione(ac, amb, this.frequenza, ps, g.pos);
-    return { se: sl - tl - g.nl + this.di - this.dt - g.degrado, theta, rel };
+    const tl = perdita(ac, amb, this.frequenza, ps, g.pos, this.nome);
+    const d = Math.hypot(ps.x - g.pos.x, ps.y - g.pos.y, ps.z - g.pos.z);
+    return { se: sl - tl - g.nl + this.di - this.dt - g.degrado, theta, rel, d };
   }
 
   /**
@@ -190,6 +205,8 @@ export class SensorePassivo {
     const { asse, sorda } = g;
 
     const lineare = new Float64Array(SONAR.SETTORI);
+    /** @type {Contributo[]} */
+    const contributi = [];
     const sigmaDoppia = towed && (b.towed?.sigmaDoppia ?? 0) > 0 ? (rim.fattore_sigma_piccola_accostata ?? 2) : 1;
     const mezzoBaffles = (b.p.sensori.sfera.arco_baffles ?? 60) / 2;
     const ciecoPrua = rim.cieco_prua ?? 20;
@@ -214,6 +231,7 @@ export class SensorePassivo {
       }
       const misurato = normalizza360(e.theta + sigma * this.rng.gaussiana());
       this._stendi(lineare, misurato, se, fascio);
+      contributi.push({ sorgente: s.id, rilevamento: Math.round(misurato * 10) / 10, se, se_medio: e.se, distanza_vera: e.d });
       if (towed) this._stendi(lineare, normalizza360(2 * asse - misurato), se, fascio);
     }
 
@@ -225,7 +243,7 @@ export class SensorePassivo {
     }
 
     /** @type {Fotogramma} */
-    const out = { settori, ciechi: [] };
+    const out = { settori, ciechi: [], contributi };
     if (towed) {
       out.asse = Math.round(asse * 10) / 10;
       out.sorda = sorda;

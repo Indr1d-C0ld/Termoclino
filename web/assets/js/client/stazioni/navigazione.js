@@ -10,12 +10,15 @@
  *
  * SET apre il mirino: lo si muove col mouse o con le frecce e lo si conferma con Invio o con un clic
  * nella finestra (Esc annulla). Fino a 9 waypoint; l'autopilota si accende da solo, come nel 1989.
+ *
+ * T della pulsantiera della mappa passa dalla carta alla vista TMA (stazioni/vistatma.js) e ritorno.
  */
 import { chiamaRoutine } from '../resa/risorse.js';
 import { attivaComune, designaProssimo, vistaMappa } from './comune.js';
 import { FINESTRA, inMondo } from '../resa/mappa.js';
 import { CIFRA_GRANDE, scrivi } from '../resa/testo.js';
 import { WAYPOINT_MAX, SCALE_TEMPO } from '../../../shared/protocol.js';
+import { disegnaTma, hotspotTma, attivaTma } from './vistatma.js';
 
 /** @typedef {import('./comune.js').Contesto} Contesto */
 /** @typedef {import('./comune.js').Stazione} Stazione */
@@ -64,6 +67,7 @@ function disegna(ctx) {
  * @param {(s: string) => void} vaiA
  */
 function attiva(ctx, h, _punto, vaiA) {
+  if (ctx.ui.tma.aperta && h.gruppo >= 5 && attivaTma(ctx, h)) return true;
   if (attivaComune(ctx, h, vaiA)) return true;
   const ui = ctx.ui;
   switch (h.tasto) {
@@ -74,6 +78,7 @@ function attiva(ctx, h, _punto, vaiA) {
       if (ctx.stato.ordinati.waypoint.length >= WAYPOINT_MAX) {
         ctx.avvisa('locale.waypoint_massimi');
       } else {
+        ui.tma.aperta = false;
         ui.mirino = { tipo: 'waypoint', x: 92, y: 74 };
         ctx.avvisa('locale.seleziona_waypoint');
       }
@@ -133,6 +138,12 @@ export function navigazione(vaiA) {
     lavoro: 'NAV_688',
     cornice: true,
     disegna,
+    disegnaFinestra(ctx) {
+      if (!ctx.ui.tma.aperta || ctx.ui.mirino) return false;
+      disegnaTma(ctx);
+      return true;
+    },
+    hotspotExtra: (ctx) => (ctx.ui.tma.aperta && !ctx.ui.mirino ? hotspotTma(ctx) : []),
     attiva: (ctx, h, p) => attiva(ctx, h, p, vaiA),
   };
 }

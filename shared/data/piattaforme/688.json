@@ -113,6 +113,7 @@
     "tonali": [
       {
         "nome": "rete elettrica di bordo",
+        "tipo": "elettrica",
         "frequenza": {"valore": 60, "unita": "Hz", "fonte": "[SONALYSTS-SC] [CONO]", "confidenza": "stimato", "nota": "Corrente alternata a 60 Hz delle unita' USA (50 Hz per le altre marine, scelta di modello di Sub Command)."},
         "sopra_banda_larga": {"valore": 6, "unita": "dB", "fonte": "[COTE03 p.69]", "confidenza": "nozionale", "nota": "Altezza della riga sullo spettro a banda larga dello stesso battello, alla stessa frequenza, in una cella di 1 Hz. Il 688 e' silenzioso: righe basse."},
         "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
@@ -120,6 +121,7 @@
       },
       {
         "nome": "pompe del refrigerante, bassa velocita'",
+        "tipo": "pompa",
         "frequenza": {"valore": 74, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Frequenza di passaggio delle pale di una pompa a 890 giri/min con girante a 5 pale: ordine di grandezza plausibile, non da fonte."},
         "sopra_banda_larga": {"valore": 5, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
         "da_velocita": {"valore": 0, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
@@ -127,12 +129,60 @@
       },
       {
         "nome": "pompe del refrigerante, alta velocita'",
+        "tipo": "pompa",
         "frequenza": {"valore": 148, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Doppio della bassa velocita'."},
         "sopra_banda_larga": {"valore": 8, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
         "da_velocita": {"valore": 16, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
         "a_velocita": {"valore": 32, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
       }
     ],
+    "righe_giri": [
+      {
+        "nome": "ingranamento della ruota del riduttore principale",
+        "tipo": "riduttore",
+        "per_giro": {"valore": 180, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Frequenza = 180 · giri/60 (numero di denti nozionale): 84 Hz a 5 kt, 250 Hz a 15 kt. Una riga che segue la velocita' (F2, SCHEMA §4.1)."},
+        "sopra_banda_larga": {"valore": 0, "unita": "dB", "fonte": "[COTE03 p.69] [CONO]", "confidenza": "nozionale", "nota": "Riduttori su basamenti isolati: riga all'altezza della banda larga, la piu' debole del 688."},
+        "da_velocita": {"valore": 2, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "a_velocita": {"valore": 32, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"}
+      }
+    ],
+    "pale": {
+      "livello": {"valore": 0, "unita": "dB", "fonte": "[ITTC-02] [CONO]", "confidenza": "nozionale", "nota": "Riga di pala (pale × giri/60, [ITTC-02]) sopra lo spettro a banda larga alla stessa frequenza e alla velocita' attuale. Elica a sette pale a basso numero di giri: riga debole. A 5 kt la frequenza di pala e' 3,3 Hz, sotto la banda dell'antenna: la si legge col DEMON."},
+      "armoniche": {"valore": 3, "unita": "n", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "decremento": {"valore": 4, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Per armonica."},
+      "livello_asse": {"valore": -6, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "modulazione": {"valore": 0.03, "unita": "1", "fonte": "[SENS21] [CONO]", "confidenza": "nozionale", "nota": "Indice di modulazione d'ampiezza del rumore a banda larga alla frequenza di pala senza cavitazione: quasi nulla, il DEMON di un 688 lento e' vuoto."},
+      "modulazione_cavitante": {"valore": 0.3, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale", "nota": "Con l'elica che cavita il rumore si modula al passaggio delle pale: il DEMON conta le sette pale."},
+      "modulazione_asse": {"valore": 0.3, "unita": "1", "fonte": "[SENS21]", "confidenza": "nozionale", "nota": "Frazione della modulazione di pala alla frequenza d'asse."}
+    },
+    "transitori": {
+      "scafo": {
+        "livello": {"valore": 112, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "Scricchiolio dello scafo che cambia quota: livello spettrale equivalente a 1 kHz (dB re 1 µPa²/Hz a 1 m, spettro −20·log f), circa 15 dB sopra il battello a 5 kt. Si sente a circa due volte la portata a banda larga del battello che lo fa: «spesso su un transitorio» (PROGETTO §5.12, docs/CALIBRAZIONE_F2.md)."},
+        "durata": {"valore": 0.3, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "quota_evento": {"valore": 15, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Ogni 15 m di cambio di quota lo scafo puo' scricchiolare."},
+        "probabilita": {"valore": 0.5, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Probabilita' di uno scricchiolio ogni quota_evento metri; doppia se si cambia quota oltre 1 m/s."}
+      },
+      "pompa": {
+        "livello": {"valore": 104, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "Pompe delle casse d'assetto quando si cambia quota da fermi (casse d'assetto, SCHEMA §5)."},
+        "durata": {"valore": 8, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"},
+        "intervallo_minimo": {"valore": 120, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Un avviamento della pompa al piu' ogni due minuti."}
+      },
+      "regime": {
+        "livello": {"valore": 108, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Le pompe del refrigerante che cambiano velocita' (cambio di regime): il transitorio che accompagna il salto delle righe tonali."},
+        "durata": {"valore": 2, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "meccanico": {
+        "livello": {"valore": 104, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Idraulica degli alberi (periscopio, ESM, radar) che si alzano o si abbassano."},
+        "durata": {"valore": 4, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "portello": {
+        "livello": {"valore": 116, "unita": "dB", "fonte": "[MAN-688] [CONO]", "confidenza": "nozionale", "nota": "Apertura dei portelli dei tubi: la usera' F3."},
+        "durata": {"valore": 1.5, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale"}
+      },
+      "emersione": {
+        "durata": {"valore": 5, "unita": "s", "fonte": "[MAN-688]", "confidenza": "nozionale", "nota": "Il soffiaggio d'emergenza e' gia' un rumore continuo (acustica.json, sottomarini.soffiaggio_emergenza); il transitorio `emersione` e' il colpo d'inizio, al livello del soffiaggio."}
+      }
+    },
     "forza_bersaglio": {
       "prua_poppa": {"valore": 10, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "TS al sonar attivo di prua o di poppa; fra i due valori si interpola col seno quadro dell'aspetto. Intervallo documentato 15-25 dB per i sottomarini.", "rif": "05_acustica.md §2.3"},
       "traverso": {"valore": 25, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale"},
@@ -156,7 +206,15 @@
     "sfera_attiva": {
       "presente": {"valore": true, "fonte": "[GUS-GAK] [WWH-SON]", "confidenza": "stimato"},
       "frequenza": {"valore": 3500, "unita": "Hz", "fonte": "[GUS-GAK] [WWH-SON]", "confidenza": "stimato"},
-      "settore": {"valore": 60, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Semiampiezza del settore prodiero del ping."}
+      "settore": {"valore": 60, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Semiampiezza del settore prodiero del ping."},
+      "livello_sorgente": {"valore": 228, "unita": "dB", "fonte": "[POL-1981] [FUN-8]", "confidenza": "nozionale", "nota": "dB re 1 µPa a 1 m sull'asse del fascio. Classificato: circa 0,5 MW per scoperte a 10 000 yd [POL-1981]; dell'ordine dei grandi sonar di scafo di superficie (circa 235 dB) meno qualche dB per un apparato di sottomarino."},
+      "fascio": {"valore": 6, "unita": "°", "fonte": "[GUS-GAK]", "confidenza": "stimato", "nota": "Fasci di circa 6° × 7,2° del modo attivo: il ping puntato illumina questo fascio."},
+      "perdita_settore": {"valore": 10, "unita": "dB", "fonte": "[GUS-GAK]", "confidenza": "calcolato", "nota": "Trasmettendo su tutto il settore di ±60° invece che sul fascio di 6° l'energia si divide su un arco 20 volte piu' largo: circa 13 dB, meno il guadagno dei fasci di trasmissione larghi; 10 dB nozionali."},
+      "durata_corta": {"valore": 0.1, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Impulso della portata corta: risoluzione di 75 m in distanza."},
+      "durata_lunga": {"valore": 1, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Impulso della portata lunga: 10 dB d'energia in piu', risoluzione di 750 m."},
+      "ascolto_corta": {"valore": 9144, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "10 000 yd: finestra d'ascolto della portata corta (12 s)."},
+      "ascolto_lunga": {"valore": 36576, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "40 000 yd: finestra della portata lunga (49 s)."},
+      "sigma_min": {"valore": 1, "unita": "°", "fonte": "[GUS-GAK]", "confidenza": "nozionale", "nota": "04 §4.6.1: 1° in rilevamento, distanza ±1-2 %.", "rif": "04_sensori.md §4.6.1"}
     },
     "conforme": {
       "presente": {"valore": true, "fonte": "[GUS-GAK] [WP-LA]", "confidenza": "stimato", "nota": "Array conforme di scafo del BQQ-5: 104 idrofoni, 24 fasci per lato."},
@@ -209,7 +267,9 @@
       "banda_max": {"valore": 60000, "unita": "Hz", "fonte": "[OP-400EM]", "confidenza": "nozionale"},
       "sigma_bassa": {"valore": 5, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Errore di rilevamento fra 1 e 10 kHz."},
       "sigma_media": {"valore": 10, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Fra 10 e 30 kHz."},
-      "sigma_alta": {"valore": 45, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Oltre 30 kHz solo il quadrante: σ di 45° ne e' la resa."}
+      "sigma_alta": {"valore": 45, "unita": "°", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Oltre 30 kHz solo il quadrante: σ di 45° ne e' la resa."},
+      "banda_canale": {"valore": 100, "unita": "Hz", "fonte": "[OP-400EM] [CONO]", "confidenza": "nozionale", "nota": "Larghezza dei canali del ricevitore (che non conosce la frequenza del ping): entra nella soglia DT = 5·log(d/(B·τ)) con τ la durata dell'impulso."},
+      "indice_direttivita": {"valore": 0, "unita": "dB", "fonte": "[OP-400EM]", "confidenza": "nozionale", "nota": "Idrofoni d'intercettazione quasi omnidirezionali."}
     },
     "alta_frequenza": {
       "presente": {"valore": true, "fonte": "[FAS-BQS15] [POL-1979]", "confidenza": "stimato", "nota": "AN/BQS-15: mine, ghiaccio, ostacoli, fondale. E' l'erede onesto del «contour imaging» del 1989, ma emette ed e' intercettabile. Niente MIDAS, che e' del Seawolf (CONTRADDIZIONI C2 risolta)."},
@@ -218,7 +278,36 @@
     "periscopio": {
       "presente": {"valore": true, "fonte": "[FAS-SSN688]", "confidenza": "stimato"},
       "numero": {"valore": 2, "unita": "n", "fonte": "[FAS-SSN688] [CFW86 p.618–619]", "confidenza": "stimato", "nota": "Type 2 d'attacco (sinistra) e Type 18 di ricerca (dritta)."},
-      "errore_stadimetro": {"valore": 7, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Errore della distanza dallo stadimetro: valore unico fra il ±10 % di 06 e il ±5-10 % di 04 (CONTRADDIZIONI C10 risolta)."}
+      "errore_stadimetro": {"valore": 7, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Errore della distanza dallo stadimetro: valore unico fra il ±10 % di 06 e il ±5-10 % di 04 (CONTRADDIZIONI C10 risolta)."},
+      "errore_elevazione": {"valore": 3.5, "unita": "%", "fonte": "[NSL10] [CONO]", "confidenza": "nozionale", "nota": "Deviazione standard relativa dell'angolo misurato fra linea d'acqua e testa d'albero: due sigma fanno il ±7 % di errore_stadimetro, se si sceglie la classe giusta (distanza = altezza / tan(angolo))."},
+      "altezza_occhio": {"valore": 2, "unita": "m", "fonte": "[NSL02] [CONO]", "confidenza": "nozionale", "nota": "Testa del periscopio sopra l'acqua a quota periscopica: entra nell'orizzonte ottico (3,86·√h km)."},
+      "margine_quota": {"valore": 3, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Gli alberi si alzano con la chiglia entro profondita.periscopica + margine (21 m); oltre altri 3 m l'ufficiale di guardia li abbassa."},
+      "velocita_scia": {"valore": 10, "unita": "kt", "fonte": "[NSL02] [WP-PERISCOPE]", "confidenza": "nozionale", "nota": "Oltre questa velocita' il periscopio alzato fa un pennacchio visibile (la scia che tradisce il battello): avviso e piu' visibilita'. Le dottrine d'epoca chiedevano di non superare i 6 kt in esposizione."},
+      "sigma_rilevamento": {"valore": 0.3, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Errore di rilevamento della lettura al periscopio."},
+      "sigma_aspetto": {"valore": 10, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Errore della stima dell'angolo sulla prua del bersaglio."}
+    },
+    "esm": {
+      "presente": {"valore": true, "fonte": "[POL-1979]", "confidenza": "stimato"},
+      "nome": "AN/WLR-8",
+      "banda_min": {"valore": 50000000, "unita": "Hz", "fonte": "[POL-1979]", "confidenza": "stimato", "nota": "«Riportata» 50 MHz - 18 GHz."},
+      "banda_max": {"valore": 18000000000, "unita": "Hz", "fonte": "[POL-1979]", "confidenza": "stimato"},
+      "sensibilita": {"valore": -70, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "dB re 1 mW all'ingresso: sensibilita' tipica di un ricevitore d'allarme radar a cristallo, non trovata."},
+      "sigma": {"valore": 4, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Errore di rilevamento: 3-5° in 04 §4.6.3.", "rif": "04_sensori.md §4.6.3"},
+      "altezza": {"valore": 3, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Antenna ESM sopra l'acqua, albero alzato a quota periscopica."}
+    },
+    "radar": {
+      "presente": {"valore": true, "fonte": "[FAS-BPS15] [FAS-SSN688]", "confidenza": "stimato"},
+      "nome": "AN/BPS-15",
+      "banda": "I",
+      "frequenza": {"valore": 8825000000, "unita": "Hz", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Banda X (NATO I): 8 795-8 855 MHz in un riassunto di ricerca non verificato; la pagina della FAS letta non da' frequenze."},
+      "potenza_picco": {"valore": 35, "unita": "kW", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Stesso riassunto non verificato."},
+      "guadagno": {"valore": 28, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "fascio": {"valore": 3, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "periodo": {"valore": 6, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Circa 9,5 giri/min (riassunto non verificato): un fotogramma `radar` ogni 6 s."},
+      "altezza": {"valore": 2.5, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "portata_rif": {"valore": 20000, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Distanza a cui il radar vede un bersaglio di 1 000 m² (30 dBsm) a mare calmo; la portata scala con la radice quarta della sezione radar e non supera l'orizzonte radio."},
+      "sigma_rilevamento": {"valore": 1, "unita": "°", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "sigma_distanza": {"valore": 1, "unita": "%", "fonte": "[CONO]", "confidenza": "nozionale"}
     }
   },
   "armi": {

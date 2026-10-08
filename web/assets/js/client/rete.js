@@ -5,9 +5,12 @@
  * È il ciclo della plancia di F0 (collaudato da tests/e2e_bordo.sh) chiuso in una classe: il primo
  * biglietto arriva con la pagina, ogni nuovo tentativo ne chiede uno nuovo a PHP (sono monouso), con
  * attesa crescente fino a un minuto. In più, dalla versione 1 del protocollo: appena accolto il
- * client chiede di entrare nella palestra, e manda gli ordini.
+ * client chiede di entrare nella palestra, e manda gli ordini; dalla versione 2 `entra` porta il
+ * livello di assistenza voluto (PROTOCOLLO.md v2, predefinito 2).
  */
-import { PROTOCOLLO_VERSIONE, DAL_CLIENT, DAL_SERVER, SCENARI, codifica, decodifica } from '../../shared/protocol.js';
+import {
+  PROTOCOLLO_VERSIONE, DAL_CLIENT, DAL_SERVER, SCENARI, LIVELLI_ASSISTENZA, ASSISTENZA_PREDEFINITA, codifica, decodifica,
+} from '../../shared/protocol.js';
 
 /** Lo scenario di F1. */
 export const SCENARIO_F1 = SCENARI[0];
@@ -21,6 +24,7 @@ export const SCENARIO_F1 = SCENARI[0];
  * @property {(m: import('../../shared/protocol.js').Messaggio) => void} suMessaggio
  * @property {(s: StatoCollegamento, nota: string) => void} suStato
  * @property {string} [scenario]
+ * @property {() => number} [assistenza] il livello di assistenza da chiedere entrando (0-3)
  */
 
 export class Collegamento {
@@ -62,7 +66,11 @@ export class Collegamento {
           this.pingInviato = performance.now();
           this.invia(DAL_CLIENT.PING, { n: Math.round(this.pingInviato) });
         }, 15000);
-        this.invia(DAL_CLIENT.ENTRA, { scenario: this.o.scenario ?? SCENARIO_F1 });
+        const liv = this.o.assistenza?.() ?? ASSISTENZA_PREDEFINITA;
+        this.invia(DAL_CLIENT.ENTRA, {
+          scenario: this.o.scenario ?? SCENARIO_F1,
+          assistenza: LIVELLI_ASSISTENZA.includes(liv) ? liv : ASSISTENZA_PREDEFINITA,
+        });
       } else if (m.t === DAL_SERVER.PONG) {
         this.latenza = Math.round(performance.now() - this.pingInviato);
       }
@@ -94,7 +102,7 @@ export class Collegamento {
   }
 
   /**
-   * Un ordine al battello (PROTOCOLLO.md v1): `n` torna in `ricevuto` o nell'`errore`.
+   * Un ordine al battello (PROTOCOLLO.md v1-v2): `n` torna in `ricevuto` o nell'`errore`.
    * @param {string} cosa @param {unknown} valore @param {number} n
    */
   ordina(cosa, valore, n) {

@@ -14,9 +14,15 @@
  * (docs/ricerca/05_acustica.md): rumore di Coates (§3.2) e assorbimento di
  * Ainslie & McColm (§2.2). Quando arriva shared/ambiente.js, le sue funzioni
  * hanno la precedenza voce per voce: cio' che non esporta resta provvisorio.
+ *
+ * F2: se lo scenario ha le tabelle di propagazione (tools/acustica/tabelle.py),
+ * l'ambiente le porta in `propagazione` (server/src/sim/world/propagazione.js) e
+ * la perdita di trasmissione dei sensori la chiede a loro
+ * (server/src/sim/sensors/perdita.js); senza, resta l'analitico di F1.
  */
 
 import { access } from 'node:fs/promises';
+import { tabelleDaAmbiente } from './propagazione.js';
 
 /**
  * @typedef {object} Strato
@@ -31,6 +37,8 @@ import { access } from 'node:fs/promises';
  * @property {(x: number, y: number) => Strato | null} strato
  * @property {(f: number) => number} rumore  livello spettrale del rumore ambiente, dB re 1 µPa²/Hz, a f Hz
  * @property {(f: number) => number} assorbimento  dB/km a f Hz
+ * @property {import('./propagazione.js').Propagazione} [propagazione]  F2: le tabelle di
+ *   propagazione dello scenario, se ci sono (altrimenti la TL e' l'analitico di F1)
  */
 
 /**
@@ -138,7 +146,7 @@ export async function creaAmbiente(scenario, registro) {
   try {
     /** @type {any} */
     const mod = await import(url.href);
-    return adattaModulo(mod, scenario, provvisorio);
+    return adattaModulo(mod, scenario, provvisorio, registro);
   } catch (e) {
     registro?.warn('ambiente_non_caricato', { errore: /** @type {Error} */ (e).message });
     return provvisorio;
@@ -151,9 +159,10 @@ export async function creaAmbiente(scenario, registro) {
  * @param {any} mod
  * @param {{id: string}} scenario
  * @param {Ambiente} provvisorio
+ * @param {{warn: (e: string, d?: Record<string, unknown>) => void}} [registro]
  * @returns {Promise<Ambiente>}
  */
-async function adattaModulo(mod, scenario, provvisorio) {
+async function adattaModulo(mod, scenario, provvisorio, registro) {
   // Se il modulo prepara l'ambiente di uno scenario (carica la griglia), lo si chiama.
   /** @type {any} */
   let amb = mod;
@@ -168,8 +177,20 @@ async function adattaModulo(mod, scenario, provvisorio) {
   // terra (fondale <= 0) un metro: il battello e' in secca e il suono che
   // passa sopra la terra paga le perdite delle acque bassissime.
   const fuoriGriglia = Number(amb?.valori?.batimetria?.fondale_massimo) || provvisorio.profondita(0, 0);
+  // F2: le tabelle di propagazione, se lo scenario le ha (un file rotto non impedisce di giocare: si
+  // torna all'analitico e lo si dice nel registro).
+  /** @type {import('./propagazione.js').Propagazione | null} */
+  let propagazione = null;
+  if (fondale && amb?.valori) {
+    try {
+      propagazione = await tabelleDaAmbiente(amb);
+    } catch (e) {
+      registro?.warn('tabelle_propagazione_non_caricate', { errore: /** @type {Error} */ (e).message });
+    }
+  }
   return {
     fonte: fondale ? 'shared/ambiente.js' : 'provvisorio',
+    ...(propagazione ? { propagazione } : {}),
     profondita: fondale
       ? (x, y) => {
         const d = Number(fondale(x, y));

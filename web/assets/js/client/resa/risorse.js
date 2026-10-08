@@ -8,7 +8,7 @@
  * leggono gli stessi file dal disco e compongono le stesse schermate.
  */
 import { caricaRisorse, FrameBuffer, eseguiLavoro, InterpreteCls } from '../cls.js';
-import { decodificaPngIndicizzato } from './png.js';
+import { decodificaPngIndicizzato, decodificaPngRgba, rgbaInIndici } from './png.js';
 
 /** @typedef {import('../cls.js').Risorse} RisorseCls */
 /** @typedef {import('../cls.js').Hotspot} Hotspot */
@@ -25,7 +25,10 @@ import { decodificaPngIndicizzato } from './png.js';
  * @property {RisorseCls} cls script, figure e font per l'interprete
  * @property {Record<string, Lavoro>} lavori per id ('STEER_688', 'CONN_688'…)
  * @property {number[][]} palette DAY (= 688.PAL), 256 colori [r, g, b]
+ * @property {number[][]} paletteNotte NIGHT: cambiano cielo (16-79), grigi delle sagome (144-159, rossi) e spruzzi
  * @property {Record<string, ImmagineIndicizzata>} immagini sale e ritratti, per percorso ('sale/688.png')
+ * @property {Record<string, ImmagineIndicizzata>} sagome sagome del periscopio per nome ('FOREST2'), in indici
+ *   della palette DAY (90h + nibble), trasparente = SAGOMA_TRASPARENTE; le carica `caricaSagome`
  */
 /**
  * @typedef {object} Lettore
@@ -40,6 +43,12 @@ import { decodificaPngIndicizzato } from './png.js';
 
 /** Ritratti dell'equipaggio usati dal client (688, confrontati con le catture 014, 047, 061: CREW2 sonarista, CREW3 ufficiale alle armi, CREW4 ufficiale d'immersione). */
 export const RITRATTI = ['equipaggio/CREW2.png', 'equipaggio/CREW3.png', 'equipaggio/CREW4.png'];
+
+/**
+ * Indice che nelle sagome del periscopio vuol dire «trasparente»: il nibble 15 sarebbe 9Fh, un nero che
+ * le sagome non usano mai (ASSET.md §4.4), quindi lo si tiene come segnaposto da saltare.
+ */
+export const SAGOMA_TRASPARENTE = 0x9f;
 
 /**
  * Lettore per il browser: tutto passa dalla rotta autenticata.
@@ -68,10 +77,11 @@ export function lettoreHttp(base) {
  * @returns {Promise<Originali>}
  */
 export async function caricaOriginali(lettore) {
-  const [cls, pannelli, day, ...immagini] = await Promise.all([
+  const [cls, pannelli, day, notte, ...immagini] = await Promise.all([
     caricaRisorse(lettore.json),
     lettore.json('cls/pannelli.json'),
     lettore.json('palette/DAY.json'),
+    lettore.json('palette/NIGHT.json'),
     ...['sale/688.png', ...RITRATTI].map(async (p) => [p, await decodificaPngIndicizzato(await lettore.byte(p))]),
   ]);
   /** @type {Record<string, Lavoro>} */
@@ -81,8 +91,44 @@ export async function caricaOriginali(lettore) {
     cls,
     lavori,
     palette: day.colori,
+    paletteNotte: notte.colori,
     immagini: Object.fromEntries(/** @type {[string, ImmagineIndicizzata][]} */ (immagini)),
+    sagome: {},
   };
+}
+
+/**
+ * Carica le sagome del periscopio (le 93 figure di `periscopio/giorno/`, dal manifesto dell'estrattore)
+ * e le riporta agli indici della palette DAY: di notte le stesse figure si vedono rosse cambiando solo
+ * la palette dello schermo, come faceva il gioco con NIGHT.PAL. Si può limitare a qualche prefisso
+ * (per esempio ['FOREST', 'MERCH']); senza, le carica tutte. Non lancia: una figura che non si legge
+ * resta semplicemente assente (il periscopio la salta).
+ * @param {Originali} orig @param {Lettore} lettore @param {string[]} [prefissi]
+ * @returns {Promise<number>} quante figure sono state caricate
+ */
+export async function caricaSagome(orig, lettore, prefissi) {
+  /** @type {string[]} */
+  let percorsi = [];
+  try {
+    const m = await lettore.json('manifest.json');
+    percorsi = (m.file ?? []).map((/** @type {{percorso: string}} */ f) => f.percorso)
+      .filter((/** @type {string} */ p) => /^periscopio\/giorno\/[A-Z0-9]+\.png$/.test(p));
+  } catch {
+    return 0;
+  }
+  const nome = (/** @type {string} */ p) => p.replace(/^.*\//, '').replace(/\.png$/, '');
+  if (prefissi) percorsi = percorsi.filter((p) => prefissi.some((x) => nome(p).startsWith(x)));
+  let n = 0;
+  await Promise.all(percorsi.map(async (p) => {
+    try {
+      const rgba = await decodificaPngRgba(await lettore.byte(p));
+      orig.sagome[nome(p)] = rgbaInIndici(rgba, orig.palette, 0x90, 0x9e, SAGOMA_TRASPARENTE);
+      n++;
+    } catch {
+      // figura illeggibile: il periscopio non la disegna
+    }
+  }));
+  return n;
 }
 
 /**

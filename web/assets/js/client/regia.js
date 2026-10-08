@@ -19,7 +19,9 @@ import { conn } from './stazioni/conn.js';
 import { governo } from './stazioni/governo.js';
 import { navigazione, confermaWaypoint } from './stazioni/navigazione.js';
 import { sonar } from './stazioni/sonar.js';
+import { periscopio, notte } from './stazioni/periscopio.js';
 import { generica } from './stazioni/generica.js';
+import { LIVELLI_ASSISTENZA } from '../../shared/protocol.js';
 import { naviga, perTasto, centro } from './ingressi.js';
 
 /** @typedef {import('./resa/risorse.js').Originali} Originali */
@@ -34,7 +36,9 @@ const CON_NASTRO = new Set(['radio']);
 
 export class Regia {
   /**
-   * @param {{ orig: Originali, lingua?: string, ordina?: (cosa: string, valore: unknown, n: number) => void }} o
+   * @param {{ orig: Originali, lingua?: string, ordina?: (cosa: string, valore: unknown, n: number) => void,
+   *   assistenza?: number, salvaAssistenza?: (livello: number) => void }} o
+   *   assistenza: il livello voluto all'avvio (lo manda `entra`); salvaAssistenza: per ricordarlo
    */
   constructor(o) {
     this.orig = o.orig;
@@ -42,6 +46,8 @@ export class Regia {
     this.tela = new Tela();
     this.stato = statoIniziale();
     this.ui = uiIniziale(o.lingua ?? 'it');
+    if (o.assistenza !== undefined && LIVELLI_ASSISTENZA.includes(o.assistenza)) this.ui.assistenza = o.assistenza;
+    this.salvaAssistenza = o.salvaAssistenza ?? (() => {});
     this.nastro = new Nastro();
     /** @type {Campionatore | null} */
     this.fondale = null;
@@ -54,6 +60,8 @@ export class Regia {
     this.ultimaOra = NaN;
     /** Ora corrente in secondi (la passa componi). */
     this.ora = 0;
+    /** @type {import('./biblioteca.js').Classe[]} il libro delle firme (lo carica plancia.js) */
+    this.biblioteca = [];
     const vai = (/** @type {string} */ s) => this.vaiA(s);
     /** @type {Record<string, Stazione>} */
     this.stazioni = {
@@ -63,7 +71,7 @@ export class Regia {
       sonar: sonar(vai),
       radio: generica('radio', 'RADIO_688', false, vai),
       status: generica('status', 'STATUS_688', false, vai),
-      periscopio: generica('periscopio', 'PERI_688', true, vai),
+      periscopio: periscopio(vai),
       armi: generica('armi', 'WCR_688', true, vai),
     };
   }
@@ -104,6 +112,7 @@ export class Regia {
       avvisa: (chiave, parametri) => this.avvisa(chiave, parametri),
       t: (chiave, parametri) => this.t(chiave, parametri),
       cache: this.cache,
+      biblioteca: this.biblioteca,
     };
   }
 
@@ -197,8 +206,13 @@ export class Regia {
     else if (CON_NASTRO.has(st.id)) this.nastro.disegna(this.tela, this.font);
     st.disegna(ctx);
     if (this.ui.aiuto) {
-      const righe = [this.t('ui.aiuto.titolo'), '', ...this.t('ui.aiuto.testo').split('\n')];
-      disegnaRiquadro(this.tela, this.font, 60, 40, righe);
+      const liv = this.stato.nave?.assistenza ?? this.ui.assistenza;
+      const righe = [
+        this.t('ui.aiuto.titolo'), '', ...this.t('ui.aiuto.testo').split('\n'), '',
+        this.t('ui.aiuto.assistenza', { n: liv, nome: this.t(`ui.assistenza.${liv}`) }),
+        this.t('ui.aiuto.assistenza_cambia'),
+      ];
+      disegnaRiquadro(this.tela, this.font, 24, 22, righe);
     }
     this.#cursore();
   }
@@ -233,7 +247,11 @@ export class Regia {
 
   /** Lettera o cifra: porta il cursore sul comando, non lo esegue. @param {string} k */
   lettera(k) {
-    if (this.ui.aiuto) return;
+    if (this.ui.aiuto) {
+      // con l'aiuto aperto le cifre 0-3 scelgono il livello di assistenza
+      if (/^[0-3]$/.test(k)) this.scegliAssistenza(Number(k));
+      return;
+    }
     const hs = this.hotspot();
     const i = perTasto(hs, k);
     if (i === null) return;
@@ -254,8 +272,31 @@ export class Regia {
   }
 
   esc() {
+    if (!this.ui.aiuto && !this.ui.mirino && this.stazione.esc?.(this.contesto())) return;
     this.ui.aiuto = false;
     this.ui.mirino = null;
+  }
+
+  /**
+   * Il livello di assistenza (PROGETTO §5.6): si ricorda per il prossimo `entra` e, in partita, si
+   * ordina subito (il server può rifiutarlo con `livello`).
+   * @param {number} livello 0-3
+   */
+  scegliAssistenza(livello) {
+    if (!LIVELLI_ASSISTENZA.includes(livello)) return;
+    this.ui.assistenza = livello;
+    this.salvaAssistenza(livello);
+    if (this.stato.partita && this.stato.nave && this.stato.nave.assistenza !== livello) this.ordina('assistenza', livello);
+  }
+
+  /**
+   * La palette dello schermo: NIGHT quando si guarda dal periscopio di notte (cielo blu notte, sagome
+   * rosse, 094), DAY altrimenti.
+   * @returns {'giorno' | 'notte'}
+   */
+  get palette() {
+    if (this.ui.stazione !== 'periscopio' || !this.stato.nave?.alberi.periscopio || this.ui.peri.libro) return 'giorno';
+    return notte(this.contesto()) ? 'notte' : 'giorno';
   }
 
   aiuto() {

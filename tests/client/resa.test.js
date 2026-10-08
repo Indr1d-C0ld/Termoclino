@@ -187,8 +187,8 @@ test('Sonar composto: la cascata nella finestra, la prua al centro, i baffles gr
   const t = r.tela;
   assert.equal(t.leggi(92, 43), 15); // seconda riga, colonna della prua (la prima ha il puntino della prua)
   assert.ok(t.leggi(9, 43) >= 145 && t.leggi(9, 43) <= 150); // 192° relativi: nei baffles
-  // le zone in più della testata ci sono
-  assert.equal(r.hotspot().length, r.pannello.hotspot.length + 3);
+  // le zone in più della testata ci sono: sensore, portata del ping, riferimento, corpo della cascata
+  assert.equal(r.hotspot().length, r.pannello.hotspot.length + 4);
 });
 
 test('CONN: il nome della stazione sotto il puntatore, e Invio ci porta', { skip: !CI_SONO_ORIGINALI && MOTIVO_SALTO }, async () => {

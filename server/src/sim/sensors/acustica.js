@@ -28,6 +28,7 @@ import {
   soloValori,
   visitaDati,
 } from '../../../../shared/data/piattaforme.js';
+import { caricaFirme } from '../../../../shared/data/firme.js';
 
 /** @typedef {'sfera' | 'towed'} NomeBanda */
 /** @typedef {import('../../../../shared/data/piattaforme.js').ValoriPiattaforma} ValoriPiattaforma */
@@ -48,7 +49,7 @@ import {
  * @property {{indice_d: number, fondo_normalizzato: number, fluttuazione_sigma: number, fluttuazione_tau: number}} rivelazione
  * @property {{sl_rif: number, pendenza_spettro: number, frazione_cavitazione_bassa_frequenza: number,
  *   elica_sopra_chiglia: number, soffiaggio_emergenza: number, rumore_proprio_cavitazione: number}} sottomarini
- * @property {{pendenza_spettro: number, towed_base: number}} rumore_proprio
+ * @property {{pendenza_spettro: number, towed_base: number, pendenza_towed?: number}} rumore_proprio
  * @property {{distanza_transizione_min: number, perdita_rimbalzo: number, angolo_radente: number,
  *   perdita_fondo_max: number, perdita_strato: number, strato_distanza_minima: number,
  *   strato_distanza_piena: number}} propagazione
@@ -57,6 +58,30 @@ import {
  * @property {{cacciatorpediniere: ProfiloNave, mercantile: ProfiloNave,
  *   biologico: {nome: string, sl_sfera: number, sl_towed: number, quota: number,
  *   attiva_media: number, spenta_media: number, deriva: number}}} sorgenti
+ * @property {{tempo_integrazione: number, ginocchio_spettro: number, pendenza_fuori_banda: number,
+ *   indice_d: number}} banda_stretta  F2: righe tonali, LOFAR e fotogrammi a banda stretta
+ * @property {{tempo_integrazione: number, cella_minima: number}} demon  F2
+ * @property {{velocita_suono: number, lobi_trasmissione: number, retro_trasmissione: number,
+ *   sigma_distanza_relativa: number, frazione_risoluzione: number, angolo_verticale: number,
+ *   guadagno_doppler_max?: number}} attivo  F2
+ * @property {{lambert_mu: number, volume: number, superficie_minima: number}} riverberazione  F2
+ * @property {{soglia_riconoscimento: number, tempo_integrazione_minimo: number}} transitori  F2
+ * @property {Record<string, import('../../../../shared/data/firme.js').ValoriFirma>} firme  F2: le firme
+ *   di shared/data/firme/ (navi, biologici), caricate con il file acustico
+ * @property {ValoriSensori['ottica']} ottica  F2: ottica del periscopio (shared/data/sensori.json)
+ * @property {ValoriSensori['radio']} radio  F2: propagazione radio, ESM e radar (shared/data/sensori.json)
+ */
+
+/**
+ * Costanti dei sensori non acustici (shared/data/sensori.json, F2).
+ * @typedef {object} ValoriSensori
+ * @property {string} formato
+ * @property {{orizzonte: number, visibilita_giorno: number, visibilita_notte: number,
+ *   luce_testa_albero: number, luce_fianco: number, luce_coronamento: number,
+ *   stato_mare_limpido: number, riduzione_stato_mare: number, albero_giorno: number,
+ *   albero_notte: number, fattore_scia: number, velocita_onda_prua: number}} ottica
+ * @property {{raggio_terra_equivalente: number, perdite: number, ricomparsa: number,
+ *   soglia_riconoscimento: number, rcs_albero: number, rcs_scia: number, rcs_nave: number}} radio
  */
 
 export const FORMATO_ACUSTICA = 'termoclino-acustica/1';
@@ -90,16 +115,33 @@ export function validaAcustica(grezzi) {
   return errori;
 }
 
+export const FORMATO_SENSORI = 'termoclino-sensori/1';
+
 /**
- * Carica e valida shared/data/acustica.json.
+ * Carica e valida shared/data/acustica.json, con le firme (shared/data/firme/)
+ * e le costanti dei sensori non acustici (shared/data/sensori.json): tutto
+ * cio' che serve ai sensori viaggia insieme nel valore acustico.
  * @returns {Promise<ValoriAcustica>}
  */
 export async function caricaAcustica() {
-  const testo = await leggiTesto(new URL('../../../../shared/data/acustica.json', import.meta.url));
+  const [testo, testoSensori, firme] = await Promise.all([
+    leggiTesto(new URL('../../../../shared/data/acustica.json', import.meta.url)),
+    leggiTesto(new URL('../../../../shared/data/sensori.json', import.meta.url)),
+    caricaFirme(),
+  ]);
   const grezzi = JSON.parse(testo);
   const errori = validaAcustica(grezzi);
   if (errori.length > 0) throw new TypeError(`acustica.json non valido:\n  ${errori.join('\n  ')}`);
-  return /** @type {ValoriAcustica} */ (soloValori(grezzi));
+  const grezziSensori = JSON.parse(testoSensori);
+  const erroriSensori = validaAcustica({ ...grezziSensori, formato: FORMATO_ACUSTICA });
+  if (grezziSensori.formato !== FORMATO_SENSORI) erroriSensori.push(`formato atteso ${FORMATO_SENSORI}`);
+  if (erroriSensori.length > 0) throw new TypeError(`sensori.json non valido:\n  ${erroriSensori.join('\n  ')}`);
+  const ac = /** @type {ValoriAcustica} */ (soloValori(grezzi));
+  const sensori = /** @type {ValoriSensori} */ (soloValori(grezziSensori));
+  ac.ottica = sensori.ottica;
+  ac.radio = sensori.radio;
+  ac.firme = Object.fromEntries([...firme].map(([id, f]) => [id, f.valori]));
+  return ac;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,16 +208,45 @@ export function correzioneAspetto(cosAspetto, prua, poppa) {
  * @param {number} cosAspetto
  */
 export function livelloSottomarino(p, ac, banda, velocita, cavitante, cosAspetto) {
+  return livelloSottomarinoA(p, ac, ac.bande[banda].centro, velocita, cavitante, cosAspetto);
+}
+
+/**
+ * Lo stesso livello spettrale a una frequenza qualsiasi (F2: righe tonali,
+ * LOFAR, transitori). Lo spettro di Ross (−20·log f) vale sopra il
+ * ginocchio (banda_stretta.ginocchio_spettro, 100 Hz), sotto e' piatto; il
+ * salto di cavitazione conta per intero da 1 kHz in su e per la frazione
+ * di bassa frequenza sotto. Alle frequenze delle due bande di F1 (2 kHz e
+ * 300 Hz) da' esattamente i valori di F1.
+ * @param {ValoriPiattaforma} p
+ * @param {ValoriAcustica} ac
+ * @param {number} f Hz
+ * @param {number} velocita kt
+ * @param {boolean} cavitante
+ * @param {number} cosAspetto
+ */
+export function livelloSottomarinoA(p, ac, f, velocita, cavitante, cosAspetto) {
   const r = p.acustica.rumore_irradiato;
   const v = Math.abs(velocita);
   let sl = ac.sottomarini.sl_rif + r.gradino_sl0
     + r.pendenza * Math.log10(Math.max(v, r.velocita_min) / r.velocita_rif)
     + r.pendenza_extra * Math.max(0, v - r.soglia_pendenza_extra)
-    + ac.sottomarini.pendenza_spettro * Math.log10(ac.bande[banda].centro / 1000);
+    + spostamentoSpettro(ac, f);
   if (cavitante) {
-    sl += p.acustica.cavitazione.salto * (banda === 'sfera' ? 1 : ac.sottomarini.frazione_cavitazione_bassa_frequenza);
+    sl += p.acustica.cavitazione.salto * (f >= 1000 ? 1 : ac.sottomarini.frazione_cavitazione_bassa_frequenza);
   }
   return sl + correzioneAspetto(cosAspetto, r.aspetto_prua, r.aspetto_poppa);
+}
+
+/**
+ * Spostamento dello spettro a banda larga da 1 kHz alla frequenza f:
+ * −20·log(f/1 kHz) sopra il ginocchio, costante sotto.
+ * @param {ValoriAcustica} ac
+ * @param {number} f Hz
+ */
+export function spostamentoSpettro(ac, f) {
+  const g = ac.banda_stretta?.ginocchio_spettro ?? 100;
+  return ac.sottomarini.pendenza_spettro * Math.log10(Math.max(f, g) / 1000);
 }
 
 /**
@@ -187,8 +258,20 @@ export function livelloSottomarino(p, ac, banda, velocita, cavitante, cosAspetto
  * @param {number} cosAspetto
  */
 export function livelloNave(n, ac, banda, velocita, cosAspetto) {
+  return livelloNaveA(n, ac, ac.bande[banda].centro, velocita, cosAspetto);
+}
+
+/**
+ * Lo stesso livello spettrale a una frequenza qualsiasi (F2).
+ * @param {ProfiloNave} n
+ * @param {ValoriAcustica} ac
+ * @param {number} f Hz
+ * @param {number} velocita kt
+ * @param {number} cosAspetto
+ */
+export function livelloNaveA(n, ac, f, velocita, cosAspetto) {
   return n.sl_10kt + n.pendenza * Math.log10(Math.max(Math.abs(velocita), n.velocita_min) / 10)
-    + ac.sottomarini.pendenza_spettro * Math.log10(ac.bande[banda].centro / 1000)
+    + spostamentoSpettro(ac, f)
     + correzioneAspetto(cosAspetto, n.aspetto_prua, n.aspetto_poppa);
 }
 
@@ -206,10 +289,24 @@ export function livelloNave(n, ac, banda, velocita, cosAspetto) {
  * @param {boolean} cavitante
  */
 export function rumoreProprioSfera(p, ac, velocita, cavitante) {
+  return rumoreProprioSferaA(p, ac, ac.bande.sfera.centro, velocita, cavitante);
+}
+
+/**
+ * Rumore proprio della sfera a una frequenza qualsiasi (F2): stessa forma,
+ * spettro piatto sotto il ginocchio.
+ * @param {ValoriPiattaforma} p
+ * @param {ValoriAcustica} ac
+ * @param {number} f Hz
+ * @param {number} velocita kt
+ * @param {boolean} cavitante
+ */
+export function rumoreProprioSferaA(p, ac, f, velocita, cavitante) {
   const rp = p.acustica.rumore_proprio;
   const v = Math.abs(velocita);
+  const g = ac.banda_stretta?.ginocchio_spettro ?? 100;
   return rp.livello_macchinario
-    + ac.rumore_proprio.pendenza_spettro * Math.log10(ac.bande.sfera.centro / 1000)
+    + ac.rumore_proprio.pendenza_spettro * Math.log10(Math.max(f, g) / 1000)
     + 10 * Math.log10(1 + (v / rp.velocita_soglia_sfera) ** rp.esponente)
     + (cavitante ? ac.sottomarini.rumore_proprio_cavitazione : 0);
 }
@@ -222,9 +319,25 @@ export function rumoreProprioSfera(p, ac, velocita, cavitante) {
  * @param {boolean} cavitante
  */
 export function rumoreProprioTowed(p, ac, velocita, cavitante) {
+  return rumoreProprioTowedA(p, ac, ac.bande.towed.centro, velocita, cavitante);
+}
+
+/**
+ * Rumore proprio dell'antenna a una frequenza qualsiasi (F2): il rumore di
+ * flusso cala con la frequenza (rumore_proprio.pendenza_towed, riferita ai
+ * 300 Hz della banda di F1), piatto sotto il ginocchio.
+ * @param {ValoriPiattaforma} p
+ * @param {ValoriAcustica} ac
+ * @param {number} f Hz
+ * @param {number} velocita kt
+ * @param {boolean} cavitante
+ */
+export function rumoreProprioTowedA(p, ac, f, velocita, cavitante) {
   const rp = p.acustica.rumore_proprio;
   const v = Math.abs(velocita);
+  const g = ac.banda_stretta?.ginocchio_spettro ?? 100;
   return ac.rumore_proprio.towed_base
+    + (ac.rumore_proprio.pendenza_towed ?? 0) * Math.log10(Math.max(f, g) / ac.bande.towed.centro)
     + 10 * Math.log10(1 + (v / rp.velocita_soglia_rimorchiata) ** rp.esponente)
     + (cavitante ? ac.sottomarini.rumore_proprio_cavitazione / 2 : 0);
 }

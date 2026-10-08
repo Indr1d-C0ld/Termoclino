@@ -389,6 +389,32 @@ l'assorbimento vale circa 0,6 dB a 300 Hz e 64 dB a 10 kHz. Attenzione: la formu
 assorbimento del testo dell'Accademia navale USA sottostima fino a 7 volte sotto i 5 kHz; si usa
 Ainslie & McColm.
 
+**Fatto in F2** (`tools/acustica/`, `shared/data/scenari/torpex_palestra.tl.bin`,
+`server/src/sim/world/propagazione.js`; dettagli e numeri in `docs/CALIBRAZIONE_F2.md`, parte G).
+Il tracciatore e' nostro, in Python con numpy: raggi in forma chiusa in un ambiente indipendente
+dalla distanza (ogni raggio e' periodico, si calcola un semiciclo e si piega la fase), intensita'
+**semicoerente** per tubi di raggi (somma incoerente, con lo specchio di Lloyd mediato sulla banda
+alla sorgente e al ricevitore), lamelle minime di una lunghezza d'onda e di due scale di Airy alle
+caustiche, correzione WKB dei canali (effetto tunnel e sostegno del primo modo: lo strato sottile
+non intrappola le basse frequenze), Rayleigh sul fondo, Eckart e Schulkin in superficie. Invece che
+contro Bellhop (nessun binario scaricato) e' convalidato contro le soluzioni esatte: divergenza
+sferica (entro 0,5 dB), specchio di Lloyd (coerente esatto; semicoerente entro 0,6 dB nel campo
+lontano), guida di Pekeris contro i modi normali (scarto quadratico medio 0,2-1,0 dB, massimo 1,7),
+profilo di Munk (prima zona di convergenza fra 51 e 74 km, ciclo del raggio radente 65 km), canale
+superficiale (energia conservata entro 0,1 dB). L'ambiente della palestra e' diviso in **sette classi
+di fondale** (30-900 m: costa, piattaforma, scarpata, canale), ciascuna con il suo fondo (ghiaia,
+sabbia, sabbia fangosa, da [MASSON03] dove c'e' un rilievo) e il suo profilo (colonna rimescolata
+dalla marea dentro il fronte dei 100-150 m, strato isotermo di 21 m sulla climatologia fuori); un
+percorso media le tabelle delle classi che attraversa (un campione del fondale ogni 2 km, al piu' 15) e
+paga 40 dB se passa sopra un'isola. Otto bande (le ottave della sfera e dell'antenna, 50, 100, 300, 1000 Hz per le righe,
+3,5 kHz per l'attivo, 25 kHz per i siluri), 16 quote, 382 distanze da 25 m a 307 km: 1,8 MiB in un
+byte per valore, tre minuti di calcolo, deterministico. In linea: costo costante, 0,8 µs per coppia
+(mediana su una macchina del 2013 carica). Due perdite nozionali tarate (Schulkin in superficie, 4 dB per rimbalzo in piu'
+al fondo a 2 kHz) tengono i battelli lenti a poche migliaia di iarde (§5.12); la novita' e' che **lo
+strato estivo delle Fær Øer, in fisica, nasconde poco** (troppo sottile per le frequenze dei sonar, e il
+fondo riempie l'ombra): la regola nozionale di F1 non c'e' piu', ed e' rimasta come opzione di gioco
+(`propagazione.percorso.perdita_strato`, oggi 0).
+
 ### 5.4 Rumore, sensori, nebbia di guerra
 
 - **Rumore irradiato** per classe in funzione della velocità e del regime: banda larga, **righe
@@ -671,12 +697,8 @@ completando TORPEX '89, come nel manuale il tutorial.
   (schivare tre siluri in una partita); *Orecchio fino* (classificare l'avversario dalle sole righe
   tonali); *Nessuna lettera* (vincere ad assistenza 0); *Ritorno a casa* (le dieci missioni con
   entrambi i lati); *Il capo è passato* (il tasto F10).
-- **Statistiche personali e globali**. Le più significative in un duello di sottomarini:
-  **vantaggio di rilevamento** (chi ha sentito chi per primo, e con quanto anticipo), qualità
-  della soluzione al momento del lancio (errore di distanza in %), rumore proprio medio, tempo
-  sotto lo strato e a quota periscopica, ping emessi, siluri lanciati, a segno e schivati, fili
-  rotti, esche usate, distanza media d'ingaggio. Globali: vittorie per lato e scenario, efficacia
-  delle armi, mappe di calore degli ingaggi.
+- **Statistiche personali e globali**: una sezione a sé, nutrita e dettagliata, accanto a gradi e
+  decorazioni (decisione dell'utente dell'8/10/2026): vedi §7.9.
 
 ### 7.7 Singolo
 
@@ -690,6 +712,93 @@ completando TORPEX '89, come nel manuale il tutorial.
 
 Ogni partita ha la sua pagina: esito, statistiche, linea del tempo dei rilevamenti di entrambi, e
 il **replay con la verità** (le due tracce sulla mappa, i cerchi di rilevamento, i siluri).
+
+### 7.9 Statistiche
+
+Richiesta dell'utente (8/10/2026): nel profilo, accanto all'avanzamento di grado, una sezione di
+**statistiche personali nutrita e dettagliata**; e una sezione **generale**, globale e cumulativa,
+per tutto il gioco. Le pagine sono pubbliche (salvo le parti personali che il giocatore sceglie di
+nascondere) e quindi, per D4, senza grafica originale: stile del sito, grafici nostri.
+
+**Da dove vengono.** Ogni numero si calcola **sul server, dal diario della partita**: le istantanee
+della verità (già scritte da F1, una al secondo) più gli **eventi tipizzati** che la simulazione
+registra mentre accadono (scoperte, classificazioni, soluzioni, lanci, colpi, schivate, danni…). Mai
+da quello che dichiara il client. I diari si conservano (circa 200 KB per ora di gioco con due
+battelli), e i totali sono **ricalcolabili**: una statistica aggiunta in futuro si riempie anche per
+le partite già giocate (`console.php stats:ricalcola`). Per questo il diario va completo **da F2**:
+ogni fase che aggiunge una meccanica aggiunge i suoi eventi, anche se le pagine arrivano in F6.
+
+**Dopo la partita la nebbia si alza.** Le statistiche usano la verità: «l'avversario ti ha sentito
+per primo, al minuto 12, a 9.400 iarde, sulla towed array» si può dire solo a partita chiusa, come
+nel debriefing.
+
+**Ogni statistica si legge per modo** (classificata, amichevole, singolo, palestra), **per lato e
+classe** (688, Alfa, poi le altre), **per scenario** e **per periodo** (mese, stagione, sempre), con
+il confronto con la media dei giocatori del proprio grado e il percentile.
+
+**Personali** (la pagina «Stato di servizio» del profilo):
+
+| Gruppo | Cosa |
+|--------|------|
+| Servizio | partite giocate, vinte, perse, pari, abbandonate; serie; ore in mare (di gioco e reali); miglia percorse; tempo in immersione; quota massima raggiunta; storico della valutazione (Glicko-2) e dei gradi, punto per punto; decorazioni e traguardi con data e partita |
+| Ascolto | **vantaggio di rilevamento** (chi ha sentito chi per primo e con quanto anticipo, in minuti e in iarde); distanza di prima scoperta media e massima, per sensore (sfera, towed, intercettazione, periscopio, ESM); tempo e correttezza della classificazione; contatti tracciati e falsi contatti; tempo per arrivare a una soluzione con Q ≥ 70 %; errore di distanza della soluzione al lancio |
+| Discrezione | rumore irradiato medio rispetto alla propria classe; tempo in cavitazione; tempo sopra e sotto lo strato e a quota periscopica; ping emessi; controscoperte subite (quante volte ti hanno sentito per colpa di cosa: velocità, ping, portelli, cambi di quota); minuti di silenzio |
+| Manovra | velocità media; rapporto scatto-deriva; cambi di gamba per soluzione; urti col fondo; minuti oltre la quota di collaudo |
+| Armi (da F3) | siluri e missili lanciati, a segno, mancati, distanza media di lancio, minuti di filo, fili rotti, esche usate, siluri schivati e come, siluri ricevuti, danni per compartimento, affondamenti per arma |
+| Mappe | mappa di calore personale: dove si viene scoperti, dove si scopre, dove si spara, sul fondale vero di ogni teatro |
+| Primati personali | scoperta più lontana, corsa di siluro più lunga andata a segno, vittoria più rapida, passaggio più vicino, partita più lunga |
+
+**Generali** (la pagina «Statistiche» del sito, cumulative):
+
+| Gruppo | Cosa |
+|--------|------|
+| Totali | partite, ore e miglia in mare, siluri lanciati e a segno, giocatori attivi; attività per giorno e per mese |
+| Scenari e lati | vittorie per lato e scenario (con il termine di vantaggio di lato della valutazione, §7.4), durata media, distanze medie di prima scoperta, mappe di calore degli ingaggi e degli affondamenti, mappa di densità delle quote e delle posizioni (dove ci si nasconde) |
+| Armi e contromisure | efficacia per arma e per fascia di distanza, efficacia delle esche, riuscita delle schivate per manovra |
+| Sensori | distribuzione delle distanze di scoperta per sensore e per ambiente, uso dello strato: lo stesso materiale fa da **rapporto di bilanciamento** (§5.11) |
+| Classifiche | valutazione; classifiche per statistica (con un minimo di partite); **albo d'oro** dei primati |
+| Sala operativa | missioni della comunità più giocate e meglio votate (§7.10) |
+
+Tabelle: `partite`, `partita_giocatori` (statistiche della partita in JSON, una riga per
+giocatore), `statistiche_giocatore` (totali per modo/lato/classe/scenario/periodo) e
+`statistiche_globali`, materializzate dal ricalcolo e aggiornate a fine partita. Il server di gioco
+calcola le statistiche della partita alla chiusura e le consegna a PHP; PHP le aggrega.
+
+### 7.10 Sala operativa: l'editor di missioni
+
+Proposta accettata dall'utente l'8/10/2026, fase **F5b** (§10). Il gioco del 1989 non aveva un
+editor: le missioni sono script compilati (`.TOK`) nelle MLB. Qui diventa una **stazione in più**,
+nello stesso stile Classic: 320×200, palette, font e cornici originali, tastiera come nel 1989
+(le lettere spostano il cursore, Invio esegue).
+
+- **Carta**: quella della Navigation Board con il fondale vero; si piazzano unità e rotte.
+- **Tavolozza delle unità** con le sagome originali del periscopio; pannello delle proprietà alla
+  maniera della barra del bersaglio; **briefing** scritto e mostrato come lo vedrà il giocatore.
+- **Cosa contiene una missione**: lo **stesso formato degli scenari** della palestra (F4 lo fissa
+  pensando all'editor), così il server la gioca senza codice speciale.
+  1. teatro: per ora i sette delle mappe originali, rifatti su batimetria vera (Faroe, Kola,
+     Gibilterra, Adriatico, Pacifico, Mare di Norvegia…); aree libere più avanti, perché fondale e
+     ambiente nuovi costano (scaricamento, elaborazione, licenze; EMODnet copre solo l'Europa);
+  2. anno (1985-1991: decide classi e armi, per esempio ADCAP solo dal 1988), stagione (profilo e
+     strato), stato del mare, giorno o notte;
+  3. forze: solo unità del catalogo con le fonti (nessun numero inventato), con posizione, rotta,
+     velocità, quota, comportamento e dotazione;
+  4. **copione** a righe «quando… allora…», ispirato alle istruzioni degli script originali
+     (IFC_HOSTILE, IFC_SURFACE…): condizioni (tempo, ingresso in un'area, scoperta, affondamento) e
+     azioni (cambio di rotta o velocità, messaggio radio, rinforzi, fine missione);
+  5. obiettivi e debriefing, con le cartoline originali.
+- **Controlli del server** prima della pubblicazione: unità in acqua e a quote possibili, rotte che
+  non tagliano la terra, partenze che non si scoprono a vicenda (l'editor mostra le **distanze di
+  scoperta stimate** con lo stesso codice del sonar), limiti di dimensione. Pulsante **«prova in
+  mare»**: la missione parte subito in singolo, anche a 32×.
+- **Le dieci missioni del 1989 come modelli**: un convertitore dai `.TOK` le apre nell'editor
+  («riapri TORPEX '89»). Si genera all'installazione dalla copia del gioco, come la grafica: niente
+  materiale originale nel repo.
+- **Regole decise con l'utente**: bozze per tutti, **pubblicazione dopo l'approvazione
+  dell'amministratore** (la registrazione è aperta e il briefing è testo libero), con segnalazioni;
+  le missioni della comunità contano **solo in singolo e in amichevole**, in classifica restano
+  quelle ufficiali; teatri: **i sette originali** per cominciare. Voti e numero di partite per
+  missione; pagina dell'autore.
 
 ---
 
@@ -851,9 +960,13 @@ nel browser.
 | **F3** | Colpire | Siluri completi, filo, esche, missili, danni per compartimento e controllo danni, Weapon Control e Status | Si affonda un bersaglio e si schiva un siluro in modo credibile |
 | **F4** | Il mondo del 1989 | Capitano IA, forze ASW, traffico, biologici, le dieci missioni ricostruite dagli script originali (posizioni, rotte, dotazioni) su batimetria vera, formato degli scenari, debriefing del CINC con le cartoline originali, singolo completo | La campagna si gioca da capo a fondo con entrambi i lati |
 | **F5** | Il duello | Lobby, sfide e codici, ciclo di vita della partita, riconnessione e ufficiale di guardia, resa, chat radio, scenari di duello, replay con la verità | Due giocatori si sfidano, uno cade e rientra, a fine partita rivedono tutto |
-| **F6** | Carriera | Glicko-2 con vantaggio di lato, classificata e amichevole, gradi, decorazioni, traguardi, statistiche personali e globali, storico | Le pagine pubbliche mostrano classifica e statistiche vere |
+| **F5b** | Sala operativa | Editor di missioni nello stile Classic (§7.10): carta, unità, rotte, copione «quando… allora…», briefing, controlli del server, prova in mare, convertitore delle dieci missioni originali, pubblicazione con approvazione, voti | Una missione nuova si scrive, si prova, si pubblica e un altro giocatore la gioca |
+| **F6** | Carriera | Glicko-2 con vantaggio di lato, classificata e amichevole, gradi, decorazioni, traguardi, **stato di servizio con le statistiche personali dettagliate e statistiche generali cumulative** (§7.9), storico | Le pagine pubbliche mostrano classifica e statistiche vere |
 | **F7** | Profondità | Altre classi (688I, Sturgeon, Victor III, Akula, Kilo…), armi per anno, mine, selettore d'anno, bilanciamento col bot | Il rapporto di bilanciamento è dentro le bande stabilite per ogni scenario in classifica |
 | **F8** | Rifinitura | Remastered, audio e sonar in cuffia, voci, tutorial contestuale, aiuto F1 per ogni comando, accessibilità, pannello admin | — |
+
+Il piano di dettaglio di F2, con i filoni di lavoro e i criteri, è in
+[`docs/F2_ASCOLTARE.md`](F2_ASCOLTARE.md).
 
 ---
 
@@ -954,6 +1067,14 @@ Con la mia raccomandazione; si possono prendere strada facendo.
 | D11 | Finestra storica | 1985-1991 con selettore d'anno / un anno fisso | **1985-1991 con selettore** |
 | D12 | Dati classificati | Valori nozionali dichiarati / inventati senza dirlo | **Nozionali dichiarati**, con il ragionamento in `docs/ricerca/` |
 | D13 | Lettera a Ratcliff | Sì / no | **Sì**, prima di aprire il servizio al pubblico |
+
+### 12.3 Decisioni dell'8/10/2026
+
+| # | Decisione | Conseguenza |
+|---|-----------|-------------|
+| D14 | **Editor di missioni** («Sala operativa», §7.10) come fase F5b, dopo il duello | Il formato degli scenari di F4 si disegna già pensando all'editor |
+| D15 | Missioni della comunità: bozze per tutti, **pubblicazione dopo approvazione**; contano solo in singolo e amichevole; per ora i **sette teatri originali** | Coda di approvazione nel pannello amministrativo; nessun effetto sulla valutazione |
+| D16 | **Statistiche personali nutrite e dettagliate** nel profilo, accanto ai gradi, e **statistiche generali** cumulative (§7.9) | Il **diario della partita** con eventi tipizzati va completo da F2; i totali sono ricalcolabili dai diari conservati |
 
 ---
 

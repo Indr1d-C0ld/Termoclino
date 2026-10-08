@@ -80,6 +80,19 @@ export function orologio(secondi) {
 }
 
 /**
+ * Un numero «12.3» col punto decimale di un solo pixel fra le cifre, come scriviDecimale (la barra del
+ * bersaglio del 1989 è stretta: «16.5» col punto del font finirebbe sopra DPT).
+ * @param {Tela} tela @param {FontGioco} font @param {number} x @param {number} y @param {string} s @param {number} colore
+ */
+function scriviConPunto(tela, font, x, y, s, colore) {
+  const i = s.indexOf('.');
+  if (i < 0) return scrivi(tela, font, x, y, s, colore);
+  const xi = i > 0 ? scrivi(tela, font, x, y, s.slice(0, i), colore) : x;
+  tela.pixel(xi - 1, y + 4, colore);
+  return scrivi(tela, font, xi, y, s.slice(i + 1), colore);
+}
+
+/**
  * Barra del bersaglio.
  * @param {Tela} tela @param {FontGioco} font
  * @param {{ bersaglio?: string, rilevamento?: string, distanza?: string, rotta?: string, velocita?: string, quota?: string }} v
@@ -87,9 +100,9 @@ export function orologio(secondi) {
 export function disegnaBarraBersaglio(tela, font, v) {
   if (v.bersaglio) scrivi(tela, font, 48, 6, perIlFont(v.bersaglio).slice(0, 44), 13);
   if (v.rilevamento) scrivi(tela, font, 49, 13, v.rilevamento, 13);
-  if (v.distanza) scrivi(tela, font, 113, 13, v.distanza, 13);
+  if (v.distanza) scriviConPunto(tela, font, 113, 13, v.distanza, 13);
   if (v.rotta) scrivi(tela, font, 182, 13, v.rotta, 13);
-  if (v.velocita) scrivi(tela, font, 241, 13, v.velocita, 13);
+  if (v.velocita) scriviConPunto(tela, font, 241, 13, v.velocita, 13);
   if (v.quota) {
     const x = scrivi(tela, font, 276, 13, v.quota, 13);
     scrivi(tela, font, x, 13, 'FT', 11);

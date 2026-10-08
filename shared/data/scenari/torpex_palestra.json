@@ -1573,5 +1573,826 @@
     "nota": "Si sposta lentamente."
    }
   }
- ]
+ ],
+ "propagazione": {
+  "formato": "termoclino-tl/1",
+  "generato_da": "tools/acustica/tabelle.py",
+  "descrizione": "Tabelle di perdita di trasmissione TL(distanza, quota della sorgente, quota del ricevitore, banda) calcolate fuori linea con il tracciatore di raggi di tools/acustica (PROGETTO §5.3), una per classe di fondale («regione»), e lette in linea da server/src/sim/world/propagazione.js. Metodo, convalida e taratura in docs/CALIBRAZIONE_F2.md.",
+  "metodo": "Raggi in forma chiusa in un ambiente indipendente dalla distanza (profilo lineare a tratti, fondo piatto per regione); intensita' semicoerente per tubi di raggi: somma incoerente dei raggi, ciascuno pesato col fattore dello specchio di Lloyd mediato sulla banda alla sorgente e (dopo un passaggio dal fondo) al ricevitore; lamelle minime di una lunghezza d'onda e due scale di Airy alle caustiche; nei canali chiusi da un punto d'inversione la correzione WKB (effetto tunnel di Kemble e sostegno del primo modo), che rende il canale superficiale sottile trasparente alle basse frequenze; riflessione di Rayleigh sul fondo piu' una perdita nozionale per rimbalzo, di Eckart in superficie; assorbimento di Ainslie & McColm sul cammino dei raggi. Lungo le distanze una media mobile [1, 2, 1]/4 dell'intensita' sui passi del 2,5 %. Lungo un percorso la lettura in linea media le tabelle delle classi di fondale incontrate (pesate per tratto) e aggiunge una perdita se il percorso passa sopra la terra.",
+  "profili": {
+   "stratificato": {
+    "descrizione": "Estate al largo del fronte di marea: strato rimescolato isotermo fino alla profondita' dello strato dello scenario, alla temperatura e salinita' climatologiche di quella quota; sotto, il profilo climatologico. E' la sonda tipo che la media climatologica smussa (nota di ambiente.strato.profondita).",
+    "profondita_strato": {
+     "valore": 21.0,
+     "unita": "m",
+     "fonte": "[WOA23] [DBM04]",
+     "confidenza": "calcolato",
+     "nota": "ambiente.strato.profondita."
+    },
+    "temperatura_strato": {
+     "valore": 10.496,
+     "unita": "°C",
+     "fonte": "[WOA23]",
+     "confidenza": "calcolato",
+     "nota": "Temperatura climatologica alla base dello strato."
+    },
+    "salinita_strato": {
+     "valore": 35.227,
+     "unita": "psu",
+     "fonte": "[WOA23]",
+     "confidenza": "calcolato"
+    },
+    "velocita_superficie": {
+     "valore": 1491.86,
+     "unita": "m/s",
+     "fonte": "[MACK81] [WOA23]",
+     "confidenza": "calcolato"
+    },
+    "velocita_base_strato": {
+     "valore": 1492.2,
+     "unita": "m/s",
+     "fonte": "[MACK81] [WOA23]",
+     "confidenza": "calcolato",
+     "nota": "Nello strato isotermo la velocita' cresce solo con la pressione: un canale superficiale sottile. Con la correzione WKB il primo modo vi esiste da circa 1,3-2,5 kHz ed e' molto perduto per effetto tunnel: per i sonar (sotto i 4 kHz) il canale quasi non intrappola; conta per le alte frequenze (25 kHz)."
+    }
+   },
+   "rimescolato": {
+    "descrizione": "Piattaforma interna, dentro il fronte di marea delle Faer Oer: colonna d'acqua omogenea tutto l'anno, alle medie climatologiche di temperatura e salinita' fra la superficie e il fondale della classe. Niente strato: la velocita' cresce dolcemente con la pressione e piega i raggi verso la superficie.",
+    "fronte": {
+     "valore": 150.0,
+     "unita": "m",
+     "fonte": "[LHS09]",
+     "confidenza": "stimato",
+     "nota": "Il fronte di marea sta fra le isobate di 100 e 150 m; dentro l'acqua e' omogenea anche d'estate. Le classi fino a 110 m sono rimescolate, quelle da 190 m stratificate: fra le due la lettura in linea interpola, ed e' il fronte."
+    }
+   }
+  },
+  "fondi": {
+   "ghiaia": {
+    "nome": "ghiaia",
+    "velocita": {
+     "valore": 1800.0,
+     "unita": "m/s",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Velocita' di compressione tipica (tab. 1.3)."
+    },
+    "densita": {
+     "valore": 2.0,
+     "unita": "1",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Rispetto all'acqua."
+    },
+    "attenuazione": {
+     "valore": 0.6,
+     "unita": "dB/λ",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Attenuazione di compressione."
+    },
+    "angolo_critico": {
+     "valore": 34.1,
+     "unita": "°",
+     "fonte": "[JKPS11] [CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Radenza sotto la quale la riflessione e' quasi totale, con 1490 m/s nell'acqua sul fondo."
+    }
+   },
+   "sabbia": {
+    "nome": "sabbia",
+    "velocita": {
+     "valore": 1650.0,
+     "unita": "m/s",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Velocita' di compressione tipica (tab. 1.3)."
+    },
+    "densita": {
+     "valore": 1.9,
+     "unita": "1",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Rispetto all'acqua."
+    },
+    "attenuazione": {
+     "valore": 0.8,
+     "unita": "dB/λ",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Attenuazione di compressione."
+    },
+    "angolo_critico": {
+     "valore": 25.4,
+     "unita": "°",
+     "fonte": "[JKPS11] [CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Radenza sotto la quale la riflessione e' quasi totale, con 1490 m/s nell'acqua sul fondo."
+    }
+   },
+   "sabbia_fangosa": {
+    "nome": "sabbia fangosa (limo)",
+    "velocita": {
+     "valore": 1575.0,
+     "unita": "m/s",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Velocita' di compressione tipica (tab. 1.3)."
+    },
+    "densita": {
+     "valore": 1.7,
+     "unita": "1",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Rispetto all'acqua."
+    },
+    "attenuazione": {
+     "valore": 1.0,
+     "unita": "dB/λ",
+     "fonte": "[JKPS11]",
+     "confidenza": "stimato",
+     "nota": "Attenuazione di compressione."
+    },
+    "angolo_critico": {
+     "valore": 18.9,
+     "unita": "°",
+     "fonte": "[JKPS11] [CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Radenza sotto la quale la riflessione e' quasi totale, con 1490 m/s nell'acqua sul fondo."
+    }
+   }
+  },
+  "perdita_fondo_extra": {
+   "perdita": {
+    "valore": 4.0,
+    "unita": "dB",
+    "fonte": "[FUN-8] [CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Perdita al rimbalzo sul fondo in piu' di quella del semispazio fluido liscio, uguale a ogni radenza, alla frequenza di riferimento: rugosita' (ghiaia, increspature, dune di sabbia di [MASSON03]), stratificazione dei sedimenti, diffusione di volume e pendenze del fondale vero, che il modello piatto e omogeneo non vede. Il semispazio da' sotto l'angolo critico solo 0,1-0,7 dB per rimbalzo su sabbia e ghiaia; [FUN-8] riporta da 2 a oltre 30 dB. Tarata perche' due 688 lenti sulla piattaforma si sentano a poche migliaia di iarde (PROGETTO §5.12): docs/CALIBRAZIONE_F2.md.",
+    "rif": "docs/CALIBRAZIONE_F2.md"
+   },
+   "frequenza": {
+    "valore": 2000.0,
+    "unita": "Hz",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Frequenza a cui vale `perdita`."
+   },
+   "esponente": {
+    "valore": 0.5,
+    "unita": "1",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "La perdita in piu' scala come (f / frequenza)^esponente: la rugosita' conta meno alle basse frequenze (1,5 dB a 300 Hz, 0,6 dB a 50 Hz, 14 dB a 25 kHz)."
+   }
+  },
+  "superficie": {
+   "stato_mare": {
+    "valore": 3,
+    "unita": "n",
+    "fonte": "[NCEP-R1]",
+    "confidenza": "calcolato",
+    "nota": "ambiente.mare.stato_predefinito: le tabelle valgono per questo stato del mare."
+   },
+   "altezza_onde": {
+    "valore": 0.26,
+    "unita": "m",
+    "fonte": "[PM64] [STOJ06]",
+    "confidenza": "calcolato",
+    "nota": "Altezza quadratica media delle onde, H1/3 / 4 con H1/3 = 0,0246 U10² (mare completamente sviluppato) e il vento della classe 3 (6,5 m/s)."
+   },
+   "frazione_avanti": {
+    "valore": 0.5,
+    "unita": "1",
+    "fonte": "[ECK53]",
+    "confidenza": "nozionale",
+    "nota": "Dell'energia che la superficie rugosa toglie alla riflessione coerente (1 - mu², mu = exp(-2 (k sigma sin theta)²)), quanta resta nel raggio; il resto si perde. Al massimo 3 dB per rimbalzo."
+   },
+   "altezza_significativa": {
+    "valore": 1.039,
+    "unita": "m",
+    "fonte": "[PM64] [STOJ06]",
+    "confidenza": "calcolato",
+    "nota": "H1/3 = 0,0246 U10² con il vento della classe 3."
+   },
+   "perdita_radenti": {
+    "valore": 4.28,
+    "unita": "dB",
+    "fonte": "[SCH68] [URICK83]",
+    "confidenza": "stimato",
+    "nota": "Perdita per rimbalzo dei raggi radenti a 2 kHz, formula empirica di Schulkin 1,64·√(f·H) (f in kHz, H altezza delle onde in piedi, qui H1/3), uguale a ogni radenza e moltiplicata alla riflessione di Eckart; va come la radice della frequenza: 1,7 dB a 300 Hz, 15,1 a 25 kHz. Senza, nell'acqua rimescolata della piattaforma interna (che piega i raggi verso la superficie) il suono andrebbe lontanissimo senza perdere quasi nulla."
+   }
+  },
+  "regioni": [
+   {
+    "id": "costa_30",
+    "nome": "acque costiere, 30 m",
+    "gruppo": "costa",
+    "fondale": {
+     "valore": 30.0,
+     "unita": "m",
+     "fonte": "[EMODNET-DTM] [CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Profondita' della tabella. Fra due classi la lettura in linea interpola nel logaritmo della profondita' locale."
+    },
+    "da": {
+     "valore": 0.0,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe precedente."
+    },
+    "a": {
+     "valore": 42.4,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe seguente."
+    },
+    "fondo": "ghiaia",
+    "nota_fondo": "Acque costiere fra le isole, battute dalle correnti di marea piu' forti dell'area: fondo grossolano. Nessun rilievo sedimentologico aperto letto per la piattaforma interna delle Faer Oer: nozionale, per analogia con la ghiaia residuale che [MASSON03] trova dove le correnti superano 1 m/s.",
+    "profilo": "rimescolato",
+    "area": {
+     "valore": 2.2,
+     "unita": "%",
+     "fonte": "[EMODNET-DTM]",
+     "confidenza": "calcolato",
+     "nota": "Frazione dei nodi di mare della griglia che cadono in questa classe."
+    }
+   },
+   {
+    "id": "costa_60",
+    "nome": "acque costiere, 60 m",
+    "gruppo": "costa",
+    "fondale": {
+     "valore": 60.0,
+     "unita": "m",
+     "fonte": "[EMODNET-DTM] [CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Profondita' della tabella. Fra due classi la lettura in linea interpola nel logaritmo della profondita' locale."
+    },
+    "da": {
+     "valore": 42.4,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe precedente."
+    },
+    "a": {
+     "valore": 81.2,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe seguente."
+    },
+    "fondo": "ghiaia",
+    "nota_fondo": "Come costa_30.",
+    "profilo": "rimescolato",
+    "area": {
+     "valore": 6.5,
+     "unita": "%",
+     "fonte": "[EMODNET-DTM]",
+     "confidenza": "calcolato",
+     "nota": "Frazione dei nodi di mare della griglia che cadono in questa classe."
+    }
+   },
+   {
+    "id": "piattaforma_110",
+    "nome": "piattaforma, 110 m",
+    "gruppo": "piattaforma",
+    "fondale": {
+     "valore": 110.0,
+     "unita": "m",
+     "fonte": "[EMODNET-DTM] [CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Profondita' della tabella. Fra due classi la lettura in linea interpola nel logaritmo della profondita' locale."
+    },
+    "da": {
+     "valore": 81.2,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe precedente."
+    },
+    "a": {
+     "valore": 144.6,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe seguente."
+    },
+    "fondo": "sabbia",
+    "nota_fondo": "Piattaforma: sabbia (nozionale). [MASSON03] descrive al ciglio della piattaforma (circa 200 m) ghiaia e sabbia mescolate, con sabbie mobili sopra un substrato di ghiaia.",
+    "profilo": "rimescolato",
+    "area": {
+     "valore": 25.8,
+     "unita": "%",
+     "fonte": "[EMODNET-DTM]",
+     "confidenza": "calcolato",
+     "nota": "Frazione dei nodi di mare della griglia che cadono in questa classe."
+    }
+   },
+   {
+    "id": "piattaforma_190",
+    "nome": "piattaforma, 190 m",
+    "gruppo": "piattaforma",
+    "fondale": {
+     "valore": 190.0,
+     "unita": "m",
+     "fonte": "[EMODNET-DTM] [CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Profondita' della tabella. Fra due classi la lettura in linea interpola nel logaritmo della profondita' locale."
+    },
+    "da": {
+     "valore": 144.6,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe precedente."
+    },
+    "a": {
+     "valore": 257.9,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe seguente."
+    },
+    "fondo": "sabbia",
+    "nota_fondo": "Come piattaforma_110; qui la colonna d'acqua e' gia' stratificata d'estate (fuori dal fronte di marea).",
+    "profilo": "stratificato",
+    "area": {
+     "valore": 38.2,
+     "unita": "%",
+     "fonte": "[EMODNET-DTM]",
+     "confidenza": "calcolato",
+     "nota": "Frazione dei nodi di mare della griglia che cadono in questa classe."
+    }
+   },
+   {
+    "id": "scarpata_350",
+    "nome": "scarpata, 350 m",
+    "gruppo": "scarpata",
+    "fondale": {
+     "valore": 350.0,
+     "unita": "m",
+     "fonte": "[EMODNET-DTM] [CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Profondita' della tabella. Fra due classi la lettura in linea interpola nel logaritmo della profondita' locale."
+    },
+    "da": {
+     "valore": 257.9,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe precedente."
+    },
+    "a": {
+     "valore": 458.3,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe seguente."
+    },
+    "fondo": "ghiaia",
+    "nota_fondo": "[MASSON03]: sulla scarpata superiore, sotto la corrente di pendio diretta a nord-est (oltre 0,75 m/s), sabbie mobili su un substrato prevalentemente di ghiaia, fino a circa 500 m.",
+    "profilo": "stratificato",
+    "area": {
+     "valore": 14.2,
+     "unita": "%",
+     "fonte": "[EMODNET-DTM]",
+     "confidenza": "calcolato",
+     "nota": "Frazione dei nodi di mare della griglia che cadono in questa classe."
+    }
+   },
+   {
+    "id": "scarpata_600",
+    "nome": "scarpata, 600 m",
+    "gruppo": "scarpata",
+    "fondale": {
+     "valore": 600.0,
+     "unita": "m",
+     "fonte": "[EMODNET-DTM] [CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Profondita' della tabella. Fra due classi la lettura in linea interpola nel logaritmo della profondita' locale."
+    },
+    "da": {
+     "valore": 458.3,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe precedente."
+    },
+    "a": {
+     "valore": 734.8,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe seguente."
+    },
+    "fondo": "sabbia_fangosa",
+    "nota_fondo": "[MASSON03]: sulla scarpata inferiore e sul fondo dei canali meridionali, veli di sabbia e sabbia fangosa depositati dalle correnti di fondo (0,3-0,4 m/s); qui i parametri del limo.",
+    "profilo": "stratificato",
+    "area": {
+     "valore": 6.5,
+     "unita": "%",
+     "fonte": "[EMODNET-DTM]",
+     "confidenza": "calcolato",
+     "nota": "Frazione dei nodi di mare della griglia che cadono in questa classe."
+    }
+   },
+   {
+    "id": "canale_900",
+    "nome": "canale, 900 m",
+    "gruppo": "canale",
+    "fondale": {
+     "valore": 900.0,
+     "unita": "m",
+     "fonte": "[EMODNET-DTM] [CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Profondita' della tabella. Fra due classi la lettura in linea interpola nel logaritmo della profondita' locale."
+    },
+    "da": {
+     "valore": 734.8,
+     "unita": "m",
+     "fonte": "[CALC-TL]",
+     "confidenza": "calcolato",
+     "nota": "Media geometrica con la classe precedente."
+    },
+    "fondo": "ghiaia",
+    "nota_fondo": "[MASSON03]: nel Canale delle Faer Oer i sedimenti piu' grossolani stanno lungo il bordo settentrionale, ai piedi della piattaforma delle Faer Oer: ghiaia solcata dalle correnti fra 750 e 1200 m. La parte del canale nell'area e' quella.",
+    "profilo": "stratificato",
+    "area": {
+     "valore": 6.6,
+     "unita": "%",
+     "fonte": "[EMODNET-DTM]",
+     "confidenza": "calcolato",
+     "nota": "Frazione dei nodi di mare della griglia che cadono in questa classe."
+    }
+   }
+  ],
+  "bande": [
+   {
+    "id": "sfera",
+    "uso": "banda larga della sfera (ottava di acustica.json)",
+    "centro": {
+     "valore": 2000.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL] [URICK83]",
+     "confidenza": "nozionale",
+     "nota": "Come bande.sfera di acustica.json."
+    },
+    "da": {
+     "valore": 1414.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Come in acustica.json."
+    },
+    "a": {
+     "valore": 2828.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Come in acustica.json."
+    },
+    "alfa": {
+     "valore": 0.141531,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   },
+   {
+    "id": "towed",
+    "uso": "banda larga dell'antenna rimorchiata (ottava di acustica.json)",
+    "centro": {
+     "valore": 300.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL] [URICK83]",
+     "confidenza": "nozionale",
+     "nota": "Come bande.towed di acustica.json."
+    },
+    "da": {
+     "valore": 212.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Come in acustica.json."
+    },
+    "a": {
+     "valore": 424.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Come in acustica.json."
+    },
+    "alfa": {
+     "valore": 0.010354,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   },
+   {
+    "id": "f50",
+    "uso": "righe tonali basse (rete elettrica, pale)",
+    "centro": {
+     "valore": 50.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Frequenza di riferimento: la lettura per frequenza interpola fra le bande strette nel logaritmo della frequenza."
+    },
+    "da": {
+     "valore": 45.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro meno il 10 %: la media sulla banda smussa le frange dello specchio di Lloyd."
+    },
+    "a": {
+     "valore": 55.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro piu' il 10 %."
+    },
+    "alfa": {
+     "valore": 0.000307,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   },
+   {
+    "id": "f100",
+    "uso": "righe tonali",
+    "centro": {
+     "valore": 100.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Frequenza di riferimento: la lettura per frequenza interpola fra le bande strette nel logaritmo della frequenza."
+    },
+    "da": {
+     "valore": 90.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro meno il 10 %: la media sulla banda smussa le frange dello specchio di Lloyd."
+    },
+    "a": {
+     "valore": 110.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro piu' il 10 %."
+    },
+    "alfa": {
+     "valore": 0.001221,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   },
+   {
+    "id": "f300",
+    "uso": "righe tonali",
+    "centro": {
+     "valore": 300.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Frequenza di riferimento: la lettura per frequenza interpola fra le bande strette nel logaritmo della frequenza."
+    },
+    "da": {
+     "valore": 270.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro meno il 10 %: la media sulla banda smussa le frange dello specchio di Lloyd."
+    },
+    "a": {
+     "valore": 330.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro piu' il 10 %."
+    },
+    "alfa": {
+     "valore": 0.010354,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   },
+   {
+    "id": "f1000",
+    "uso": "righe tonali alte",
+    "centro": {
+     "valore": 1000.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Frequenza di riferimento: la lettura per frequenza interpola fra le bande strette nel logaritmo della frequenza."
+    },
+    "da": {
+     "valore": 900.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro meno il 10 %: la media sulla banda smussa le frange dello specchio di Lloyd."
+    },
+    "a": {
+     "valore": 1100.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro piu' il 10 %."
+    },
+    "alfa": {
+     "valore": 0.071179,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   },
+   {
+    "id": "f3500",
+    "uso": "sonar attivo BQQ-5 e intercettazione (WLR-9)",
+    "centro": {
+     "valore": 3500.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Frequenza di riferimento: la lettura per frequenza interpola fra le bande strette nel logaritmo della frequenza."
+    },
+    "da": {
+     "valore": 3150.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro meno il 10 %: la media sulla banda smussa le frange dello specchio di Lloyd."
+    },
+    "a": {
+     "valore": 3850.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro piu' il 10 %."
+    },
+    "alfa": {
+     "valore": 0.236327,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   },
+   {
+    "id": "f25000",
+    "uso": "teste dei siluri e sonar ad alta frequenza (F3)",
+    "centro": {
+     "valore": 25000.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Frequenza di riferimento: la lettura per frequenza interpola fra le bande strette nel logaritmo della frequenza."
+    },
+    "da": {
+     "valore": 22500.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro meno il 10 %: la media sulla banda smussa le frange dello specchio di Lloyd."
+    },
+    "a": {
+     "valore": 27500.0,
+     "unita": "Hz",
+     "fonte": "[CALC-TL]",
+     "confidenza": "nozionale",
+     "nota": "Centro piu' il 10 %."
+    },
+    "alfa": {
+     "valore": 5.255222,
+     "unita": "dB/km",
+     "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+     "confidenza": "calcolato",
+     "nota": "Ainslie & McColm al centro della banda nell'acqua dello scenario (ambiente.assorbimento): nelle tabelle e' tolto (alfa per distanza) e la lettura lo rimette."
+    }
+   }
+  ],
+  "quote": {
+   "serie": [
+    2.0,
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    32.0,
+    45.0,
+    65.0,
+    90.0,
+    125.0,
+    175.0,
+    250.0,
+    350.0,
+    500.0,
+    700.0
+   ],
+   "unita": "m",
+   "fonte": "[CALC-TL]",
+   "confidenza": "nozionale",
+   "nota": "Quote delle sorgenti e dei ricevitori; in ogni tabella valgono quelle sotto fondale - 1, piu' fondale - 1. Fitte vicino alla superficie e intorno allo strato (eliche delle navi a 5-6 m, sfera a quota periscopica a 13 m, strato a 21 m). Fra due quote si interpola linearmente in dB."
+  },
+  "distanze": {
+   "prima": {
+    "valore": 25.0,
+    "unita": "m",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Prima distanza della tabella; sotto, divergenza sferica sulla distanza obliqua raccordata al primo valore."
+   },
+   "rapporto": {
+    "valore": 1.025,
+    "unita": "1",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Progressione geometrica: un passo del 2,5 % (25 m a 1 km, 1 km a 40 km)."
+   },
+   "numero": {
+    "valore": 382,
+    "unita": "n",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Fino a oltre 300 km."
+   }
+  },
+  "codifica": {
+   "passo": {
+    "valore": 0.5,
+    "unita": "dB",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Un byte per valore: TL - 20 log10 r - alfa r."
+   },
+   "zero": {
+    "valore": 100,
+    "unita": "n",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Codice dello zero: da -50 a +77,5 dB rispetto alla divergenza sferica (oltre, il percorso e' comunque muto)."
+   }
+  },
+  "percorso": {
+   "campioni": {
+    "valore": 15,
+    "unita": "n",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Punti del fondale letti al piu' lungo il segmento sorgente-ricevitore (estremi esclusi): costo limitato e costante. Un'isola piu' stretta della distanza fra due campioni puo' sfuggire (oltre i 32 km i campioni si diradano: 18 km su 280 km)."
+   },
+   "passo_campioni": {
+    "valore": 2000.0,
+    "unita": "m",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Un campione ogni tanti metri fino al massimo di `campioni`: la griglia del fondale e' di 500 m, isole e pendenze si misurano in chilometri."
+   },
+   "soglia_terra": {
+    "valore": 1.0,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "Un campione con meno acqua di cosi' e' terra."
+   },
+   "perdita_terra": {
+    "valore": 40.0,
+    "unita": "dB",
+    "fonte": "[CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Perdita in piu' se il percorso passa sopra la terra: l'isola fa ombra, e intorno passa solo la diffrazione. Nessun valore aperto; in F1 la terra non faceva ombra."
+   },
+   "perdita_strato": {
+    "valore": 0.0,
+    "unita": "dB",
+    "fonte": "[CW-MOD] [CALC-TL]",
+    "confidenza": "nozionale",
+    "nota": "Regola di gioco facoltativa: perdita in piu' per i percorsi con sorgente e ricevitore da parti opposte dello strato, per la frazione di percorso in acqua stratificata (da 500 a 2000 m raccordata, come in F1). Zero: vale solo la fisica delle tabelle, nella quale lo strato estivo di 21 m nasconde poco (docs/CALIBRAZIONE_F2.md, dove sta anche il valore che ridarebbe le bande dello strato di F1)."
+   }
+  },
+  "tabella": {
+   "file": "torpex_palestra.tl.bin",
+   "codifica": "uint8",
+   "byte": 1906976,
+   "sha256": "501d093c90e44661324c9c67e765fe5a02dd5773ebb256be83ecb45215641427"
+  }
+ }
 }

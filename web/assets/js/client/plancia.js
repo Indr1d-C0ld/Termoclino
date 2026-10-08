@@ -1,6 +1,6 @@
 // @ts-check
 /**
- * Plancia — client di gioco, resa Classic (fase F1).
+ * Plancia — client di gioco, resa Classic (fasi F1-F2).
  *
  * Collega i pezzi: la grafica originale (dalla rotta autenticata /originali/), la regia che compone le
  * stazioni sulla tela indicizzata, lo schermo che la mostra ingrandita al pixel, tastiera e mouse, e il
@@ -8,12 +8,18 @@
  * nuovo: il ciclo di F0, ora in rete.js).
  *
  * L'indirizzo del server lo dà la pagina (configurazione `gioco.ws_url`, che PHP mette anche nella
- * Content-Security-Policy). Per lavorare col finto server (tests/strumenti/finto_server.mjs) si avvia
+ * Content-Security-Policy). In F2 carica anche, senza bloccare l'avvio, le sagome del periscopio (dalla
+ * rotta autenticata, come il resto della grafica originale) e il libro delle firme (dati comuni, da
+ * /assets/shared/data/), e ricorda nel browser il livello di assistenza scelto (comodità del singolo
+ * giocatore: il livello in vigore lo dice il server). Per lavorare col finto server
+ * (tests/strumenti/finto_server.mjs) si avvia
  * un sito di sviluppo con TERMOCLINO_CONFIG=tests/strumenti/config_finto_server.php: un parametro
  * nell'indirizzo non basterebbe, perché la CSP bloccherebbe il collegamento. In sviluppo (app.debug,
  * data-sviluppo="1") la regia è raggiungibile dalla console come `termoclino`.
  */
-import { caricaOriginali, lettoreHttp } from './resa/risorse.js';
+import { caricaOriginali, caricaSagome, lettoreHttp } from './resa/risorse.js';
+import { caricaBiblioteca } from './biblioteca.js';
+import { ASSISTENZA_PREDEFINITA, LIVELLI_ASSISTENZA } from '../../shared/protocol.js';
 import { Schermo } from './resa/schermo.js';
 import { Regia } from './regia.js';
 import { Ingressi } from './ingressi.js';
@@ -61,8 +67,21 @@ async function avvia() {
 
   /** @type {Collegamento | null} */
   let rete = null;
-  const regia = new Regia({ orig, lingua, ordina: (cosa, valore, n) => rete?.ordina(cosa, valore, n) });
+  const regia = new Regia({
+    orig, lingua, ordina: (cosa, valore, n) => rete?.ordina(cosa, valore, n),
+    assistenza: livelloRicordato(), salvaAssistenza: ricordaLivello,
+  });
   const schermo = new Schermo(canvas, orig.palette);
+  let paletteAttuale = 'giorno';
+
+  // sagome del periscopio e libro delle firme: arrivano mentre si gioca già
+  caricaSagome(orig, lettoreHttp(d.originali ?? '/originali/')).catch(() => 0);
+  const baseShared = new URL(d.shared ?? '/assets/shared/', location.href);
+  caricaBiblioteca(async (p) => {
+    const r = await fetch(new URL(p, baseShared), { credentials: 'same-origin' });
+    if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`);
+    return r.json();
+  }).then((b) => { regia.biblioteca = b; }).catch(() => {});
 
   // fondale: sintetico subito, quello vero appena la partita dice lo scenario
   let scenarioFondale = '';
@@ -92,6 +111,7 @@ async function avvia() {
     ws: d.ws ?? '',
     biglietto: d.biglietto ?? '',
     nuovoBiglietto: () => chiediBiglietto(d.urlBiglietto ?? '', d.csrf ?? ''),
+    assistenza: () => regia.ui.assistenza,
     suMessaggio: (m) => {
       regia.ricevi(m);
       if (m.t === 'partita' && regia.stato.partita) fondalePer(regia.stato.partita);
@@ -144,6 +164,12 @@ async function avvia() {
   const ciclo = (/** @type {number} */ t) => {
     if (!regia.ui.capo) {
       regia.componi(t / 1000);
+      // di notte, al periscopio, la palette NIGHT (cielo blu notte, sagome rosse)
+      const p = regia.palette;
+      if (p !== paletteAttuale) {
+        paletteAttuale = p;
+        schermo.cambiaPalette(p === 'notte' ? orig.paletteNotte : orig.palette);
+      }
       schermo.presenta(regia.tela);
     }
     requestAnimationFrame(ciclo);
@@ -152,6 +178,25 @@ async function avvia() {
   radice.scrollIntoView({ block: 'start' });
   canvas.focus({ preventScroll: true });
   rete.apri();
+}
+
+/** Il livello di assistenza scelto l'ultima volta in questo browser (o il predefinito). */
+function livelloRicordato() {
+  try {
+    const v = Number(localStorage.getItem('termoclino.assistenza'));
+    return LIVELLI_ASSISTENZA.includes(v) && localStorage.getItem('termoclino.assistenza') !== null ? v : ASSISTENZA_PREDEFINITA;
+  } catch {
+    return ASSISTENZA_PREDEFINITA;
+  }
+}
+
+/** @param {number} livello */
+function ricordaLivello(livello) {
+  try {
+    localStorage.setItem('termoclino.assistenza', String(livello));
+  } catch {
+    // archiviazione del browser non disponibile: si ricorderà solo per questa partita
+  }
 }
 
 avvia();

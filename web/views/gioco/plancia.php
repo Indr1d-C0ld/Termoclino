@@ -24,7 +24,7 @@ $sviluppo = (bool) config('app.debug', false);
   </div>
   <p class="riga-stato"><span class="spia" data-stato="spento"></span>
     <span id="stato-collegamento">In attesa del collegamento…</span>
-    <span class="tasti">F1 aiuto · F2–F8 stazioni · F9 CONN · F10 capo</span></p>
+    <span class="tasti">F1 aiuto e assistenza · F2–F8 stazioni · F9 CONN · F10 capo</span></p>
   <p class="crediti" id="crediti-mappa" hidden></p>
 </div>
 

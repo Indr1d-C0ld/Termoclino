@@ -108,9 +108,11 @@ export class Palestra {
    * @param {number} uid
    * @param {string} nome
    * @param {Canale} canale
+   * @param {{assistenza?: number}} [opzioni]  livello di assistenza (PROTOCOLLO v2, `entra`); chi riprende
+   *   il proprio battello tiene il livello che aveva (lo cambia con l'ordine `assistenza`)
    * @returns {Promise<{ok: true} | {ok: false, errore: string}>}
    */
-  async entra(uid, nome, canale) {
+  async entra(uid, nome, canale, opzioni = {}) {
     const partita = await this._partita();
     const vecchio = this.canali.get(uid);
     const adesso = this.adessoMs();
@@ -121,7 +123,7 @@ export class Palestra {
       canale.invia(DAL_SERVER.PARTITA, partita.descrizione(g));
       partita.riprendi(uid, canale.invia, adesso);
     } else {
-      g = partita.aggiungiGiocatore(uid, nome, canale.invia);
+      g = partita.aggiungiGiocatore(uid, nome, canale.invia, opzioni);
       if (!g) return { ok: false, errore: ERRORI.PARTITA_PIENA };
       this.canali.set(uid, canale);
       canale.invia(DAL_SERVER.PARTITA, partita.descrizione(g));

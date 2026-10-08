@@ -1,14 +1,18 @@
 // @ts-check
 /**
- * Decodifica dei PNG indicizzati dell'estrattore (sale di controllo, ritratti dell'equipaggio).
+ * Decodifica dei PNG dell'estrattore: quelli indicizzati (sale di controllo, ritratti dell'equipaggio)
+ * e quelli RGBA (le sagome del periscopio, scritte in RGBA con il nibble trasparente).
  *
  * La resa Classic lavora in indici di palette, e le immagini originali sono PNG «a palette» (tipo di
  * colore 3, profondità 8 o 4) scritti da estrai688.py. Passarle dal decodificatore del browser
  * vorrebbe dire tornare da RGB agli indici, con il rischio della gestione del colore; qui invece si
  * leggono gli indici così come sono, con `DecompressionStream` (browser e Node 18+), senza dipendenze.
+ * Le sagome RGBA (tipo 6, 8 bit) si leggono allo stesso modo e si riportano agli indici con
+ * `rgbaInIndici`, confrontando i colori con quelli esatti della palette (sono stati scritti da lì).
  */
 
 /** @typedef {{ larghezza: number, altezza: number, indici: Uint8Array }} ImmagineIndicizzata */
+/** @typedef {{ larghezza: number, altezza: number, rgba: Uint8Array }} ImmagineRgba */
 
 /** @param {Uint8Array} b @param {number} o */
 function u32(b, o) {
@@ -30,10 +34,10 @@ function paeth(a, b, c) {
 }
 
 /**
+ * Legge il PNG fino alle righe di byte già senza filtro (una riga = `passo` byte).
  * @param {Uint8Array} byte il file PNG
- * @returns {Promise<ImmagineIndicizzata>}
  */
-export async function decodificaPngIndicizzato(byte) {
+async function righeGrezze(byte) {
   const firma = [137, 80, 78, 71, 13, 10, 26, 10];
   if (!firma.every((v, i) => byte[i] === v)) throw new Error('non è un PNG');
   let larghezza = 0, altezza = 0, profondita = 0, tipo = 0, interlacciato = 0;
@@ -54,15 +58,19 @@ export async function decodificaPngIndicizzato(byte) {
     else if (nome === 'IEND') break;
     o += 12 + lung;
   }
-  if (tipo !== 3 || interlacciato !== 0 || ![1, 2, 4, 8].includes(profondita)) {
+  const canali = tipo === 6 ? 4 : tipo === 3 ? 1 : 0;
+  const ammessa = tipo === 3 ? [1, 2, 4, 8].includes(profondita) : profondita === 8;
+  if (!canali || interlacciato !== 0 || !ammessa) {
     throw new Error(`PNG non supportato (tipo ${tipo}, profondità ${profondita}, interlacciato ${interlacciato})`);
   }
   const compressi = new Uint8Array(idat.reduce((n, c) => n + c.length, 0));
   let k = 0;
   for (const c of idat) { compressi.set(c, k); k += c.length; }
   const grezzi = await gonfia(compressi);
-  const passo = Math.ceil((larghezza * profondita) / 8);
-  const indici = new Uint8Array(larghezza * altezza);
+  const passo = Math.ceil((larghezza * profondita * canali) / 8);
+  // byte per pixel ai fini dei filtri (almeno 1)
+  const bpp = Math.max(1, (profondita * canali) >> 3);
+  const righe = new Uint8Array(passo * altezza);
   let prec = new Uint8Array(passo);
   let riga = new Uint8Array(passo);
   for (let y = 0; y < altezza; y++) {
@@ -70,7 +78,7 @@ export async function decodificaPngIndicizzato(byte) {
     const filtro = grezzi[base];
     for (let x = 0; x < passo; x++) {
       const v = grezzi[base + 1 + x];
-      const a = x > 0 ? riga[x - 1] : 0, b = prec[x], c = x > 0 ? prec[x - 1] : 0;
+      const a = x >= bpp ? riga[x - bpp] : 0, b = prec[x], c = x >= bpp ? prec[x - bpp] : 0;
       let r;
       switch (filtro) {
         case 0: r = v; break;
@@ -82,13 +90,71 @@ export async function decodificaPngIndicizzato(byte) {
       }
       riga[x] = r & 0xff;
     }
-    const perByte = 8 / profondita, maschera = (1 << profondita) - 1;
+    righe.set(riga, y * passo);
+    [prec, riga] = [riga, prec];
+  }
+  return { larghezza, altezza, profondita, tipo, passo, righe };
+}
+
+/**
+ * @param {Uint8Array} byte il file PNG (a palette)
+ * @returns {Promise<ImmagineIndicizzata>}
+ */
+export async function decodificaPngIndicizzato(byte) {
+  const g = await righeGrezze(byte);
+  if (g.tipo !== 3) throw new Error(`PNG non supportato (tipo ${g.tipo}): serve un PNG a palette`);
+  const { larghezza, altezza, profondita, passo, righe } = g;
+  const indici = new Uint8Array(larghezza * altezza);
+  const perByte = 8 / profondita, maschera = (1 << profondita) - 1;
+  for (let y = 0; y < altezza; y++) {
     for (let x = 0; x < larghezza; x++) {
-      const byteRiga = riga[Math.floor(x / perByte)];
+      const byteRiga = righe[y * passo + Math.floor(x / perByte)];
       const spost = 8 - profondita * ((x % perByte) + 1);
       indici[y * larghezza + x] = (byteRiga >> spost) & maschera;
     }
-    [prec, riga] = [riga, prec];
   }
   return { larghezza, altezza, indici };
+}
+
+/**
+ * @param {Uint8Array} byte il file PNG (RGBA, 8 bit per canale)
+ * @returns {Promise<ImmagineRgba>}
+ */
+export async function decodificaPngRgba(byte) {
+  const g = await righeGrezze(byte);
+  if (g.tipo !== 6) throw new Error(`PNG non supportato (tipo ${g.tipo}): serve un PNG RGBA`);
+  return { larghezza: g.larghezza, altezza: g.altezza, rgba: g.righe };
+}
+
+/**
+ * Da RGBA agli indici di palette: ogni pixel opaco prende l'indice, fra `primo` e `ultimo`, del
+ * colore esattamente uguale (o il più vicino, per sicurezza); i pixel trasparenti diventano
+ * `trasparente`. Le sagome del periscopio sono il nibble n disegnato come 90h + n nella palette DAY.
+ * @param {ImmagineRgba} img @param {number[][]} palette @param {number} primo @param {number} ultimo
+ * @param {number} trasparente indice dei pixel trasparenti (da saltare poi in Tela.incolla)
+ * @returns {ImmagineIndicizzata}
+ */
+export function rgbaInIndici(img, palette, primo, ultimo, trasparente) {
+  const n = img.larghezza * img.altezza;
+  const indici = new Uint8Array(n);
+  /** @type {Map<number, number>} */
+  const memo = new Map();
+  for (let i = 0; i < n; i++) {
+    const r = img.rgba[4 * i], g = img.rgba[4 * i + 1], b = img.rgba[4 * i + 2], a = img.rgba[4 * i + 3];
+    if (a < 128) { indici[i] = trasparente; continue; }
+    const k = (r << 16) | (g << 8) | b;
+    let idx = memo.get(k);
+    if (idx === undefined) {
+      let migliore = primo, dmin = Infinity;
+      for (let j = primo; j <= ultimo; j++) {
+        const c = palette[j] ?? [0, 0, 0];
+        const d = (c[0] - r) ** 2 + (c[1] - g) ** 2 + (c[2] - b) ** 2;
+        if (d < dmin) { dmin = d; migliore = j; }
+      }
+      idx = migliore;
+      memo.set(k, idx);
+    }
+    indici[i] = idx;
+  }
+  return { larghezza: img.larghezza, altezza: img.altezza, indici };
 }

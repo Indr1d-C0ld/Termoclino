@@ -1,6 +1,6 @@
 {
   "formato": "termoclino-acustica/1",
-  "aggiornato": "2026-10-07",
+  "aggiornato": "2026-10-08",
   "descrizione": "Costanti assolute del modello acustico analitico di F1 (livello C di docs/ricerca/05_acustica.md §6.3). Le piattaforme danno solo scarti relativi (gradino_sl0, rumore proprio a 1 kHz); qui stanno i livelli assoluti, le bande, le soglie e le sorgenti di superficie. Taratura e portate risultanti: docs/CALIBRAZIONE_F1.md. Tutti i livelli sono spettrali (dB re 1 µPa²/Hz, sorgenti a 1 m).",
   "bande": {
     "sfera": {
@@ -32,7 +32,8 @@
   },
   "rumore_proprio": {
     "pendenza_spettro": {"valore": -20, "unita": "dB/decade", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Sposta il rumore proprio dei sensori di scafo, dato a 1 kHz (acustica.rumore_proprio.livello_macchinario), alla banda della sfera: −6 dB a 2 kHz. Con mare forza 3 il rumore proprio comincia a dominare intorno ai 15 kt, come chiede 05 §7.1.", "rif": "05_acustica.md §7.1"},
-    "towed_base": {"valore": 33, "unita": "dB", "fonte": "[FUN-8] [WP-TAS]", "confidenza": "nozionale", "nota": "Rumore proprio dell'antenna rimorchiata a velocita' minima nella banda dei 300 Hz. Il livello_macchinario delle piattaforme (45 dB a 1 kHz, misurato sullo scafo) applicato all'antenna con v₀ = 3 kt la renderebbe sorda gia' a 6 kt, contro le regole R2 (piena efficacia fino a 8 kt, sorda oltre 12): l'antenna sta 800 m a poppa, lontana dai macchinari. Con 33 dB il rumore di flusso pareggia il mare forza 3 a circa 9 kt e lo supera di 4 dB a 12 kt.", "rif": "04_sensori.md §4.6.2"}
+    "towed_base": {"valore": 33, "unita": "dB", "fonte": "[FUN-8] [WP-TAS]", "confidenza": "nozionale", "nota": "Rumore proprio dell'antenna rimorchiata a velocita' minima nella banda dei 300 Hz. Il livello_macchinario delle piattaforme (45 dB a 1 kHz, misurato sullo scafo) applicato all'antenna con v₀ = 3 kt la renderebbe sorda gia' a 6 kt, contro le regole R2 (piena efficacia fino a 8 kt, sorda oltre 12): l'antenna sta 800 m a poppa, lontana dai macchinari. Con 33 dB il rumore di flusso pareggia il mare forza 3 a circa 9 kt e lo supera di 4 dB a 12 kt.", "rif": "04_sensori.md §4.6.2"},
+    "pendenza_towed": {"valore": -20, "unita": "dB/decade", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "F2: il rumore di flusso dell'antenna cala con la frequenza (e' «soprattutto a bassa frequenza», [FUN-8 §8.8.1.2]): towed_base vale a 300 Hz, sotto il ginocchio dello spettro (100 Hz) resta piatto. A 60 Hz l'antenna resta comunque limitata dal rumore del mare.", "rif": "05_acustica.md §7.1"}
   },
   "propagazione": {
     "distanza_transizione_min": {"valore": 100, "unita": "m", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "TL = 20·log r fino a r₀, poi 10·log(r/r₀) in piu' (divergenza cilindrica, PROGETTO §5.3): r₀ e' la profondita' dell'acqua (la piu' bassa fra sorgente, ricevitore e punto medio), mai sotto questo valore.", "rif": "05_acustica.md §2.1, §5.5"},
@@ -54,6 +55,32 @@
       "rischio_danno": {"valore": 0.05, "unita": "1", "fonte": "[WP-TAS] [MAN-688]", "confidenza": "nozionale", "nota": "Probabilita' al minuto, per ogni nodo oltre velocita_danno, di perdere l'antenna (la resistenza cresce col quadrato della velocita'). A 25 kt: circa 30 % al minuto."},
       "velocita_filare_max": {"valore": 12, "unita": "kt", "fonte": "[WP-TAS]", "confidenza": "nozionale", "nota": "Sopra questa velocita' l'antenna non si fila ne' si ritira: il cavo resta fermo finche' non si rallenta."}
     }
+  },
+  "banda_stretta": {
+    "tempo_integrazione": {"valore": 60, "unita": "s", "fonte": "[URICK83] [FUN-8]", "confidenza": "nozionale", "nota": "F2: integrazione dell'analisi a banda stretta (LOFAR e fotogrammi a banda stretta), nella soglia DT = 5·log(d·B/t) di una riga in una cella di larghezza B: 1-3 minuti per la banda stretta in 04 §4.6.4. Con celle di 1 Hz la soglia vale −3,2 dB (contro −9,4 della banda larga dell'antenna, che pero' somma 212 Hz di spettro).", "rif": "04_sensori.md §4.6.4"},
+    "ginocchio_spettro": {"valore": 100, "unita": "Hz", "fonte": "[ARX2402] [MCK12]", "confidenza": "nozionale", "nota": "F2: lo spettro a banda larga di Ross (−20·log f) vale da qualche centinaio di Hz in su; sotto i 100 Hz lo spettro delle navi si appiattisce e si tiene costante. Alle bande di F1 (300 Hz e 2 kHz) non cambia niente."},
+    "pendenza_fuori_banda": {"valore": 40, "unita": "dB/decade", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "F2: fuori dalla banda di un sensore (banda_min, banda_max nei dati di piattaforma) la risposta cala di 40 dB per decade: il LOFAR della sfera sotto i 500 Hz e quello dell'antenna sotto i 30 Hz restano quasi vuoti."}
+  },
+  "demon": {
+    "tempo_integrazione": {"valore": 60, "unita": "s", "fonte": "[SENS21] [CONO]", "confidenza": "nozionale", "nota": "F2: integrazione dello spettro della modulazione (celle da 0,1 Hz). Modello: una riga di modulazione d'indice m su un rumore con rapporto segnale/rumore s nella banda B del sensore da' nella cella b il rapporto r = (m²/2)·(s/(1+S))²·(B/b), con S la somma dei rapporti di tutte le sorgenti nel fascio; SE = 10·log r − 5·log(d/(b·t)). Il DEMON chiede un contatto gia' forte a banda larga.", "rif": "docs/CALIBRAZIONE_F2.md"}
+  },
+  "attivo": {
+    "velocita_suono": {"valore": 1500, "unita": "m/s", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "F2: velocita' del suono con cui si misurano le distanze degli echi e si calcolano i tempi d'arrivo (ping, intercettazioni, transitori). Il profilo vero dello scenario va da circa 1 480 a 1 495 m/s: l'errore di distanza che ne viene sta dentro sigma_distanza_relativa."},
+    "lobi_trasmissione": {"valore": -20, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "F2: livello dei lobi laterali del fascio di trasmissione puntato, per chi sta fuori dal fascio ma dentro il settore."},
+    "retro_trasmissione": {"valore": -30, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "F2: quanto arriva del ping dietro il settore di trasmissione (la sfera trasmette verso prua)."},
+    "sigma_distanza_relativa": {"valore": 0.003, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "F2: errore relativo della distanza dovuto alla velocita' del suono supposta (0,3 %)."},
+    "frazione_risoluzione": {"valore": 0.5, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "F2: σ della distanza = frazione · (c·τ/2) · 10^(−SE/20) piu' la parte relativa: un impulso lungo misura peggio la distanza.", "rif": "04_sensori.md §4.6.1"},
+    "angolo_verticale": {"valore": 7.2, "unita": "°", "fonte": "[GUS-GAK]", "confidenza": "stimato", "nota": "F2: ampiezza verticale dei fasci attivi della sfera (6° × 7,2°): entra nel volume che riverbera e pesa la superficie e il fondo (da vicino stanno fuori dal fascio)."},
+    "guadagno_doppler_max": {"valore": 20, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "F2: tetto del guadagno contro la riverberazione quando l'eco di un bersaglio in moto radiale cade fuori dallo spettro della riverberazione: 10·log(Δf·τ) con Δf = 2·v/c·f. E' il motivo per cui l'impulso lungo serve: contro un bersaglio senza moto radiale in acque basse rende meno del corto."}
+  },
+  "riverberazione": {
+    "lambert_mu": {"valore": -27, "unita": "dB", "fonte": "[OIK07]", "confidenza": "stimato", "nota": "F2: coefficiente della legge di Lambert per il fondo, S_b = μ + 10·log(sin² θ) (Mackenzie, ripreso da [OIK07]).", "rif": "05_acustica.md §2.3"},
+    "volume": {"valore": -80, "unita": "dB", "fonte": "[FUN-8] [CONO]", "confidenza": "nozionale", "nota": "F2: forza di diffusione di volume, dB re 1 m⁻¹, fuori dallo strato diffondente profondo (−70/−80 dB nelle fonti, valore non verificato)."},
+    "superficie_minima": {"valore": -70, "unita": "dB", "fonte": "[ZHANG04]", "confidenza": "nozionale", "nota": "F2: pavimento della forza di retrodiffusione di superficie di Chapman-Harris (che a radenza quasi nulla scenderebbe senza limite)."}
+  },
+  "transitori": {
+    "soglia_riconoscimento": {"valore": 6, "unita": "dB", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "F2: il sonarista riconosce il tipo di un transitorio (scafo, pompa, portello…) se ne sente almeno 6 dB sopra la soglia; sotto dice «sconosciuto»."},
+    "tempo_integrazione_minimo": {"valore": 0.5, "unita": "s", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "F2: nella soglia DT = 5·log(d/(B·τ)) di un transitorio la durata non conta sotto il mezzo secondo (l'orecchio e il display non integrano di meno)."}
   },
   "sorgenti": {
     "cacciatorpediniere": {

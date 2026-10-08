@@ -9,16 +9,26 @@
  * Cinematica semplice ma onesta: velocita' che insegue l'ordine con
  * un'accelerazione limitata, accostata al piu' a v/R (diametro tattico del
  * profilo), rotta verso il prossimo waypoint, giro dei waypoint in cerchio.
+ *
+ * F2: ogni corpo porta la sua firma (shared/data/firme/*.json): righe tonali,
+ * righe che seguono i giri, pale e assi (DEMON), forza di bersaglio, sagoma e
+ * altezza d'albero per il periscopio, radar per l'ESM altrui; i biologici
+ * cantano (righe che saltano) e i globicefali scattano (transitori).
  */
 
 import { NODO_MS, differenzaAngolare, gradiInRadianti, normalizza360, radiantiInGradi } from '../../../shared/units.js';
 import { rilevamento } from '../../../shared/geo.js';
-import { livelloNave } from '../sim/sensors/acustica.js';
+import { livelloNave, livelloNaveA, spostamentoSpettro, sommaDb } from '../sim/sensors/acustica.js';
 
 /** @typedef {import('../sim/sensors/acustica.js').ValoriAcustica} ValoriAcustica */
 /** @typedef {import('../sim/sensors/acustica.js').NomeBanda} NomeBanda */
 /** @typedef {import('../sim/sensors/acustica.js').ProfiloNave} ProfiloNave */
 /** @typedef {import('../../../shared/rng.js').Generatore} Generatore */
+/** @typedef {import('../../../shared/data/firme.js').ValoriFirma} ValoriFirma */
+/** @typedef {import('../../../shared/data/firme.js').SpecieBiologica} SpecieBiologica */
+/** @typedef {import('../sim/platform/battello.js').RigaIrradiata} RigaIrradiata */
+/** @typedef {import('../sim/platform/battello.js').Modulazione} Modulazione */
+/** @typedef {import('../sim/platform/battello.js').Transitorio} Transitorio */
 
 /** Raggio d'arrivo a un waypoint, m. */
 const ARRIVO = 500;
@@ -34,8 +44,13 @@ export class Nave {
    * @param {{x: number, y: number}[]} a.waypoint
    * @param {'ciclo' | 'ferma'} [a.alTermine]  dopo l'ultimo waypoint: si torna al punto di
    *   partenza e si ricomincia (predefinito), oppure ci si ferma (TORPEX '89: SPEED_TO 0)
+   * @param {ValoriFirma | null} [a.firma]  F2: la firma della classe (righe, ottica, radar)
    */
   constructor(a) {
+    /** @type {ValoriFirma | null} */
+    this.firma = a.firma ?? null;
+    /** @type {Transitorio[]} (le navi di F2 non ne fanno; interfaccia comune) */
+    this.transitoriNuovi = [];
     this.id = a.id;
     this.tipo = /** @type {const} */ ('nave');
     this.classe = a.classe;
@@ -99,6 +114,87 @@ export class Nave {
     return livelloNave(this.profilo, ac, banda, this.velocita, cosAspetto);
   }
 
+  /**
+   * F2: lo spettro a banda larga a una frequenza qualsiasi.
+   * @param {ValoriAcustica} ac
+   * @param {number} f Hz
+   * @param {number} cosAspetto
+   */
+  livelloA(ac, f, cosAspetto) {
+    return livelloNaveA(this.profilo, ac, f, this.velocita, cosAspetto);
+  }
+
+  /** Giri d'asse al minuto. */
+  get giri() {
+    return Math.abs(this.velocita) * (this.firma?.propulsione?.giri_per_nodo ?? 0);
+  }
+
+  /** F2: l'elica cavita (le navi di superficie gia' a velocita' basse). */
+  get cavitante() {
+    return Math.abs(this.velocita) > (this.firma?.propulsione?.velocita_cavitazione ?? 6);
+  }
+
+  /**
+   * F2: le righe irradiate (vedi Battello.righe): le fisse riferite alla banda
+   * larga alla velocita' di riferimento della firma, le altre a quella attuale.
+   * @param {ValoriAcustica} ac
+   * @param {number} cosAspetto
+   * @returns {RigaIrradiata[]}
+   */
+  righe(ac, cosAspetto) {
+    const fa = this.firma?.acustica;
+    if (!fa) return [];
+    const v = Math.abs(this.velocita);
+    /** @type {RigaIrradiata[]} */
+    const out = [];
+    for (const t of fa.tonali ?? []) {
+      if (v < t.da_velocita || v >= t.a_velocita) continue;
+      out.push({ f: t.frequenza, livello: livelloNaveA(this.profilo, ac, t.frequenza, fa.velocita_rif, 0) + t.sopra_banda_larga, tipo: 'tonale' });
+    }
+    const asse = this.giri / 60;
+    if (asse <= 0) return out;
+    for (const t of fa.righe_giri ?? []) {
+      if (v < t.da_velocita || v >= t.a_velocita) continue;
+      const f = t.per_giro * asse;
+      out.push({ f, livello: this.livelloA(ac, f, cosAspetto) + t.sopra_banda_larga, tipo: 'giri' });
+    }
+    const pa = fa.pale;
+    if (pa) {
+      const fp = asse * (this.firma?.propulsione?.elica_pale ?? 1);
+      out.push({ f: asse, livello: this.livelloA(ac, asse, cosAspetto) + pa.livello_asse, tipo: 'asse' });
+      for (let k = 1; k <= pa.armoniche; k++) {
+        out.push({ f: k * fp, livello: this.livelloA(ac, k * fp, cosAspetto) + pa.livello - pa.decremento * (k - 1), tipo: 'pala' });
+      }
+    }
+    return out;
+  }
+
+  /**
+   * F2: la modulazione del rumore delle eliche (DEMON).
+   * @returns {Modulazione | null}
+   */
+  modulazione() {
+    const pa = this.firma?.acustica?.pale;
+    const pr = this.firma?.propulsione;
+    if (!pa || !pr || this.giri <= 0) return null;
+    const m = this.cavitante ? pa.modulazione_cavitante : pa.modulazione;
+    return { asse: this.giri / 60, pale: pr.elica_pale, assi: pr.assi, m, mAsse: m * pa.modulazione_asse, armoniche: pa.armoniche };
+  }
+
+  /**
+   * F2: forza di bersaglio (seno quadro dell'aspetto fra prua/poppa e traverso).
+   * @param {number} cosAspetto
+   */
+  forzaBersaglio(cosAspetto) {
+    const fb = this.firma?.acustica?.forza_bersaglio ?? { prua_poppa: 25, traverso: 35 };
+    return fb.prua_poppa + (fb.traverso - fb.prua_poppa) * (1 - cosAspetto * cosAspetto);
+  }
+
+  /** F2: i radar che trasmettono (per l'ESM altrui). */
+  get emettitori() {
+    return (this.firma?.emettitori ?? []).filter((r) => r.acceso !== false);
+  }
+
   verita() {
     return {
       id: this.id, tipo: this.tipo, classe: this.classe,
@@ -121,10 +217,23 @@ export class Biologico {
    * @param {Generatore} a.rng
    * @param {number} [a.quota] m (predefinita quella del profilo)
    * @param {number} [a.velocita] kt di deriva (predefinita quella del profilo)
+   * @param {SpecieBiologica | null} [a.specie]  F2: canto, scatti, forza di bersaglio
    */
   constructor(a) {
     this.id = a.id;
     this.tipo = /** @type {const} */ ('biologico');
+    /** @type {SpecieBiologica | null} */
+    this.specie = a.specie ?? null;
+    // Sotto-flussi propri per il canto e gli scatti: non toccano quello degli episodi di F1.
+    this.rngCanto = a.rng.deriva('canto');
+    /** frequenza dell'unita' del canto in corso, Hz */
+    this.fCanto = 0;
+    this.cambioCanto = 0;
+    this.prossimoScatto = 0;
+    /** @type {Transitorio[]} */
+    this.transitoriNuovi = [];
+    /** @type {{livello: number, restante: number, peso: number}[]} */
+    this.transitoriAttivi = [];
     this.profilo = a.profilo;
     this.rng = a.rng;
     this.x = a.x;
@@ -156,6 +265,68 @@ export class Biologico {
       // Ogni tanto il gruppo cambia direzione.
       this.rotta = normalizza360(this.rotta + this.rng.intervallo(-45, 45));
     }
+    this._f2(dt);
+  }
+
+  /**
+   * F2: le unita' del canto cambiano frequenza; i treni di scatti sono
+   * transitori `biologico`.
+   * @param {number} dt
+   */
+  _f2(dt) {
+    const sp = this.specie;
+    if (!sp) return;
+    if (sp.canto) {
+      this.cambioCanto -= dt;
+      if (this.cambioCanto <= 0) {
+        this.cambioCanto = sp.canto.durata_unita;
+        this.fCanto = this.rngCanto.intervallo(sp.canto.f_min, sp.canto.f_max);
+      }
+    }
+    if (sp.scatti && this.attivo) {
+      this.prossimoScatto -= dt;
+      if (this.prossimoScatto <= 0) {
+        this.prossimoScatto = -Math.log(1 - this.rngCanto.uniforme()) * sp.scatti.intervallo;
+        this.transitoriNuovi.push({ tipo: 'biologico', livello: sp.scatti.livello, durata: sp.scatti.durata });
+        this.transitoriAttivi.push({ livello: sp.scatti.livello, restante: Math.max(1, sp.scatti.durata), peso: Math.min(1, sp.scatti.durata) });
+      }
+    }
+    if (this.transitoriAttivi.length > 0) {
+      for (const t of this.transitoriAttivi) t.restante -= dt;
+      this.transitoriAttivi = this.transitoriAttivi.filter((t) => t.restante > 0);
+    }
+  }
+
+  /**
+   * F2: le righe del canto, quando il gruppo e' attivo.
+   * @returns {RigaIrradiata[]}
+   */
+  righe() {
+    const c = this.specie?.canto;
+    if (!this.attivo || !c || this.fCanto <= 0) return [];
+    return [{ f: this.fCanto, livello: c.livello, tipo: 'canto' }];
+  }
+
+  /** @returns {null} i biologici non hanno eliche */
+  modulazione() {
+    return null;
+  }
+
+  /**
+   * F2: lo spettro a banda larga a una frequenza qualsiasi: il livello di F1
+   * della banda piu' vicina (i biologici non hanno uno spettro di Ross).
+   * @param {ValoriAcustica} ac
+   * @param {number} f Hz
+   * @returns {number}
+   */
+  livelloA(ac, f) {
+    if (!this.attivo) return -Infinity;
+    return f >= 800 ? this.profilo.sl_sfera : this.profilo.sl_towed;
+  }
+
+  /** F2: forza di bersaglio. */
+  forzaBersaglio() {
+    return this.specie?.forza_bersaglio ?? 0;
   }
 
   posizioneAcustica() {
@@ -168,8 +339,14 @@ export class Biologico {
    * @returns {number | null}
    */
   livello(ac, banda) {
-    if (!this.attivo) return null;
-    return banda === 'sfera' ? this.profilo.sl_sfera : this.profilo.sl_towed;
+    let sl = this.attivo ? (banda === 'sfera' ? this.profilo.sl_sfera : this.profilo.sl_towed) : -Infinity;
+    // F2: i treni di scatti si vedono anche sul waterfall, per la loro durata.
+    if (this.transitoriAttivi.length > 0) {
+      let lin = 0;
+      for (const t of this.transitoriAttivi) lin += t.peso * 10 ** ((t.livello + spostamentoSpettro(ac, ac.bande[banda].centro)) / 10);
+      sl = sommaDb(sl, 10 * Math.log10(lin));
+    }
+    return sl === -Infinity ? null : sl;
   }
 
   verita() {
