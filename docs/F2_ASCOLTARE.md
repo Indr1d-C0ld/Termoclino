@@ -62,7 +62,7 @@ il file prima di toccarlo.
 
 ## 4. Stato (8/10/2026)
 
-**F2 fatta**, salvo una decisione aperta (lo strato, sotto). Cosa è stato verificato:
+**F2 fatta.** Cosa è stato verificato:
 
 - **Propagazione**: tracciatore semi-coerente con tabelle per sette classi di profondità e tre
   tipi di fondo (1,8 MiB, rigenerazione deterministica); casi canonici entro 0,5-1,7 dB, prima
@@ -86,9 +86,11 @@ il file prima di toccarlo.
 - **Integrazione**: `visivo.luce` (giorno o notte) e il messaggio `storia` per chi rientra (la pila
   della TMA non riparte da zero), con le loro prove.
 
-**Aperta: lo strato estivo nasconde poco.** Con le tabelle, il sottile strato di 21 m dell'estate
+**Decisa (D17): lo strato estivo nasconde poco, e va bene così.** Con le tabelle, il sottile strato di 21 m dell'estate
 alle Faroe trattiene poco alle frequenze del sonar e il rimbalzo sul fondo riempie la zona d'ombra:
 un 688 a quota periscopica si sente a 0,57-0,67 della distanza alla stessa quota (in F1 era sotto
 0,5). È la fisica di quest'acqua bassa e stratificata appena; in acque profonde con uno strato
 spesso l'effetto torna. C'è una manopola nozionale (`propagazione.percorso.perdita_strato`, oggi 0):
-a 8 dB riporta le bande di F1. Decisione da prendere con l'utente.
+a 8 dB riporta le bande di F1. L'utente ha deciso (8/10/2026): nel gioco normale vale la fisica
+(manopola a 0), gli 8 dB entrano solo nel preset «regolamento 1989», quando ci saranno le regole di
+partita.

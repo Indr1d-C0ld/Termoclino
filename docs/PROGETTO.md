@@ -1075,6 +1075,7 @@ Con la mia raccomandazione; si possono prendere strada facendo.
 | D14 | **Editor di missioni** («Sala operativa», §7.10) come fase F5b, dopo il duello | Il formato degli scenari di F4 si disegna già pensando all'editor |
 | D15 | Missioni della comunità: bozze per tutti, **pubblicazione dopo approvazione**; contano solo in singolo e amichevole; per ora i **sette teatri originali** | Coda di approvazione nel pannello amministrativo; nessun effetto sulla valutazione |
 | D16 | **Statistiche personali nutrite e dettagliate** nel profilo, accanto ai gradi, e **statistiche generali** cumulative (§7.9) | Il **diario della partita** con eventi tipizzati va completo da F2; i totali sono ricalcolabili dai diari conservati |
+| D17 | **Strato termico: fisica nel gioco normale**, perdita nozionale in più (8 dB, `propagazione.percorso.perdita_strato`) **solo nel preset «regolamento 1989»** (8/10/2026) | Nelle acque basse e d'estate lo strato nasce sottile e nasconde poco, come vuole la fisica; il preset 1989 (D3) ci aggiunge lo strato dell'originale. La manopola entra nel preset quando arrivano le regole di partita (F4-F5) |
 
 ---
 
