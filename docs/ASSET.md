@@ -79,10 +79,10 @@ indica che il nibble k non viene disegnato. Le descrizioni vengono dall'aver gua
 | DISK1.MLB | DIALOG0.ENC | PIC-RLE | 219 | sì | pulsante "OK" dei riquadri di dialogo | EGA 16 | 29x21 |
 | DISK1.MLB | DIALOG1.ENC | PIC-RLE | 314 | sì | pulsante "CANCEL" | EGA 16 | 58x22 |
 | DISK1.MLB | DIAL0.ENC | PIC-RLE | 144 | sì | selettore cifra UP/DN del numero di telefono (pannello configurazione) | EGA 16 | 11x24 |
-| DISK1.MLB | SURFA.LZW | LZW > PIC-RLE | 9352 | sì | mappa batimetrica, indice mappa 0 = missione 6 GOULASH (Jugoslavia/Adriatico secondo il briefing) | DAY 191+4n (mappa nav.) | 320x200 |
-| DISK1.MLB | SURFB.LZW | LZW > PIC-RLE | 11384 | sì | mappa batimetrica, indice 1 = missione 0 HIT AND RUN | DAY 191+4n (mappa nav.) | 319x200 |
-| DISK1.MLB | SURFC.LZW | LZW > PIC-RLE | 12874 | sì | mappa batimetrica, indice 2 = missione 3 SUB OPS (costa di Polyarnyy, lato sovietico) | DAY 191+4n (mappa nav.) | 320x200 |
-| DISK1.MLB | SURFG.LZW | LZW > PIC-RLE | 15308 | sì | mappa batimetrica, indice 6 = missioni 1 TORPEX e 2 SHAKE EM (isole Faroe) | DAY 191+4n (mappa nav.) | 319x200 |
+| DISK1.MLB | SURFA.LZW | LZW > PIC-RLE | 9352 | sì | mappa batimetrica, indice mappa 0 = missione 6 GOULASH (Jugoslavia/Adriatico secondo il briefing) | DAY 191+4(15−n) (mappa nav.) | 320x200 |
+| DISK1.MLB | SURFB.LZW | LZW > PIC-RLE | 11384 | sì | mappa batimetrica, indice 1 = missione 0 HIT AND RUN | DAY 191+4(15−n) (mappa nav.) | 319x200 |
+| DISK1.MLB | SURFC.LZW | LZW > PIC-RLE | 12874 | sì | mappa batimetrica, indice 2 = missione 3 SUB OPS (costa di Polyarnyy, lato sovietico) | DAY 191+4(15−n) (mappa nav.) | 320x200 |
+| DISK1.MLB | SURFG.LZW | LZW > PIC-RLE | 15308 | sì | mappa batimetrica, indice 6 = missioni 1 TORPEX e 2 SHAKE EM (isole Faroe) | DAY 191+4(15−n) (mappa nav.) | 319x200 |
 | DISK1.MLB | DAY.PAL | palette RGB 8 bit | 768 | sì | palette VGA 256 colori diurna (= 688.PAL = ALFA.PAL) | - |  |
 | DISK1.MLB | NIGHT.PAL | palette RGB 8 bit | 768 | sì | palette VGA notturna: cielo scuro, rampa grigia 144-159 diventa rossa (periscopio notturno) | - |  |
 | DISK1.MLB | SELECT.CLS | CLS bytecode | 2354 | sì (bytecode); resa esatta (§4.7) | script schermate: L00 selezione missione, L01 pannello di configurazione, L02-L0B widget (fulmine modem, caselle) | EGA 16 / VGA 0-15 |  |
@@ -261,9 +261,9 @@ indica che il nibble k non viene disegnato. Le descrizioni vengono dall'aver gua
 | DISK2.MLB | DAMAGE3.ENC | PIC-RLE | 157 | sì | indicatore di danno della schermata STATUS | EGA 16 | 15x17 |
 | DISK2.MLB | DAMAGE4.ENC | PIC-RLE | 441 | sì | indicatore di danno della schermata STATUS | EGA 16 | 57x18 |
 | DISK2.MLB | DAMAGE5.ENC | PIC-RLE | 64 | sì | indicatore di danno della schermata STATUS | EGA 16 | 2x30 |
-| DISK2.MLB | SURFD.LZW | LZW > PIC-RLE | 9984 | sì | mappa batimetrica, indice 3 = missioni 4 MUMAR CADAVER e 5 ESCAPE (stretto di Gibilterra) | DAY 191+4n (mappa nav.) | 320x200 |
-| DISK2.MLB | SURFE.LZW | LZW > PIC-RLE | 13264 | sì | mappa batimetrica, indice 4 = missione 7 CAT WALK (Pacifico, CINCPACFLT) | DAY 191+4n (mappa nav.) | 318x200 |
-| DISK2.MLB | SURFF.LZW | LZW > PIC-RLE | 11968 | sì | mappa batimetrica, indice 5 = missioni 8 SURPRISE PARTY e 9 HOMECOMING (Mare di Norvegia / Atlantico) | DAY 191+4n (mappa nav.) | 320x200 |
+| DISK2.MLB | SURFD.LZW | LZW > PIC-RLE | 9984 | sì | mappa batimetrica, indice 3 = missioni 4 MUMAR CADAVER e 5 ESCAPE (stretto di Gibilterra) | DAY 191+4(15−n) (mappa nav.) | 320x200 |
+| DISK2.MLB | SURFE.LZW | LZW > PIC-RLE | 13264 | sì | mappa batimetrica, indice 4 = missione 7 CAT WALK (Pacifico, CINCPACFLT) | DAY 191+4(15−n) (mappa nav.) | 318x200 |
+| DISK2.MLB | SURFF.LZW | LZW > PIC-RLE | 11968 | sì | mappa batimetrica, indice 5 = missioni 8 SURPRISE PARTY e 9 HOMECOMING (Mare di Norvegia / Atlantico) | DAY 191+4(15−n) (mappa nav.) | 320x200 |
 | DISK2.MLB | STEER.CLS | CLS bytecode | 7163 | sì (bytecode); resa esatta (§4.7) | script: stazione governo (timone, macchine, quota, auto-funzioni) | EGA 16 |  |
 | DISK2.MLB | STAT.CLS | CLS bytecode | 1947 | sì (bytecode); resa esatta (§4.7) | script: cornice comune a tutte le stazioni (barra TARGET/BEARING, riga messaggi, orologio, tastierino 4WAY) | EGA 16 |  |
 | DISK2.MLB | TARGET0.ENC | PIC-RLE | 32 | sì | marcatore bersaglio 5x6 (i 5 file sono identici) | EGA 16 | 5x7 |
@@ -315,8 +315,8 @@ indica che il nibble k non viene disegnato. Le descrizioni vengono dall'aver gua
   con palette diverse di giorno e di notte (di notte rossi). Le immagini dell'elicottero **KA-25 "HORMON" mancano**: la
   tabella dei prefissi le prevede ma nelle MLB non ci sono.
 - **Ritratti dell'equipaggio (8):** `CREW1–8`, foto digitalizzate in 16 grigi da 168–173 × 94–96 pixel.
-- **Mappe (7):** `SURFA–G`, mappe batimetriche 320×200 a 16 livelli (0 = terra, 1 = costa, 2–15 = profondità
-  crescente). Servono alla carta nautica, alla vista "contour" 3D e alla costa vista dal periscopio. A quale missione
+- **Mappe (7):** `SURFA–G`, mappe batimetriche 320×200 a 16 livelli (15 = terra, 14 = costa, 13…0 =
+  profondità crescente: l'ordine è il contrario di quello che si era supposto all'inizio, verificato in F1). Servono alla carta nautica, alla vista "contour" 3D e alla costa vista dal periscopio. A quale missione
   serve ciascuna è indicato nella tabella e viene da `mission_config.tsv`.
 - **Font:** uno solo, dentro GAME.EXE, con 224 glyph, codici 20h-FFh (piccolo maiuscolo, grande maiuscolo usato per le
   minuscole, simboli dei pulsanti, pseudo-cirillico): vedi §4.8.
@@ -381,8 +381,9 @@ pixel 4 bit, nibble ALTO = pixel di sinistra
   - sprite del periscopio: 90h per le navi, 50h per SMK (grigi più fuoco 80–95), A0h per SFX2 (spruzzi 160–175),
     A7h per MISSILE (167–182);
   - tutto il resto: 0 (colori EGA).
-- La mappa nautica usa l'indice `0BFh + 4·nibble`. L'ho verificato sui colori di una cattura DOSBox: solo
-  191, 195, ..., 251.
+- La mappa nautica usa l'indice `0BFh + 4·(15 − livello)`: la terra (15) ha 191, l'acqua più profonda (0) 251.
+  Nelle catture DOSBox compaiono solo 191, 195, ..., 251; l'ordine l'ha stabilito in F1 il confronto cella per cella
+  fra la griglia e due catture della carta (errore medio 0,02–0,1 livelli).
 - In NIGHT.PAL cambiano le rampe del cielo (16–79), dei grigi (144–159, che diventano rossi) e 160–166/183–188:
   la stessa nave vista di notte appare rossa.
 
@@ -734,7 +735,7 @@ node --test tests/client/                                    # oppure npm test
 | `equipaggio/CREWn.png`, `equipaggio/notte/` | ritratti indicizzati (indici 90h+n) |
 | `interfaccia/*.png` | 23 elementi d'interfaccia, EGA16; SUB1/SUB2 con il nibble 1 trasparente |
 | `fine/END0-4.png` | scrivania e cartoline di fine missione |
-| `mappe/SURFx.png`, `mappe/SURFx.bin`, `mappe/mappe.json` | mappe di profondità: PNG nei colori della carta, griglia grezza (un byte per cella, 0 terra, 1 costa, 2-15 profondità) e indice con le missioni di ognuna (ricavate dagli script SCENE) |
+| `mappe/SURFx.png`, `mappe/SURFx.bin`, `mappe/mappe.json` | mappe di profondità: PNG nei colori della carta, griglia grezza (un byte per cella, 15 terra, 14 costa, 13-0 profondità crescente) e indice con le missioni di ognuna (ricavate dagli script SCENE) |
 | `suoni/*.wav` | i 6 suoni, 8 bit mono alla frequenza nominale del §4.6 |
 | `font/font.png`, `font/font.json` | atlante 16×14 celle di 8×13 (bianco su trasparente) e, per ogni codice 20h-FFh, larghezza, posizione e le 13 righe; gruppi del font, tabella del cirillico, interlinea e spaziatura |
 | `cls/<SCRIPT>.json` | i 13 script `.CLS` decodificati (sotto) |

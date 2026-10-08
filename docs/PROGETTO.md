@@ -327,6 +327,37 @@ I numeri stanno in `shared/data/` con fonte e confidenza; le equazioni e i param
   stagione, convertito con l'equazione di Mackenzie (1981).
 - **Rumore ambiente** secondo le curve di Wenz: traffico, stato del mare, pioggia, biologici.
 
+**Fatto in F1: l'area di TORPEX '89** (`shared/data/scenari/torpex_palestra.*`, rigenerabile con
+`tools/batimetria/scarica.py`, letta da `shared/ambiente.js`). Quadrato di 200 km di lato centrato a
+61°45' N 6°50' W, fra Sandoy e Suðuroy: tutto l'arcipelago, il campo originale con circa 75 km di
+margine, il Canale delle Fær Øer e il fianco del Canale Fær Øer-Shetland (fondale massimo 968 m).
+
+- **Batimetria**: al posto di GEBCO, la più fine EMODnet DTM 2024 (1/16 di primo); ogni nodo di una
+  griglia di 500 m (401 × 401, Int16, 314 KiB) è la media dei circa 40 campioni della sua cella;
+  terre emerse e stretti dove EMODnet è vuoto da ETOPO 2022 15". Terra = valore negativo.
+- **Georeferenza della mappa del 1989.** Gli script danno le posizioni in unità che il gioco mostra
+  come gradi:primi:secondi (2" per unità), ma non sono gradi: le unità sono isotrope, la mappa SURFG
+  ha una cella ogni 32 unità con il nord in alto, e i suoi 16 livelli vanno da 15 = terra a 0 = acqua
+  più profonda (al contrario di quanto dicevamo in `ASSET.md`; verificato cella per cella sulle
+  schermate DOSBox). Un'affinità ai minimi quadrati su 14 punti di controllo (baricentri delle isole,
+  punte delle tre isole lunghe) dà circa **19,4 m per unità in X e 22,2 in Y** (il rapporto è quello dei
+  pixel VGA: la mappa fu disegnata per sembrare giusta sullo schermo) e quasi nessuna rotazione;
+  **scarto quadratico medio 2,5 km**, massimo 5,5 km sulla punta sud di Sandoy: la mappa è una Fær Øer
+  disegnata a mano. Con questa conversione i tre Forrest Sherman partono in acqua, a nord di Suðuroy
+  («off the coast of the southernmost island»), e vanno a nord-ovest come negli ordini.
+- **Oceanografia: estate** (luglio-settembre) del decennio 1985-1994, World Ocean Atlas 2023 a 0,25°,
+  media dei nove nodi profondi dell'area. È la stagione dello strato: **strato a 21 m** (soglia di
+  0,2 °C), salto di velocità di 4,5 m/s fino alla base della termoclina stagionale (100 m), quindi
+  **13,5 dB** con la regola nozionale di 05 §5.1. In primavera (aprile-giugno) lo stesso calcolo dà
+  0,2 m/s: lo strato non ci sarebbe e la prova di F1 non avrebbe niente da mostrare. Mare forza 3
+  (vento estivo 7,4 m/s, NCEP/NCAR), rumore di Coates con traffico 0,4, assorbimento di Ainslie &
+  McColm a 8,7 °C, S 35,24, pH 8,09 (GLODAPv2).
+- **Licenze.** EMODnet è CC BY 4.0: l'attribuzione («EMODnet Bathymetry Consortium (2024): EMODnet
+  Digital Bathymetry (DTM 2024), https://doi.org/10.12770/cf51df64-56f9-4a99-b1aa-36b8d7b743a1»)
+  sta nel campo `crediti` dello scenario e il client la deve mostrare con la mappa. ETOPO 2022 e
+  WOA23 sono di pubblico dominio; NCEP/NCAR e GLODAP chiedono la citazione, anch'essa in `crediti`.
+  Le fonti sono nella Parte F di `docs/ricerca/FONTI.md`.
+
 ### 5.2 Unità di misura
 
 - 688: piedi, iarde e migliaia di iarde (kyd), nodi, gradi veri.
@@ -887,6 +918,13 @@ armi, niente TMA, niente lobby.
 - due giocatori nella stessa area si sentono a vicenda secondo le regole dell'acustica e niente
   di più;
 - tutte le prove sono verdi tre volte di fila.
+
+**Stato (8/10/2026): F1 fatta.** Prova a due browser (due account, due origini) contro il server di
+sviluppo: il 688 fermo a quota periscopica sente l'altro, che corre a 18 nodi cavitando, come
+traccia sul waterfall e come «nuovo contatto S1, rilevamento 137» (vero: circa 135), e l'altro non
+sente lui; nessun messaggio porta la posizione dell'altro (la prova di nebbia lo verifica su ogni
+campo). Tre giri di fila di `tests/tutte.sh` verdi: 241 prove, tipi, end-to-end 10/10; 46 prove del
+server. Distanze di scoperta in `docs/CALIBRAZIONE_F1.md`.
 
 ---
 

@@ -65,6 +65,10 @@ else
 fi
 
 echo ">>> server di gioco"
+# La versione che /salute dichiara: il commit da cui si pubblica (+«-dirty» se
+# l'albero ha modifiche non committate, che quindi non stanno in nessun repo).
+TERMOCLINO_VERSIONE="$(git -C "$SORGENTE" describe --always --dirty 2>/dev/null || echo sconosciuta)"
+export TERMOCLINO_VERSIONE
 docker compose -f "$SORGENTE/server/compose.yaml" up -d --build --remove-orphans
 for i in $(seq 1 15); do
   curl -fsS http://127.0.0.1:8095/salute >/dev/null 2>&1 && break
@@ -73,12 +77,13 @@ done
 curl -fsS http://127.0.0.1:8095/salute && echo
 
 echo ">>> verifica dall'esterno"
-for U in / accesso salute; do
+for U in "" accesso salute; do
   printf '    %-10s %s\n' "/$U" "$(curl -sS -o /dev/null -w '%{http_code}' "$URL/$U" || echo '---')"
 done
 printf '    %-10s %s\n' "/ws" "$(curl -sS -o /dev/null -w '%{http_code}' \
   -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Version: 13' \
   -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' -H "Origin: ${URL%/termoclino}" \
-  "$URL/ws" || echo '---')"
+  "$URL/ws" 2>/dev/null || true)"
+# curl esce con errore dopo il 101 (non parla WebSocket): conta solo il codice.
 echo "    (attesi: 200, 200, 200 e 101 per il WebSocket)"
 echo ">>> fatto."

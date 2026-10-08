@@ -3,15 +3,26 @@
 #
 #   bash tests/e2e_bordo.sh [url-sito] [url-ws]
 #
-# Default: l'ambiente di sviluppo (php -S su 8160, server di gioco su 8095,
+# Default: l'ambiente di sviluppo (php -S su 8160, server di gioco su 8096,
 # posta su 'log'). Crea un utente usa-e-getta, legge il collegamento di conferma
 # dal diario della posta, accede, prende il biglietto dalla plancia e lo
 # presenta al server di gioco. Alla fine cancella l'utente, anche se fallisce.
+#
+# MAI contro l'esercizio: crea e cancella utenti e spedisce la conferma. Per
+# questo la console usa esplicitamente la configurazione di sviluppo, e la prova
+# si ferma se quella configurazione spedisce posta vera.
 set -euo pipefail
 
 RADICE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SITO="${1:-http://127.0.0.1:8160}"
-WS="${2:-ws://127.0.0.1:8095/}"
+WS="${2:-ws://127.0.0.1:8096/}"
+export TERMOCLINO_CONFIG="${TERMOCLINO_CONFIG:-$RADICE/web/config/config.php}"
+TRASPORTO=$(php -r 'require $argv[1] . "/web/src/autoload.php"; App\Core\Config::load($argv[1] . "/web"); echo App\Core\Config::get("mail.transport", "?");' "$RADICE")
+if [ "$TRASPORTO" != "log" ]; then
+  echo "e2e bordo: la configurazione $TERMOCLINO_CONFIG spedisce posta vera ($TRASPORTO): mi fermo." >&2
+  exit 1
+fi
+case "$WS" in *:8095/*|*:8095) echo "e2e bordo: 8095 e' il server di gioco di ESERCIZIO: mi fermo." >&2; exit 1 ;; esac
 CONSOLE="php $RADICE/web/bin/console.php"
 DIARIO="$RADICE/web/storage/logs/app.log"
 CAMPIONE="e2e$(date +%s)$RANDOM"
@@ -77,6 +88,12 @@ NUOVO=$(curl -fsS -c "$BISCOTTI" -b "$BISCOTTI" -X POST -H "X-CSRF-Token: $CSRF"
   | sed -n 's/.*"biglietto":"\([^"]*\)".*/\1/p')
 node "$RADICE/tests/strumenti/sali_a_bordo.mjs" "$WS" "$NUOVO" "$SITO" >/dev/null \
   && ok "un biglietto nuovo (riconnessione) porta di nuovo a bordo" || male "il biglietto di riconnessione non funziona"
+
+# --- Prima immersione: partita, ordine, stato (protocollo v1) ------------------------------
+NUOVO=$(curl -fsS -c "$BISCOTTI" -b "$BISCOTTI" -X POST -H "X-CSRF-Token: $CSRF" "$SITO/biglietto" \
+  | sed -n 's/.*"biglietto":"\([^"]*\)".*/\1/p')
+IMMERSIONE=$(node "$RADICE/tests/strumenti/immergiti.mjs" "$WS" "$NUOVO" "$SITO") \
+  && ok "nella palestra: ordini ricevuti, stato e sonar arrivano" || male "immersione fallita: $IMMERSIONE"
 
 # --- Grafica originale protetta ----------------------------------------------------------
 CODICE=$(curl -sS -o /dev/null -w '%{http_code}' "$SITO/originali/manifest.json")

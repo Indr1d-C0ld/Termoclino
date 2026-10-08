@@ -171,7 +171,10 @@ sbaglia vicino alla superficie). Sopra `V_cav` il rumore a banda larga sale di `
 
 **Rumore proprio** (`05_acustica.md` §7.1): `NL(v) = livello_macchinario + 10·log10(1 + (v/v₀)^esponente)`
 con v₀ = `velocita_soglia_sfera`, `velocita_soglia_conforme` o `velocita_soglia_rimorchiata`
-secondo il sensore.
+secondo il sensore. Eccezione, decisa in F1: per l'antenna rimorchiata `livello_macchinario` (misurato
+sullo scafo) non vale, perché la renderebbe sorda già a 6 kt contro le regole R2 qui sotto: al suo posto
+si usa `rumore_proprio.towed_base` di `shared/data/acustica.json` (l'antenna sta 800 m a poppa, lontana
+dai macchinari). La motivazione è nella nota di quel campo.
 
 **Errore di rilevamento** (regola R1 di `CONTRADDIZIONI.md` §4, PROGETTO §5.6):
 `σ = max(sigma_min, coefficiente_sigma · fascio(f) · 10^(−SE/20))`, con SE l'eccesso di segnale in dB.
@@ -192,3 +195,19 @@ rilevamenti per `(lunghezza_cavo + lunghezza_antenna) / v`, limitato fra `tempo_
 3. `npm test`: le prove controllano provenienza, chiavi di fonte, unità, completezza e coerenza
    fisica; quelle specifiche del duello (688 contro Alfa) vanno estese se servono.
 4. Se una scelta risolve o lascia aperta una voce di `CONTRADDIZIONI.md`, scriverlo in `contraddizioni`.
+
+## 7. Scenari
+
+Gli scenari stanno in `shared/data/scenari/<id>.json` (formato `termoclino-scenario/1`) con la griglia
+del fondale accanto (`<id>.batimetria.bin`, Int16LE); li genera `tools/batimetria/scarica.py` e li legge
+`shared/ambiente.js`, che ne descrive il formato in testa al modulo. La regola di provenienza è la
+stessa di queste pagine, con due aggiunte:
+
+- la **serie**, `{"serie": [numeri], "unita", "fonte", "confidenza", "nota"?}`, per i profili e le
+  tabelle (temperatura, salinità e velocità del suono per quota, rumore per banda), dove un dato per
+  numero sarebbe solo rumore;
+- le unità dell'ambiente oltre a quelle del §2: `°C`, `psu`, `dB/km`, `dB re 1 µPa²/Hz`.
+
+Gli unici numeri senza provenienza ammessi sono quelli che descrivono il file binario
+(`batimetria.colonne`, `righe`, `byte`). Le prove (`shared/test/ambiente.test.js`) controllano
+provenienza, chiavi di `FONTI.md`, integrità della griglia e coerenza fisica.

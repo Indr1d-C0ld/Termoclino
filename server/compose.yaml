@@ -19,10 +19,21 @@ services:
     restart: unless-stopped
     network_mode: host
     env_file: /data/termoclino-config/server.env
+    # La versione la passa deploy/02-pubblica.sh (il commit pubblicato) e
+    # prevale su quella del file di ambiente.
+    environment:
+      TERMOCLINO_VERSIONE: ${TERMOCLINO_VERSIONE:-sconosciuta}
     init: true
     read_only: true
     tmpfs:
       - /tmp
+    # Le istantanee della verita' delle partite (gzip, una riga JSON al secondo
+    # di gioco: il materiale dei replay) vanno su un volume con nome, l'unico
+    # posto scrivibile oltre a /tmp. Per non registrarle: TERMOCLINO_ISTANTANEE=-
+    # nel server.env. In F1 nessuno le cancella: circa 200 KB per ora di gioco
+    # con due battelli in palestra.
+    volumes:
+      - termoclino-istantanee:/var/lib/termoclino/istantanee
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -32,3 +43,6 @@ services:
       options:
         max-size: "10m"
         max-file: "5"
+
+volumes:
+  termoclino-istantanee:

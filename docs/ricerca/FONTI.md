@@ -17,6 +17,7 @@ Data di consultazione di tutte le voci: **2026-10-07**, salvo diversa indicazion
 | 07 Dottrina dei siluri | `07_dottrina_siluri.md` (14:58) | `_fonti_05_07.md` (15:00) | fuso, Parte A |
 | 08 688 Attack Sub originale | `08_688_originale.md` (15:09) | `_fonti_04_08.md` (15:09) | fuso, Parte D |
 | Revisione incrociata | `CONTRADDIZIONI.md` (15:23) | `_fonti_integrazioni.md` (15:22) | fuso, Parte E |
+| Ambiente degli scenari (F1) | `shared/data/scenari/`, `tools/batimetria/scarica.py` | — | scritta qui, Parte F |
 
 **Verifica delle chiavi.** Sezioni controllate: `01_piattaforme.md`, `02_armi.md`, `03_contromisure.md`, `04_sensori.md`, `05_acustica.md`, `06_tma.md`, `07_dottrina_siluri.md`, `08_688_originale.md`, `CONTRADDIZIONI.md`. Chiavi distinte citate: **211**; chiavi definite qui: **229**; chiavi citate **senza voce: 0**. Chiavi definite ma non citate in nessuna sezione (fonti di contesto, calcoli, segnaposto): [NA81], [CALC-CZ], [CALC-ABS], [CALC-TMA], [CALC-CHASE], [CP-01], [CMP110], [GI15], [FAS-BSY2], [FAS-BQG5], [GAO-92-50], [RUWP-945], [RUWP-705], [WP-VICTOR], [ARMY2020-R].
 
@@ -713,6 +714,56 @@ ricerca, non letto` (quest'ultima modalità non è mai usata come base per un nu
 - U.S. Naval Institute *Proceedings*, "The U.S. Navy: Electronic Warfare (Part 2)", novembre 1979: challenge
   Cloudflare, non aggirata.
 
+## Parte F — Ambiente degli scenari (batimetria, oceanografia, mappa del 1989)
+
+*Aggiunta il 2026-10-07 con lo scenario `torpex_palestra` (F1): fonti dei dati di `shared/data/scenari/` e di
+`tools/batimetria/scarica.py`, che le scarica e le rielabora. Consultazione: 2026-10-07. Modo: **dati scaricati**
+(il servizio indicato, ritaglio dell'area 60,8-62,7 N, 8,85-4,8 W), salvo diversa indicazione.*
+
+### Dati geofisici e oceanografici
+
+- **[EMODNET-DTM]** EMODnet Bathymetry Consortium (2024), *EMODnet Digital Bathymetry (DTM 2024)*, griglia di 1/16 di
+  primo d'arco, quote sul LAT. https://doi.org/10.12770/cf51df64-56f9-4a99-b1aa-36b8d7b743a1 — dati scaricati dal
+  servizio ERDDAP https://erddap.emodnet.eu/erddap/griddap/bathymetry_dtm_2024 (variabile `elevation`, risoluzione
+  piena). Licenza **CC BY 4.0** (dichiarata da EMODnet; il campo `license` dell'ERDDAP riporta solo la clausola generica
+  del server): attribuzione obbligatoria, nel campo `crediti` dello scenario. Sulla terra e in alcuni stretti fra le
+  isole del nord il DTM è vuoto (NaN).
+- **[ETOPO22]** NOAA National Centers for Environmental Information (2022), *ETOPO 2022 15 Arc-Second Global Relief
+  Model*, quote della superficie (EGM2008). https://doi.org/10.25921/fd45-gt74 — dati scaricati via OPeNDAP dalla
+  mattonella `ETOPO_2022_v1_15s_N75W015_surface.nc` su https://www.ngdc.noaa.gov/thredds/ . Pubblico dominio. Usato
+  per la quota delle terre emerse e per gli stretti dove EMODnet è vuoto. (DOI da conoscenza pregressa, non
+  riverificato.)
+- **[WOA23]** NOAA NCEI, *World Ocean Atlas 2023*: temperatura (R. A. Locarnini et al., NOAA Atlas NESDIS 89) e
+  salinità (J. R. Reagan et al., NOAA Atlas NESDIS 90), 2024. Campi `an` (media analizzata), decennio 1985-1994,
+  stagione estiva (luglio-settembre, periodo 15), griglia di 0,25°, file CSV
+  https://www.ncei.noaa.gov/data/oceans/woa/WOA23/DATA/ (`woa23_8594_t15an04.csv.gz`, `woa23_8594_s15an04.csv.gz`).
+  Pubblico dominio. Per confronto, non usati nei dati: primavera 1985-1994 (periodo 14), giugno 1985-1994 a 1° e giugno
+  di tutti i decenni (`decav`) a 0,25°. (Autori e numeri dei volumi da conoscenza pregressa, non riverificati.)
+- **[NCEP-R1]** NOAA PSL, *NCEP/NCAR Reanalysis 1*, prodotti derivati: `wspd.mon.ltm.nc`, media mensile 1991-2020 del
+  modulo del vento a sigma 0,995 (calcolata dal vento giornaliero), griglia di 2,5°.
+  https://psl.noaa.gov/thredds/dodsC/Datasets/ncep.reanalysis.derived/surface/wspd.mon.ltm.nc — dati scaricati via
+  OPeNDAP. Riferimento del modello: E. Kalnay et al., "The NCEP/NCAR 40-Year Reanalysis Project", *Bull. Amer.
+  Meteor. Soc.* 77, 437-471, 1996 (da conoscenza pregressa, non riverificato).
+- **[GLODAP2]** S. K. Lauvset et al., "A new global interior ocean mapped climatology: the 1°x1° GLODAP version 2",
+  *Earth Syst. Sci. Data* 8, 325-340, 2016, doi:10.5194/essd-8-325-2016 (citazione dai metadati del servizio) — dati
+  scaricati da https://erddap.emodnet.eu/erddap/griddap/GLODAPv2_2016b_CMEMS (variabile `pHtsinsitutp`, 0-300 m).
+  Libera con citazione; la climatologia del carbonio è normalizzata al 2002.
+
+### Metodo
+
+- **[DBM04]** C. de Boyer Montégut, G. Madec, A. S. Fischer, A. Lazar, D. Iudicone, "Mixed layer depth over the global
+  ocean: An examination of profile data and a profile-based climatology", *J. Geophys. Res.* 109, C12003, 2004 — **da
+  conoscenza pregressa, non riverificato**: il criterio di soglia di 0,2 °C rispetto alla temperatura a 10 m per la
+  profondità dello strato rimescolato.
+
+### Il gioco del 1989
+
+- **[EST-688]** Dati del gioco estratti dalla copia dell'utente con `tools/estrai/estrai688.py` (formati in
+  `docs/ASSET.md`): la mappa batimetrica `SURFG` (319 x 200 celle, missioni 1 e 2) e lo script `SCENE1A.TOK` di TORPEX '89
+  (posizioni, rotte, velocità, quote delle unità). La lettura della mappa (cella = (X/32, 199 − Y/32), livelli 15 = terra,
+  0 = acqua più profonda) è verificata contro le schermate DOSBox 025 e 027 del catalogo privato (`privato/`). Nessun dato
+  del gioco è nel repository pubblico tranne le coordinate di script citate negli scenari.
+
 ---
 
 ## Indice delle chiavi
@@ -753,6 +804,7 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [CW-MAN] | A | C | 03, 05, 06, 07, CONTRADDIZIONI |
 | [CW-MOD] | A |  | 05, 06 |
 | [CW23] | B |  | 01, CONTRADDIZIONI |
+| [DBM04] | F |  | scenari |
 | [DS-109] | C |  | 02, CONTRADDIZIONI |
 | [DS-125] | C |  | 02, CONTRADDIZIONI |
 | [DS-44] | C |  | 02, CONTRADDIZIONI |
@@ -778,7 +830,10 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [DSTORM-671RTM] | C |  | 02, 03, CONTRADDIZIONI |
 | [DSTORM-705] | C |  | 02, 03, CONTRADDIZIONI |
 | [DSTORM-971] | C |  | 02, 03 |
+| [EMODNET-DTM] | F |  | scenari, PROGETTO §5.1 |
 | [EPA-UNDS99] | E |  | CONTRADDIZIONI |
+| [EST-688] | F |  | scenari |
+| [ETOPO22] | F |  | scenari, PROGETTO §5.1 |
 | [FAS-1135] | B |  | 01 |
 | [FAS-1144] | B |  | 01 |
 | [FAS-1164] | B |  | 01 |
@@ -834,6 +889,7 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [GAO-92-50] | D |  | — |
 | [GAO-95-104] | C |  | 02, 03 |
 | [GI15] | D |  | — |
+| [GLODAP2] | F |  | scenari |
 | [GS-BQQ5] | D |  | 04 |
 | [GS-BQR7] | D |  | 04 |
 | [GS-MK60] | C |  | 02 |
@@ -877,6 +933,7 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [NAVY-TLAM2003] | C |  | 02 |
 | [NAVY-TLAM2021] | C |  | 02 |
 | [NAVY-TORP2005] | C |  | 02 |
+| [NCEP-R1] | F |  | scenari |
 | [NLG84] | A |  | 06 |
 | [NPL-ABS] | A |  | 05 |
 | [NPL-SS] | A |  | 05 |
@@ -927,6 +984,7 @@ Chiave → Parte in cui è definita → sezioni che la citano. «↪» indica le
 | [USN-FF97] | B |  | 01 |
 | [WAG91] | A |  | 06 |
 | [WARFOR-GPD] | E |  | CONTRADDIZIONI |
+| [WOA23] | F |  | scenari, PROGETTO §5.1 |
 | [WP-688] | D |  | 08 |
 | [WP-688I] | D |  | 08 |
 | [WP-AKULA] | D |  | 04, CONTRADDIZIONI |

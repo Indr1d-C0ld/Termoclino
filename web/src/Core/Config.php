@@ -11,9 +11,16 @@ use RuntimeException;
  *
  * Ordine di ricerca del file config:
  *   1. env TERMOCLINO_CONFIG
- *   2. /etc/termoclino/config.php
- *   3. /data/termoclino-config/config.php       (default attuale, fuori dal DocumentRoot)
- *   4. <project>/config/config.php            (fallback di sviluppo)
+ *   2. <project>/config/config.php            (sviluppo: il file accanto al codice)
+ *   3. /etc/termoclino/config.php
+ *   4. /data/termoclino-config/config.php       (esercizio, fuori dal DocumentRoot)
+ *
+ * Il file accanto al codice viene PRIMA di quelli di sistema: sulla macchina
+ * dove gira l'esercizio c'e' anche l'albero di sviluppo, e con l'ordine
+ * opposto il sito di sviluppo e la sua console leggevano la configurazione
+ * vera appena esisteva, scrivendo nel database vero e spedendo posta vera
+ * (successo l'8/10/2026). In esercizio <project>/config/config.php non
+ * esiste: deploy/02-pubblica.sh non lo copia.
  */
 final class Config
 {
@@ -30,9 +37,9 @@ final class Config
 
         $candidates = array_values(array_filter([
             getenv('TERMOCLINO_CONFIG') ?: null,
+            $projectRoot . '/config/config.php',
             '/etc/termoclino/config.php',
             '/data/termoclino-config/config.php',
-            $projectRoot . '/config/config.php',
         ]));
 
         foreach ($candidates as $path) {

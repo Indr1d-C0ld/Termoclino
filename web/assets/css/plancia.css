@@ -1,0 +1,67 @@
+/*
+ * Termoclino — la plancia (client di gioco, resa Classic).
+ *
+ * Collegato solo da views/gioco/plancia.php: qui c'e' la grafica originale del
+ * 1989 (decisione D4), e le pagine pubbliche non caricano questo foglio.
+ *
+ * Il canvas e' di 320x200 pixel logici; plancia.js gli da' larghezza e altezza
+ * CSS in modo che ogni pixel logico sia un numero intero di pixel del
+ * dispositivo, e il browser lo ingrandisce al pixel piu' vicino.
+ */
+
+/* la colonna della pagina si allarga quanto serve allo schermo di gioco */
+.contenuto.largo:has(#plancia) { max-width: none; padding-top: .5rem; }
+
+.plancia { width: 100%; }
+
+.plancia-vetro {
+  display: flex;
+  justify-content: center;
+  background: #000;
+  border: 1px solid #000;
+  box-shadow: inset 0 0 0 1px var(--lamiera, #2f3a46);
+  padding: 0;
+}
+
+#schermo-classic {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: none; /* il puntatore e' quello del 1989, disegnato nella grafica */
+  outline: none;
+  background: #000;
+}
+
+#schermo-classic:focus-visible { box-shadow: 0 0 0 1px #55ffff55; }
+
+/* il tasto del capo (F10): il prompt finto del DOS, a tutto schermo */
+.capo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  margin: 0;
+  padding: .4rem .6rem;
+  background: #000;
+  color: #aaa;
+  font: 20px/1.2 "Perfect DOS VGA 437", "Px437 IBM VGA8", "DejaVu Sans Mono", monospace;
+  white-space: pre;
+}
+.capo[hidden] { display: none; }
+.capo-cursore { animation: lampeggio 1.06s steps(1) infinite; }
+@keyframes lampeggio { 50% { opacity: 0; } }
+
+.plancia .riga-stato {
+  margin: .35rem 0 0;
+  font-size: .85rem;
+  flex-wrap: wrap;
+}
+.plancia .tasti { margin-left: auto; color: var(--tenue, #8796a3); font-family: var(--mono, monospace); }
+
+/* attribuzione dei dati della mappa (EMODnet, CC BY 4.0): sempre visibile sotto lo schermo */
+.plancia .crediti {
+  margin: .25rem 0 0;
+  font-size: .72rem;
+  line-height: 1.4;
+  color: var(--tenue, #8796a3);
+}
+.plancia .crediti[hidden] { display: none; }

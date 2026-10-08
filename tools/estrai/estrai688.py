@@ -1045,7 +1045,10 @@ class Originale:
                 self.pals[pn.split('.')[0]] = load_pal(open(p, 'rb').read())
         self.pals['DAY'] = load_pal(self.rawfiles['DAY.PAL'])
         self.pals['NIGHT'] = load_pal(self.rawfiles['NIGHT.PAL'])
-        self.pals['navmap'] = [self.pals['DAY'][0xBF + 4 * i] for i in range(16)] + [(0, 0, 0)] * 240
+        # Livelli della mappa: 15 terra, 14 costa, 13..0 acqua sempre piu' profonda;
+        # il gioco li colora con DAY[0BFh + 4*(15-n)] (verificato sulle catture
+        # DOSBox della carta nautica, F1).
+        self.pals['navmap'] = [self.pals['DAY'][0xBF + 4 * (15 - i)] for i in range(16)] + [(0, 0, 0)] * 240
         self.pals['grey'] = [self.pals['DAY'][0x90 + i] for i in range(16)] + [(0, 0, 0)] * 240
         # script CLS e figure PIC
         self.cls_nomi = sorted(n for n in self.files if n.endswith('.CLS') or n.endswith('.LZA')
@@ -1429,7 +1432,7 @@ def estrai_client(o, outd, verifica):
                      'mappa di profondità (16 livelli, colori della carta nautica)', origine=o.origine[n],
                      palette='MAPPA', **meta)
             u.scrivi('mappe/%s.bin' % stem, bytes(p for r in rows for p in r),
-                     'griglia grezza: %d x %d byte dall\'alto, valore 0 terra, 1 costa, 2-15 profondità crescente'
+                     'griglia grezza: %d x %d byte dall\'alto, valore 15 terra, 14 costa, 13-0 profondità crescente'
                      % (W, H + 1), origine=o.origine[n], **meta)
         elif n.startswith('END'):
             u.scrivi('fine/%s.png' % stem, _png(_img_p(W, rows, EGA16, 0, 16)), 'cartolina di fine missione',

@@ -29,8 +29,13 @@ if (PHP_SAPI === 'cli-server') {
         $base = realpath(dirname($projectRoot) . '/shared');
         $vero = $base === false ? false : realpath($base . '/' . substr(rawurldecode($richiesto), strlen('/assets/shared/')));
         if ($vero !== false && str_starts_with($vero, $base . '/') && is_file($vero)
-            && preg_match('/\.(js|json)$/', $vero) === 1) {
-            header('Content-Type: ' . (str_ends_with($vero, '.json') ? 'application/json' : 'text/javascript') . '; charset=utf-8');
+            && preg_match('/\.(js|json|bin)$/', $vero) === 1) {
+            // .bin: le griglie del fondale degli scenari (shared/data/scenari/*.batimetria.bin).
+            header('Content-Type: ' . match (true) {
+                str_ends_with($vero, '.json') => 'application/json; charset=utf-8',
+                str_ends_with($vero, '.bin') => 'application/octet-stream',
+                default => 'text/javascript; charset=utf-8',
+            });
             readfile($vero);
             return true;
         }

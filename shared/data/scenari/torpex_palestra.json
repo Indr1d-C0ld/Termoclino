@@ -1,0 +1,1577 @@
+{
+ "formato": "termoclino-scenario/1",
+ "id": "torpex_palestra",
+ "nome": "TORPEX '89 — palestra",
+ "generato_da": "tools/batimetria/scarica.py — non modificare a mano: si cambia lo strumento e lo si rilancia",
+ "descrizione": "Palestra di F1 nell'area della missione 1 del 1989, TORPEX '89, a sud dell'arcipelago delle Fær Øer (Mar di Norvegia): batimetria vera, profilo del suono estivo del decennio del gioco, i tre cacciatorpediniere dello script originale, un mercantile e due sorgenti biologiche.",
+ "note": [
+  "Esclusi in F1 e presenti nello script originale: l'elicottero SH-60B Seahawk LAMPS III (fa la spola fra 61,6590 N, 7,3125 W e 61,7460 N, 6,3726 W a 90 nodi) e l'Alfa sovietico in agguato (a 400 ft, 61,7453 N, 6,9803 W); arrivano con le forze ASW e il capitano IA (F4).",
+  "Lo script del 1989 sceglie a caso una delle tre partenze del 688 e chiude l'esercitazione dopo 15 minuti; la palestra non ha limite di tempo e mette in acqua fino a quattro 688 insieme.",
+  "Le posizioni del 1989 portano l'errore della georeferenza (circa 2,5 km): i cacciatorpediniere sulla piattaforma restano in acqua, le partenze dei 688 sono state spostate al largo (vedi `partenze`)."
+ ],
+ "crediti": [
+  {
+   "dati": "EMODnet Bathymetry",
+   "licenza": "CC BY 4.0",
+   "testo": "Batimetria: EMODnet Bathymetry Consortium (2024): EMODnet Digital Bathymetry (DTM 2024). https://doi.org/10.12770/cf51df64-56f9-4a99-b1aa-36b8d7b743a1 — rielaborata (media su celle di 500 m). Non adatta alla navigazione."
+  },
+  {
+   "dati": "NOAA NCEI ETOPO 2022",
+   "licenza": "pubblico dominio",
+   "testo": "Quote delle terre emerse: NOAA National Centers for Environmental Information (2022), ETOPO 2022 15 Arc-Second Global Relief Model. https://doi.org/10.25921/fd45-gt74"
+  },
+  {
+   "dati": "NOAA NCEI World Ocean Atlas 2023",
+   "licenza": "pubblico dominio",
+   "testo": "Temperatura e salinità: World Ocean Atlas 2023 (NOAA NCEI), decennio 1985-1994, estate."
+  },
+  {
+   "dati": "NCEP/NCAR Reanalysis 1",
+   "licenza": "uso libero con citazione (NOAA PSL)",
+   "testo": "Vento: NCEP/NCAR Reanalysis 1, NOAA PSL, Boulder (Colorado, USA), https://psl.noaa.gov"
+  },
+  {
+   "dati": "GLODAPv2",
+   "licenza": "libera con citazione",
+   "testo": "pH: Lauvset et al. (2016), A new global interior ocean mapped climatology: the 1°x1° GLODAP version 2, Earth Syst. Sci. Data 8, 325-340."
+  }
+ ],
+ "origine": {
+  "lat": {
+   "valore": 61.75,
+   "unita": "°",
+   "fonte": "[EST-688] [EMODNET-DTM]",
+   "confidenza": "nozionale",
+   "nota": "61°45' N: centro del campo di TORPEX '89 georeferenziato, arrotondato al primo."
+  },
+  "lon": {
+   "valore": -6.833333333,
+   "unita": "°",
+   "fonte": "[EST-688] [EMODNET-DTM]",
+   "confidenza": "nozionale",
+   "nota": "6°50' W."
+  },
+  "proiezione": "azimutale equidistante sulla sfera di Gauss nell'origine (shared/geo.js, ProiezioneLocale)"
+ },
+ "area": {
+  "x0": {
+   "valore": -100000,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "nozionale",
+   "nota": "Quadrato di 200 km di lato centrato sull'origine: angolo sud-ovest 60,8407 N, 8,6738 W, nord-est 62,6332 N, 4,8825 W."
+  },
+  "y0": {
+   "valore": -100000,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "nozionale"
+  },
+  "x1": {
+   "valore": 100000,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "nozionale"
+  },
+  "y1": {
+   "valore": 100000,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "nozionale"
+  }
+ },
+ "batimetria": {
+  "file": "torpex_palestra.batimetria.bin",
+  "codifica": "int16le",
+  "colonne": 401,
+  "righe": 401,
+  "ordine": "righe da nord a sud, colonne da ovest a est; il nodo (riga i, colonna j) sta in x = x_min + j·passo, y = y_max − i·passo; fra i nodi si interpola in modo bilineare",
+  "valori": "profondità del fondo in metri, positiva verso il basso (riferimento: il LAT di EMODnet); terra = valore negativo, cioè la quota del suolo col segno meno (almeno −1)",
+  "x_min": {
+   "valore": -100000,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "nozionale"
+  },
+  "y_max": {
+   "valore": 100000,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "nozionale"
+  },
+  "passo": {
+   "valore": 500.0,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "nozionale",
+   "nota": "Ogni nodo è la media dei campioni EMODnet (1/16 di primo, circa 115 x 55 m) nella cella di 500 m centrata sul nodo: circa 40 campioni per nodo. 500 m stanno sotto la scala dei sensori e della mappa e tengono il file a circa 314 KiB."
+  },
+  "byte": 321602,
+  "sha256": "b80378dc5de64099802ed07f8f5551df7b0888a8c85683bd3fbe7e769b4757a6",
+  "fondale_massimo": {
+   "valore": 968,
+   "unita": "m",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "calcolato"
+  },
+  "frazione_terra": {
+   "valore": 3.71,
+   "unita": "%",
+   "fonte": "[EMODNET-DTM]",
+   "confidenza": "calcolato"
+  },
+  "fonti": "[EMODNET-DTM] [ETOPO22]",
+  "nodi_da_etopo": {
+   "valore": 152,
+   "unita": "n",
+   "fonte": "[ETOPO22]",
+   "confidenza": "calcolato",
+   "nota": "Nodi di mare dove EMODnet non ha dati (stretti e fiordi fra le isole): profondità ETOPO."
+  },
+  "nota": "EMODnet DTM 2024 (bathymetry_dtm_2024 su erddap.emodnet.eu) per il mare: media dei campioni di mare nella cella; terra dove prevalgono i campioni emersi, con la quota media ETOPO 2022 15\" delle celle emerse; dove prevalgono le celle vuote di EMODnet decide ETOPO. Rifare: python3 tools/batimetria/scarica.py."
+ },
+ "georeferenza_1989": {
+  "mappa": "SURFG (319 x 200 celle), missioni 1 e 2 del gioco del 1989",
+  "cella": "colonna = floor(X / 32), riga = 199 − floor(Y / 32); X verso est, Y verso nord, unità degli script",
+  "livelli": "15 = terra, 14 = costa, 13 … 0 = acqua sempre più profonda (docs/ASSET.md li dà al contrario)",
+  "formula": "x = a·X + b·Y + c, y = d·X + e·Y + f (metri sul piano di questo scenario)",
+  "coefficienti": {
+   "a": {
+    "valore": 19.317449,
+    "unita": "1",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "b": {
+    "valore": -0.655921,
+    "unita": "1",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "c": {
+    "valore": -103382.66221,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "d": {
+    "valore": -1.183673,
+    "unita": "1",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "e": {
+    "valore": 22.146876,
+    "unita": "1",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "f": {
+    "valore": -42763.652304,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   }
+  },
+  "scala_x": {
+   "valore": 19.354,
+   "unita": "m",
+   "fonte": "[EST-688] [EMODNET-DTM]",
+   "confidenza": "calcolato",
+   "nota": "Metri reali per unità di script lungo X (est-ovest)."
+  },
+  "scala_y": {
+   "valore": 22.157,
+   "unita": "m",
+   "fonte": "[EST-688] [EMODNET-DTM]",
+   "confidenza": "calcolato",
+   "nota": "Metri reali per unità di script lungo Y (nord-sud). Il rapporto x/y (circa 0,88) è vicino a quello dei pixel della VGA 320 x 200 (5:6): la mappa fu disegnata perché sembrasse giusta sullo schermo. Il gioco però misura le distanze come se X e Y avessero la stessa scala."
+  },
+  "scarto_quadratico_medio": {
+   "valore": 2515,
+   "unita": "m",
+   "fonte": "[EST-688] [EMODNET-DTM]",
+   "confidenza": "calcolato",
+   "nota": "Sui punti di controllo; è l'incertezza delle posizioni del 1989 convertite."
+  },
+  "punti_di_controllo": [
+   {
+    "punto": "Suðuroy, baricentro",
+    "residuo": {
+     "valore": 2571,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Suðuroy, punta N",
+    "residuo": {
+     "valore": 2871,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Suðuroy, punta S",
+    "residuo": {
+     "valore": 1404,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Sandoy, baricentro",
+    "residuo": {
+     "valore": 2858,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Sandoy, punta N",
+    "residuo": {
+     "valore": 949,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Sandoy, punta S",
+    "residuo": {
+     "valore": 5483,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Stóra Dímun, baricentro",
+    "residuo": {
+     "valore": 2232,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Vágar, baricentro",
+    "residuo": {
+     "valore": 1460,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Mykines, baricentro",
+    "residuo": {
+     "valore": 308,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Streymoy + Eysturoy, baricentro",
+    "residuo": {
+     "valore": 1967,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Streymoy + Eysturoy, punta N",
+    "residuo": {
+     "valore": 1018,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Streymoy + Eysturoy, punta S",
+    "residuo": {
+     "valore": 3874,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Borðoy, Kunoy, Viðoy, Kalsoy, baricentro",
+    "residuo": {
+     "valore": 1098,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   },
+   {
+    "punto": "Svínoy + Fugloy, baricentro",
+    "residuo": {
+     "valore": 2059,
+     "unita": "m",
+     "fonte": "[EST-688] [EMODNET-DTM]",
+     "confidenza": "calcolato"
+    }
+   }
+  ],
+  "nota": "Le unità degli script si mostrano a schermo come gradi:primi:secondi (2\" per unità), ma non sono gradi: la scala vera è circa 20 m per unità. La mappa è una Fær Øer disegnata a mano, riconoscibile isola per isola ma deformata: l'errore residuo (fino a 6 km sulla punta sud di Sandoy) è nella mappa, non nel metodo. Metodo nei commenti di tools/batimetria/scarica.py."
+ },
+ "ambiente": {
+  "stagione": {
+   "valore": "estate (luglio-settembre), decennio 1985-1994",
+   "fonte": "[WOA23]",
+   "confidenza": "documentato",
+   "nota": "Scelta per F1: è la stagione dello strato. Con lo stesso metodo i dati WOA23 dell'area danno 4,5 m/s di salto in estate, 1,6 a giugno e 0,2 in primavera (aprile-giugno): in primavera lo strato quasi non c'è e la prova di F1 «se uno scende sotto lo strato, l'altro lo perde» non avrebbe niente da mostrare. Il decennio è quello del gioco; il vento estivo è il più debole dell'anno."
+  },
+  "profilo": {
+   "quota": {
+    "serie": [
+     0.0,
+     5.0,
+     10.0,
+     15.0,
+     20.0,
+     25.0,
+     30.0,
+     35.0,
+     40.0,
+     45.0,
+     50.0,
+     55.0,
+     60.0,
+     65.0,
+     70.0,
+     75.0,
+     80.0,
+     85.0,
+     90.0,
+     95.0,
+     100.0,
+     125.0,
+     150.0,
+     175.0,
+     200.0,
+     225.0,
+     250.0,
+     275.0,
+     300.0,
+     325.0,
+     350.0,
+     375.0,
+     400.0,
+     425.0,
+     450.0,
+     475.0,
+     500.0,
+     550.0,
+     600.0,
+     650.0,
+     700.0,
+     750.0,
+     800.0,
+     900.0,
+     1000.0
+    ],
+    "unita": "m",
+    "fonte": "[WOA23]",
+    "confidenza": "documentato",
+    "nota": "Media dei 9 nodi WOA23 (decennio 1985-1994, estate, 0,25°) dentro l'area con la colonna d'acqua fino ad almeno 750 m (Canale delle Fær Øer e fianco del Canale Fær Øer-Shetland); livelli standard fino a 750 m, poi T e S costanti fino al fondale massimo dell'area (968 m)."
+   },
+   "temperatura": {
+    "serie": [
+     10.782,
+     10.766,
+     10.696,
+     10.618,
+     10.52,
+     10.4,
+     10.279,
+     10.149,
+     9.994,
+     9.847,
+     9.714,
+     9.609,
+     9.495,
+     9.383,
+     9.295,
+     9.212,
+     9.137,
+     9.072,
+     9.015,
+     8.941,
+     8.887,
+     8.614,
+     8.408,
+     8.159,
+     8.032,
+     8.045,
+     7.935,
+     7.763,
+     7.639,
+     7.466,
+     7.319,
+     7.001,
+     6.678,
+     6.154,
+     5.848,
+     5.235,
+     4.825,
+     3.744,
+     2.148,
+     0.633,
+     -0.257,
+     -0.827,
+     -0.827,
+     -0.827,
+     -0.827
+    ],
+    "unita": "°C",
+    "fonte": "[WOA23]",
+    "confidenza": "documentato",
+    "nota": "Sotto i 600 m l'acqua di fondo è sotto i 2 °C, fuori dal dominio dichiarato dell'equazione di Mackenzie (05_acustica.md §4.1): errore piccolo, dichiarato."
+   },
+   "salinita": {
+    "serie": [
+     35.219,
+     35.223,
+     35.224,
+     35.225,
+     35.227,
+     35.228,
+     35.23,
+     35.233,
+     35.235,
+     35.237,
+     35.239,
+     35.24,
+     35.24,
+     35.244,
+     35.245,
+     35.247,
+     35.247,
+     35.249,
+     35.249,
+     35.25,
+     35.251,
+     35.25,
+     35.251,
+     35.229,
+     35.225,
+     35.235,
+     35.232,
+     35.223,
+     35.222,
+     35.215,
+     35.211,
+     35.195,
+     35.177,
+     35.15,
+     35.14,
+     35.109,
+     35.088,
+     35.026,
+     34.971,
+     34.916,
+     34.891,
+     34.875,
+     34.875,
+     34.875,
+     34.875
+    ],
+    "unita": "psu",
+    "fonte": "[WOA23]",
+    "confidenza": "documentato"
+   },
+   "velocita_suono": {
+    "serie": [
+     1492.86,
+     1492.89,
+     1492.73,
+     1492.53,
+     1492.27,
+     1491.93,
+     1491.58,
+     1491.2,
+     1490.73,
+     1490.28,
+     1489.88,
+     1489.58,
+     1489.25,
+     1488.93,
+     1488.69,
+     1488.47,
+     1488.27,
+     1488.12,
+     1487.99,
+     1487.8,
+     1487.68,
+     1487.08,
+     1486.72,
+     1486.16,
+     1486.09,
+     1486.56,
+     1486.54,
+     1486.29,
+     1486.23,
+     1485.96,
+     1485.81,
+     1484.97,
+     1484.1,
+     1482.41,
+     1481.59,
+     1479.49,
+     1478.21,
+     1474.47,
+     1468.38,
+     1462.4,
+     1459.12,
+     1457.28,
+     1458.1,
+     1459.76,
+     1461.43
+    ],
+    "unita": "m/s",
+    "fonte": "[MACK81] [NPL-SS] [WOA23]",
+    "confidenza": "calcolato",
+    "nota": "Equazione di Mackenzie (1981) sui valori di T e S."
+   }
+  },
+  "strato": {
+   "profondita": {
+    "valore": 21.0,
+    "unita": "m",
+    "fonte": "[WOA23] [DBM04]",
+    "confidenza": "calcolato",
+    "nota": "Base dello strato rimescolato: la temperatura scende di 0,2 °C rispetto a quella di 10 m (criterio di soglia di de Boyer Montégut et al. 2004). Nel profilo climatologico la velocità è massima in superficie: la media di molti anni smussa lo strato isotermo che una singola sonda vedrebbe.",
+    "rif": "05_acustica.md §4.2, §5.1"
+   },
+   "base_termoclina": {
+    "valore": 100.0,
+    "unita": "m",
+    "fonte": "[WOA23]",
+    "confidenza": "stimato",
+    "nota": "Base della termoclina stagionale: sotto i 100 m il gradiente termico estivo scende a circa 0,01 °C/m, come nella termoclina permanente."
+   },
+   "salto_velocita": {
+    "valore": 4.52,
+    "unita": "m/s",
+    "fonte": "[MACK81] [WOA23]",
+    "confidenza": "calcolato",
+    "nota": "Velocità alla base dello strato meno velocità alla base della termoclina stagionale."
+   },
+   "perdita": {
+    "valore": 13.5,
+    "unita": "dB",
+    "fonte": "[WOA23] [CW-MOD]",
+    "confidenza": "nozionale",
+    "nota": "Perdita per l'attraversamento dello strato: 3 dB per m/s di salto, al massimo 15 dB (regola nozionale di 05_acustica.md §5.1: nessun valore aperto affidabile; Cold Waters usa un bonus di strato fino a 12 dB).",
+    "rif": "05_acustica.md §5.1"
+   },
+   "gradiente_sotto": {
+    "valore": 0.0572,
+    "unita": "1",
+    "fonte": "[MACK81] [WOA23]",
+    "confidenza": "calcolato",
+    "nota": "Gradiente medio di velocità nella termoclina stagionale, (m/s)/m."
+   }
+  },
+  "velocita_suono_minima": {
+   "quota": {
+    "valore": 750.0,
+    "unita": "m",
+    "fonte": "[WOA23] [MACK81]",
+    "confidenza": "calcolato",
+    "nota": "Minimo del profilo: è sul fondo del Canale delle Fær Øer (acqua di fondo sotto 0 °C), non un canale SOFAR libero."
+   },
+   "velocita": {
+    "valore": 1457.28,
+    "unita": "m/s",
+    "fonte": "[WOA23] [MACK81]",
+    "confidenza": "calcolato"
+   }
+  },
+  "mare": {
+   "stato_predefinito": {
+    "valore": 3,
+    "unita": "n",
+    "fonte": "[NCEP-R1]",
+    "confidenza": "calcolato",
+    "nota": "Vento medio di luglio-settembre 7,4 m/s (NCEP/NCAR R1, 1991-2020, quattro nodi intorno all'area): classe più vicina della scala nozionale di 05_acustica.md §3.4."
+   },
+   "vento_stagione": {
+    "valore": 7.41,
+    "unita": "m/s",
+    "fonte": "[NCEP-R1]",
+    "confidenza": "documentato",
+    "nota": "Media 1991-2020 (la climatologia disponibile più vicina al 1989)."
+   },
+   "vento_per_stato": {
+    "serie": [
+     0.5,
+     2.5,
+     4.5,
+     6.5,
+     9.0,
+     12.0,
+     15.5
+    ],
+    "unita": "m/s",
+    "fonte": "[STOJ06]",
+    "confidenza": "nozionale",
+    "nota": "Centro delle classi della mappa nozionale stato del mare → vento di 05_acustica.md §3.4 (0-1, 2-3, 4-5, 6-7, 8-10, 11-13, 14-17 m/s); fra due stati si interpola."
+   }
+  },
+  "rumore": {
+   "modello": "coates",
+   "formula": "dB re 1 µPa²/Hz con f in kHz: N_turb = 17 − 30·log f; N_navi = 40 + 20·(s − 0,5) + 26·log f − 60·log(f + 0,03); N_vento = 50 + 7,5·√w + 20·log f − 40·log(f + 0,4); N_term = −15 + 20·log f; somma in potenza (05_acustica.md §3.2)",
+   "traffico": {
+    "valore": 0.4,
+    "unita": "1",
+    "fonte": "[STOJ06]",
+    "confidenza": "nozionale",
+    "nota": "Attività navale s di Coates (0 = bassa, 1 = alta): area lontana dalle grandi rotte oceaniche, con pesca e traffico locale."
+   },
+   "tabella": [
+    {
+     "serie": [
+      70.2,
+      61.6,
+      55.3,
+      49.7,
+      42.6,
+      27.2
+     ],
+     "unita": "dB re 1 µPa²/Hz",
+     "fonte": "[STOJ06]",
+     "confidenza": "calcolato",
+     "nota": "Stato del mare 0 (vento 0,5 m/s), alle frequenze di `bande`."
+    },
+    {
+     "serie": [
+      70.2,
+      62.4,
+      59.0,
+      56.1,
+      49.1,
+      33.7
+     ],
+     "unita": "dB re 1 µPa²/Hz",
+     "fonte": "[STOJ06]",
+     "confidenza": "calcolato",
+     "nota": "Stato del mare 1 (vento 2,5 m/s), alle frequenze di `bande`."
+    },
+    {
+     "serie": [
+      70.3,
+      63.6,
+      62.2,
+      60.1,
+      53.2,
+      37.7
+     ],
+     "unita": "dB re 1 µPa²/Hz",
+     "fonte": "[STOJ06]",
+     "confidenza": "calcolato",
+     "nota": "Stato del mare 2 (vento 4,5 m/s), alle frequenze di `bande`."
+    },
+    {
+     "serie": [
+      70.4,
+      65.3,
+      65.2,
+      63.3,
+      56.4,
+      40.9
+     ],
+     "unita": "dB re 1 µPa²/Hz",
+     "fonte": "[STOJ06]",
+     "confidenza": "calcolato",
+     "nota": "Stato del mare 3 (vento 6,5 m/s), alle frequenze di `bande`."
+    },
+    {
+     "serie": [
+      70.6,
+      67.6,
+      68.4,
+      66.7,
+      59.7,
+      44.3
+     ],
+     "unita": "dB re 1 µPa²/Hz",
+     "fonte": "[STOJ06]",
+     "confidenza": "calcolato",
+     "nota": "Stato del mare 4 (vento 9,0 m/s), alle frequenze di `bande`."
+    },
+    {
+     "serie": [
+      71.1,
+      70.5,
+      71.8,
+      70.1,
+      63.2,
+      47.7
+     ],
+     "unita": "dB re 1 µPa²/Hz",
+     "fonte": "[STOJ06]",
+     "confidenza": "calcolato",
+     "nota": "Stato del mare 5 (vento 12,0 m/s), alle frequenze di `bande`."
+    },
+    {
+     "serie": [
+      72.0,
+      73.7,
+      75.3,
+      73.7,
+      66.8,
+      51.3
+     ],
+     "unita": "dB re 1 µPa²/Hz",
+     "fonte": "[STOJ06]",
+     "confidenza": "calcolato",
+     "nota": "Stato del mare 6 (vento 15,5 m/s), alle frequenze di `bande`."
+    }
+   ]
+  },
+  "assorbimento": {
+   "modello": "ainslie-mccolm",
+   "temperatura": {
+    "valore": 8.7,
+    "unita": "°C",
+    "fonte": "[WOA23]",
+    "confidenza": "calcolato",
+    "nota": "Media del profilo fra 0 e 300 m."
+   },
+   "salinita": {
+    "valore": 35.24,
+    "unita": "psu",
+    "fonte": "[WOA23]",
+    "confidenza": "calcolato",
+    "nota": "Media del profilo fra 0 e 300 m."
+   },
+   "ph": {
+    "valore": 8.09,
+    "unita": "1",
+    "fonte": "[GLODAP2]",
+    "confidenza": "stimato",
+    "nota": "pH in situ (scala totale) medio fra 0 e 300 m nell'area: 8,095. La climatologia GLODAPv2 è riferita al 2002: nel 1989 il pH era più alto di circa 0,02, effetto sull'assorbimento sotto il 4 %."
+   },
+   "profondita": {
+    "valore": 100.0,
+    "unita": "m",
+    "fonte": "[NPL-ABS]",
+    "confidenza": "nozionale",
+    "nota": "Quota di riferimento della formula."
+   },
+   "bande": [
+    {
+     "frequenza": {
+      "valore": 50,
+      "unita": "Hz",
+      "fonte": "[NPL-ABS]",
+      "confidenza": "documentato",
+      "rif": "05_acustica.md §6.3"
+     },
+     "alfa": {
+      "valore": 0.00031,
+      "unita": "dB/km",
+      "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+      "confidenza": "calcolato"
+     }
+    },
+    {
+     "frequenza": {
+      "valore": 150,
+      "unita": "Hz",
+      "fonte": "[NPL-ABS]",
+      "confidenza": "documentato",
+      "rif": "05_acustica.md §6.3"
+     },
+     "alfa": {
+      "valore": 0.00272,
+      "unita": "dB/km",
+      "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+      "confidenza": "calcolato"
+     }
+    },
+    {
+     "frequenza": {
+      "valore": 300,
+      "unita": "Hz",
+      "fonte": "[NPL-ABS]",
+      "confidenza": "documentato",
+      "rif": "05_acustica.md §6.3"
+     },
+     "alfa": {
+      "valore": 0.01035,
+      "unita": "dB/km",
+      "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+      "confidenza": "calcolato"
+     }
+    },
+    {
+     "frequenza": {
+      "valore": 1000,
+      "unita": "Hz",
+      "fonte": "[NPL-ABS]",
+      "confidenza": "documentato",
+      "rif": "05_acustica.md §6.3"
+     },
+     "alfa": {
+      "valore": 0.07118,
+      "unita": "dB/km",
+      "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+      "confidenza": "calcolato"
+     }
+    },
+    {
+     "frequenza": {
+      "valore": 3500,
+      "unita": "Hz",
+      "fonte": "[NPL-ABS]",
+      "confidenza": "documentato",
+      "rif": "05_acustica.md §6.3"
+     },
+     "alfa": {
+      "valore": 0.23633,
+      "unita": "dB/km",
+      "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+      "confidenza": "calcolato"
+     }
+    },
+    {
+     "frequenza": {
+      "valore": 25000,
+      "unita": "Hz",
+      "fonte": "[NPL-ABS]",
+      "confidenza": "documentato",
+      "rif": "05_acustica.md §6.3"
+     },
+     "alfa": {
+      "valore": 5.25522,
+      "unita": "dB/km",
+      "fonte": "[NPL-ABS] [WOA23] [GLODAP2]",
+      "confidenza": "calcolato"
+     }
+    }
+   ]
+  }
+ },
+ "partenze": [
+  {
+   "id": "p1",
+   "x": {
+    "valore": 32000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "61,6590 N, 6,2289 W; fondale 210 m. Anello di 9 km di raggio intorno a 61,5783 N, 6,2305 W, a levante di Suðuroy."
+   },
+   "y": {
+    "valore": -10000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale"
+   },
+   "rotta": {
+    "valore": 180,
+    "unita": "°",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "Prua verso il centro dell'anello."
+   },
+   "quota": {
+    "valore": 18,
+    "unita": "m",
+    "fonte": "[CONO] [EST-688]",
+    "confidenza": "nozionale",
+    "nota": "Quota periscopica del 688 (shared/data/piattaforme/688.json, circa 60 ft alla chiglia); lo script del 1989 parte a 20 ft (DEPTH 00A0h = 160/8)."
+   },
+   "velocita": {
+    "valore": 0,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Fermo, come nello script."
+   }
+  },
+  {
+   "id": "p2",
+   "x": {
+    "valore": 41000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "61,5775 N, 6,0609 W; fondale 178 m. Anello di 9 km di raggio intorno a 61,5783 N, 6,2305 W, a levante di Suðuroy."
+   },
+   "y": {
+    "valore": -19000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale"
+   },
+   "rotta": {
+    "valore": 270,
+    "unita": "°",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "Prua verso il centro dell'anello."
+   },
+   "quota": {
+    "valore": 18,
+    "unita": "m",
+    "fonte": "[CONO] [EST-688]",
+    "confidenza": "nozionale",
+    "nota": "Quota periscopica del 688 (shared/data/piattaforme/688.json, circa 60 ft alla chiglia); lo script del 1989 parte a 20 ft (DEPTH 00A0h = 160/8)."
+   },
+   "velocita": {
+    "valore": 0,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Fermo, come nello script."
+   }
+  },
+  {
+   "id": "p3",
+   "x": {
+    "valore": 32000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "61,4976 N, 6,2320 W; fondale 219 m. Anello di 9 km di raggio intorno a 61,5783 N, 6,2305 W, a levante di Suðuroy."
+   },
+   "y": {
+    "valore": -28000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale"
+   },
+   "rotta": {
+    "valore": 0,
+    "unita": "°",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "Prua verso il centro dell'anello."
+   },
+   "quota": {
+    "valore": 18,
+    "unita": "m",
+    "fonte": "[CONO] [EST-688]",
+    "confidenza": "nozionale",
+    "nota": "Quota periscopica del 688 (shared/data/piattaforme/688.json, circa 60 ft alla chiglia); lo script del 1989 parte a 20 ft (DEPTH 00A0h = 160/8)."
+   },
+   "velocita": {
+    "valore": 0,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Fermo, come nello script."
+   }
+  },
+  {
+   "id": "p4",
+   "x": {
+    "valore": 23000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "61,5789 N, 6,4000 W; fondale 186 m. Anello di 9 km di raggio intorno a 61,5783 N, 6,2305 W, a levante di Suðuroy."
+   },
+   "y": {
+    "valore": -19000,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale"
+   },
+   "rotta": {
+    "valore": 90,
+    "unita": "°",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "Prua verso il centro dell'anello."
+   },
+   "quota": {
+    "valore": 18,
+    "unita": "m",
+    "fonte": "[CONO] [EST-688]",
+    "confidenza": "nozionale",
+    "nota": "Quota periscopica del 688 (shared/data/piattaforme/688.json, circa 60 ft alla chiglia); lo script del 1989 parte a 20 ft (DEPTH 00A0h = 160/8)."
+   },
+   "velocita": {
+    "valore": 0,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Fermo, come nello script."
+   }
+  }
+ ],
+ "partenze_1989": [
+  {
+   "id": "p1989_1",
+   "x": {
+    "valore": 6857,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "61,6167 N, 6,7040 W; fondale 37 m. Script: X 5760, Y 1568. Posizione del gioco del 1989 convertita con la georeferenza di questo scenario (affinità sulla costa; incertezza circa 2,5 km, vedi georeferenza_1989)."
+   },
+   "y": {
+    "valore": -14855,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "script_1989": {
+    "X": {
+     "valore": 5760,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    },
+    "Y": {
+     "valore": 1568,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    }
+   },
+   "rotta": {
+    "valore": 270,
+    "unita": "°",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "COURSE dello script (bussola = 90 − v/25)."
+   },
+   "fondale": {
+    "valore": 37,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "calcolato"
+   }
+  },
+  {
+   "id": "p1989_2",
+   "x": {
+    "valore": 3274,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "61,5807 N, 6,7716 W; fondale 5 m. Script: X 5568, Y 1376. Posizione del gioco del 1989 convertita con la georeferenza di questo scenario (affinità sulla costa; incertezza circa 2,5 km, vedi georeferenza_1989)."
+   },
+   "y": {
+    "valore": -18880,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "script_1989": {
+    "X": {
+     "valore": 5568,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    },
+    "Y": {
+     "valore": 1376,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    }
+   },
+   "rotta": {
+    "valore": 320,
+    "unita": "°",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "COURSE dello script (bussola = 90 − v/25)."
+   },
+   "fondale": {
+    "valore": 5,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "calcolato"
+   }
+  },
+  {
+   "id": "p1989_3",
+   "x": {
+    "valore": -4626,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "61,7309 N, 6,9209 W; fondale 73 m. Script: X 5184, Y 2112. Posizione del gioco del 1989 convertita con la georeferenza di questo scenario (affinità sulla costa; incertezza circa 2,5 km, vedi georeferenza_1989)."
+   },
+   "y": {
+    "valore": -2126,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "script_1989": {
+    "X": {
+     "valore": 5184,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    },
+    "Y": {
+     "valore": 2112,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    }
+   },
+   "rotta": {
+    "valore": 170,
+    "unita": "°",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "COURSE dello script (bussola = 90 − v/25)."
+   },
+   "fondale": {
+    "valore": 73,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "calcolato"
+   }
+  }
+ ],
+ "nota_partenze_1989": "Le tre partenze alternative dello script del 1989 (il gioco ne sceglie una a caso), convertite: cadono contro la costa di Suðuroy, su 10-70 m di fondale. Solo per confronto; la palestra usa `partenze`.",
+ "distanza_minima_partenze": {
+  "valore": 12728,
+  "unita": "m",
+  "fonte": "[EMODNET-DTM]",
+  "confidenza": "calcolato",
+  "nota": "Fra due partenze qualsiasi: due 688 lenti si sentono a pochi km (PROGETTO §5.12)."
+ },
+ "navi": [
+  {
+   "id": "dd1",
+   "nome": "DD-1",
+   "classe": "cacciatorpediniere",
+   "piattaforma": "forrest_sherman",
+   "descrizione": "Cacciatorpediniere classe Forrest Sherman radiato, radiocomandato (ordini di TORPEX '89).",
+   "x": {
+    "valore": -3798,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "61,6670 N, 6,9051 W; fondale 60 m. Script: X 5216, Y 1792. Posizione del gioco del 1989 convertita con la georeferenza di questo scenario (affinità sulla costa; incertezza circa 2,5 km, vedi georeferenza_1989)."
+   },
+   "y": {
+    "valore": -9250,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "script_1989": {
+    "X": {
+     "valore": 5216,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    },
+    "Y": {
+     "valore": 1792,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    }
+   },
+   "rotta": {
+    "valore": 327,
+    "unita": "°",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "Verso il primo waypoint."
+   },
+   "velocita": {
+    "valore": 10,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "SPEED 0C80h = 3200/320 = 10 nodi nello script."
+   },
+   "quota": {
+    "valore": 0,
+    "unita": "m",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Nave di superficie."
+   },
+   "waypoint": [
+    {
+     "x": {
+      "valore": -5737,
+      "unita": "m",
+      "fonte": "[EST-688] [EMODNET-DTM]",
+      "confidenza": "calcolato"
+     },
+     "y": {
+      "valore": -6302,
+      "unita": "m",
+      "fonte": "[EST-688] [EMODNET-DTM]",
+      "confidenza": "calcolato"
+     },
+     "script_1989": {
+      "X": {
+       "valore": 5120,
+       "unita": "1",
+       "fonte": "[EST-688]",
+       "confidenza": "documentato"
+      },
+      "Y": {
+       "valore": 1920,
+       "unita": "1",
+       "fonte": "[EST-688]",
+       "confidenza": "documentato"
+      }
+     },
+     "nota": "61,6934 N, 6,9418 W; fondale 71 m. Script: X 5120, Y 1920."
+    }
+   ],
+   "al_termine": "ferma",
+   "nota_al_termine": "Nello script, arrivato al waypoint il cacciatorpediniere si ferma (SPEED_TO 0)."
+  },
+  {
+   "id": "dd2",
+   "nome": "DD-2",
+   "classe": "cacciatorpediniere",
+   "piattaforma": "forrest_sherman",
+   "descrizione": "Cacciatorpediniere classe Forrest Sherman radiato, radiocomandato (ordini di TORPEX '89).",
+   "x": {
+    "valore": -1881,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "61,6470 N, 6,8688 W; fondale 56 m. Script: X 5312, Y 1696. Posizione del gioco del 1989 convertita con la georeferenza di questo scenario (affinità sulla costa; incertezza circa 2,5 km, vedi georeferenza_1989)."
+   },
+   "y": {
+    "valore": -11490,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "script_1989": {
+    "X": {
+     "valore": 5312,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    },
+    "Y": {
+     "valore": 1696,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    }
+   },
+   "rotta": {
+    "valore": 320,
+    "unita": "°",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "Verso il primo waypoint."
+   },
+   "velocita": {
+    "valore": 10,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "SPEED 0C80h = 3200/320 = 10 nodi nello script."
+   },
+   "quota": {
+    "valore": 0,
+    "unita": "m",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Nave di superficie."
+   },
+   "waypoint": [
+    {
+     "x": {
+      "valore": -26189,
+      "unita": "m",
+      "fonte": "[EST-688] [EMODNET-DTM]",
+      "confidenza": "calcolato"
+     },
+     "y": {
+      "valore": 17588,
+      "unita": "m",
+      "fonte": "[EST-688] [EMODNET-DTM]",
+      "confidenza": "calcolato"
+     },
+     "script_1989": {
+      "X": {
+       "valore": 4096,
+       "unita": "1",
+       "fonte": "[EST-688]",
+       "confidenza": "documentato"
+      },
+      "Y": {
+       "valore": 2944,
+       "unita": "1",
+       "fonte": "[EST-688]",
+       "confidenza": "documentato"
+      }
+     },
+     "nota": "61,9068 N, 7,3320 W; fondale 109 m. Script: X 4096, Y 2944."
+    }
+   ],
+   "al_termine": "ferma",
+   "nota_al_termine": "Nello script, arrivato al waypoint il cacciatorpediniere si ferma (SPEED_TO 0)."
+  },
+  {
+   "id": "dd3",
+   "nome": "DD-3",
+   "classe": "cacciatorpediniere",
+   "piattaforma": "forrest_sherman",
+   "descrizione": "Cacciatorpediniere classe Forrest Sherman radiato, radiocomandato (ordini di TORPEX '89).",
+   "x": {
+    "valore": 655,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "61,6265 N, 6,8210 W; fondale 58 m. Script: X 5440, Y 1600. Posizione del gioco del 1989 convertita con la georeferenza di questo scenario (affinità sulla costa; incertezza circa 2,5 km, vedi georeferenza_1989)."
+   },
+   "y": {
+    "valore": -13768,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "script_1989": {
+    "X": {
+     "valore": 5440,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    },
+    "Y": {
+     "valore": 1600,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    }
+   },
+   "rotta": {
+    "valore": 319,
+    "unita": "°",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "Verso il primo waypoint."
+   },
+   "velocita": {
+    "valore": 10,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "SPEED 0C80h = 3200/320 = 10 nodi nello script."
+   },
+   "quota": {
+    "valore": 0,
+    "unita": "m",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Nave di superficie."
+   },
+   "waypoint": [
+    {
+     "x": {
+      "valore": -26189,
+      "unita": "m",
+      "fonte": "[EST-688] [EMODNET-DTM]",
+      "confidenza": "calcolato"
+     },
+     "y": {
+      "valore": 17588,
+      "unita": "m",
+      "fonte": "[EST-688] [EMODNET-DTM]",
+      "confidenza": "calcolato"
+     },
+     "script_1989": {
+      "X": {
+       "valore": 4096,
+       "unita": "1",
+       "fonte": "[EST-688]",
+       "confidenza": "documentato"
+      },
+      "Y": {
+       "valore": 2944,
+       "unita": "1",
+       "fonte": "[EST-688]",
+       "confidenza": "documentato"
+      }
+     },
+     "nota": "61,9068 N, 7,3320 W; fondale 109 m. Script: X 4096, Y 2944."
+    }
+   ],
+   "al_termine": "ferma",
+   "nota_al_termine": "Nello script, arrivato al waypoint il cacciatorpediniere si ferma (SPEED_TO 0)."
+  },
+  {
+   "id": "merc1",
+   "nome": "mercantile",
+   "classe": "mercantile",
+   "piattaforma": "mercantile_generico",
+   "descrizione": "Piccolo mercantile da carico in servizio fra le Fær Øer e la Scozia.",
+   "x": {
+    "valore": 11172,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "61,9950 N, 6,6200 W; fondale 33 m. Rotta plausibile, non storica: dall'uscita del porto di Tórshavn a est di Nólsoy verso sud-est (Scozia), al bordo dell'area."
+   },
+   "y": {
+    "valore": 27342,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale"
+   },
+   "rotta": {
+    "valore": 153,
+    "unita": "°",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "Verso il primo waypoint."
+   },
+   "velocita": {
+    "valore": 12,
+    "unita": "kt",
+    "fonte": "[CONO]",
+    "confidenza": "nozionale",
+    "nota": "Velocità di servizio tipica di un piccolo mercantile degli anni '80; nel gioco del 1989 i MERCHANT SHIP hanno 15 nodi di massima."
+   },
+   "quota": {
+    "valore": 0,
+    "unita": "m",
+    "fonte": "[CONO]",
+    "confidenza": "nozionale",
+    "nota": "Nave di superficie."
+   },
+   "waypoint": [
+    {
+     "x": {
+      "valore": 28199,
+      "unita": "m",
+      "fonte": "[EMODNET-DTM]",
+      "confidenza": "nozionale"
+     },
+     "y": {
+      "valore": -5461,
+      "unita": "m",
+      "fonte": "[EMODNET-DTM]",
+      "confidenza": "nozionale"
+     },
+     "nota": "61,7000 N, 6,3000 W; fondale 117 m."
+    },
+    {
+     "x": {
+      "valore": 88166,
+      "unita": "m",
+      "fonte": "[EMODNET-DTM]",
+      "confidenza": "nozionale"
+     },
+     "y": {
+      "valore": -76963,
+      "unita": "m",
+      "fonte": "[EMODNET-DTM]",
+      "confidenza": "nozionale"
+     },
+     "nota": "61,0500 N, 5,2000 W; fondale 520 m."
+    }
+   ],
+   "al_termine": "ciclo",
+   "nota_al_termine": "Dopo l'ultimo waypoint torna navigando al punto di partenza e ricomincia (viaggio di ritorno: traffico continuo nella palestra)."
+  }
+ ],
+ "biologici": [
+  {
+   "id": "bio1",
+   "nome": "balena",
+   "tipo": "cetaceo",
+   "x": {
+    "valore": 466,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato",
+    "nota": "61,6837 N, 6,8245 W; fondale 75 m. Script: X 5440, Y 1888 (unità BIOLOGICAL, tipo 25). Posizione del gioco del 1989 convertita con la georeferenza di questo scenario (affinità sulla costa; incertezza circa 2,5 km, vedi georeferenza_1989)."
+   },
+   "y": {
+    "valore": -7390,
+    "unita": "m",
+    "fonte": "[EST-688] [EMODNET-DTM]",
+    "confidenza": "calcolato"
+   },
+   "script_1989": {
+    "X": {
+     "valore": 5440,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    },
+    "Y": {
+     "valore": 1888,
+     "unita": "1",
+     "fonte": "[EST-688]",
+     "confidenza": "documentato"
+    }
+   },
+   "quota": {
+    "valore": 46,
+    "unita": "m",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "DEPTH 04B0h = 1200/8 = 150 ft nello script."
+   },
+   "velocita": {
+    "valore": 0,
+    "unita": "kt",
+    "fonte": "[EST-688]",
+    "confidenza": "documentato",
+    "nota": "Ferma nello script (velocità massima 1 nodo)."
+   }
+  },
+  {
+   "id": "bio2",
+   "nome": "globicefali",
+   "tipo": "cetacei",
+   "x": {
+    "valore": -32816,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale",
+    "nota": "61,5000 N, 7,4500 W; fondale 201 m. Branco di globicefali sul margine della piattaforma: sorgente aggiunta per la palestra, non c'e' nello script del 1989."
+   },
+   "y": {
+    "valore": -27726,
+    "unita": "m",
+    "fonte": "[EMODNET-DTM]",
+    "confidenza": "nozionale"
+   },
+   "quota": {
+    "valore": 20,
+    "unita": "m",
+    "fonte": "[CONO]",
+    "confidenza": "nozionale",
+    "nota": "Vicino alla superficie."
+   },
+   "velocita": {
+    "valore": 3,
+    "unita": "kt",
+    "fonte": "[CONO]",
+    "confidenza": "nozionale",
+    "nota": "Si sposta lentamente."
+   }
+  }
+ ]
+}

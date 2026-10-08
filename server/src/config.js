@@ -8,6 +8,9 @@
  * il segreto: senza, il server non parte.
  */
 
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 /**
  * @typedef {object} Configurazione
  * @property {string} host
@@ -18,6 +21,9 @@
  * @property {number} raffica
  * @property {'debug'|'info'|'warn'|'error'} livelloLog
  * @property {string} versione
+ * @property {string | null} dirIstantanee  cartella delle istantanee della verita' (null = non si registra)
+ * @property {number} guardiaSecondi  quanto l'ufficiale di guardia tiene un battello senza linea, s reali
+ * @property {number} maxGiocatori  battelli al massimo nella palestra
  */
 
 /**
@@ -37,6 +43,17 @@ export function leggiConfigurazione(env) {
   if (!['debug', 'info', 'warn', 'error'].includes(livello)) {
     throw new Error(`TERMOCLINO_LOG non valido: ${livello}`);
   }
+  const guardia = Number(env.TERMOCLINO_GUARDIA_SECONDI ?? '300');
+  if (!Number.isFinite(guardia) || guardia < 0) {
+    throw new Error(`TERMOCLINO_GUARDIA_SECONDI non valido: ${env.TERMOCLINO_GUARDIA_SECONDI}`);
+  }
+  const maxGiocatori = Number(env.TERMOCLINO_PALESTRA_MAX ?? '8');
+  if (!Number.isInteger(maxGiocatori) || maxGiocatori < 1 || maxGiocatori > 64) {
+    throw new Error(`TERMOCLINO_PALESTRA_MAX non valido: ${env.TERMOCLINO_PALESTRA_MAX}`);
+  }
+  // Istantanee: in Docker una cartella su volume (vedi compose.yaml); fuori,
+  // la cartella temporanea del sistema. "-" le spegne.
+  const dir = env.TERMOCLINO_ISTANTANEE ?? join(tmpdir(), 'termoclino', 'istantanee');
   return {
     host: env.TERMOCLINO_HOST ?? '127.0.0.1',
     porta,
@@ -49,5 +66,8 @@ export function leggiConfigurazione(env) {
     raffica: Number(env.TERMOCLINO_RAFFICA ?? '40'),
     livelloLog: livello,
     versione: env.TERMOCLINO_VERSIONE ?? 'sviluppo',
+    dirIstantanee: dir === '-' || dir === '' ? null : dir,
+    guardiaSecondi: guardia,
+    maxGiocatori,
   };
 }

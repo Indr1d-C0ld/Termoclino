@@ -1,0 +1,93 @@
+{
+  "formato": "termoclino-acustica/1",
+  "aggiornato": "2026-10-07",
+  "descrizione": "Costanti assolute del modello acustico analitico di F1 (livello C di docs/ricerca/05_acustica.md §6.3). Le piattaforme danno solo scarti relativi (gradino_sl0, rumore proprio a 1 kHz); qui stanno i livelli assoluti, le bande, le soglie e le sorgenti di superficie. Taratura e portate risultanti: docs/CALIBRAZIONE_F1.md. Tutti i livelli sono spettrali (dB re 1 µPa²/Hz, sorgenti a 1 m).",
+  "bande": {
+    "sfera": {
+      "centro": {"valore": 2000, "unita": "Hz", "fonte": "[GUS-GAK] [FUN-8]", "confidenza": "nozionale", "nota": "Ottava centrata sulla frequenza di riferimento della sfera (sensori.sfera.frequenza_rif = 2 kHz, dove i dati danno DI 25,5 dB e fascio 9,8°), dentro la banda passiva 0,5-5 kHz della BQS-13. Il broadband di Sub Command era modellato a 2-4 kHz [SONALYSTS-SC]; a 2 kHz il salto di cavitazione (sopra 1 kHz) conta per intero.", "rif": "05_acustica.md §6.2"},
+      "da": {"valore": 1414, "unita": "Hz", "fonte": "[FUN-8]", "confidenza": "calcolato", "nota": "2000/√2: un'ottava."},
+      "a": {"valore": 2828, "unita": "Hz", "fonte": "[FUN-8]", "confidenza": "calcolato", "nota": "2000·√2."},
+      "tempo_integrazione": {"valore": 5, "unita": "s", "fonte": "[FUN-8] [URICK83]", "confidenza": "nozionale", "nota": "Tempo d'integrazione del rivelatore a banda larga dentro la soglia DT = 5·log(d/(B·t)): il fotogramma esce ogni secondo ma l'operatore e il display integrano qualche secondo (cadenza 4-10 s della sfera in 06 §5.1).", "rif": "06_tma.md §5.1"}
+    },
+    "towed": {
+      "centro": {"valore": 300, "unita": "Hz", "fonte": "[FAS-TB16] [COTE03 p.49]", "confidenza": "nozionale", "nota": "Ottava centrata sulla frequenza di riferimento della TB-16 (sensori.rimorchiata.frequenza_rif = 300 Hz: DI 14,7 dB, fascio 3,5°). Bassa frequenza: assorbimento quasi nullo, ma rumore di traffico piu' alto. Il vantaggio vero dell'antenna, le righe tonali, arriva in F2.", "rif": "04_sensori.md §4.6.1"},
+      "da": {"valore": 212, "unita": "Hz", "fonte": "[FUN-8]", "confidenza": "calcolato", "nota": "300/√2."},
+      "a": {"valore": 424, "unita": "Hz", "fonte": "[FUN-8]", "confidenza": "calcolato", "nota": "300·√2."},
+      "tempo_integrazione": {"valore": 5, "unita": "s", "fonte": "[FUN-8] [URICK83]", "confidenza": "nozionale", "nota": "Come la sfera."}
+    }
+  },
+  "rivelazione": {
+    "indice_d": {"valore": 13.8, "unita": "1", "fonte": "[FUN-8] [URICK83]", "confidenza": "calcolato", "nota": "Indice di rivelazione per Pd = 50 % e Pfa = 10⁻⁴ (calcolo gaussiano d = z²). Entra nella soglia DT = 5·log10(d/(B·t)), riferita ai livelli spettrali: −13,5 dB per la sfera, −9,4 dB per l'antenna.", "rif": "05_acustica.md §1.3"},
+    "fondo_normalizzato": {"valore": -10, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Media del fondo di rumore normalizzato nei fotogrammi, rispetto alla soglia. La potenza del fondo di ogni settore e' esponenziale (rivelatore d'energia): la probabilita' che un settore di solo rumore superi la soglia vale e^(−10) ≈ 4,5·10⁻⁵, coerente con la Pfa dell'indice d."},
+    "fluttuazione_sigma": {"valore": 6, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Deviazione standard della fluttuazione di SE (propagazione, sorgente, operatore), intervallo 5-8 dB.", "rif": "05_acustica.md §8"},
+    "fluttuazione_tau": {"valore": 180, "unita": "s", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Tempo di correlazione del processo di Ornstein-Uhlenbeck: il contatto va e viene in minuti, non sfarfalla a ogni secondo.", "rif": "05_acustica.md §8"}
+  },
+  "sottomarini": {
+    "sl_rif": {"valore": 95, "unita": "dB", "fonte": "[ONI96] [FUN-8]", "confidenza": "nozionale", "nota": "Livello spettrale irradiato a banda larga del 688I (gradino 0) a 5 kt, a 1 kHz, dB re 1 µPa²/Hz a 1 m. Classificato: tarato perche' due 688 lenti si scoprano a poche migliaia di iarde (PROGETTO §5.12, 07 §7: 3-10 kyd per Akula contro 688) con la sfera a 2 kHz e mare forza 3. Tutte le classi sono scarti da questo valore (acustica.rumore_irradiato.gradino_sl0).", "rif": "docs/CALIBRAZIONE_F1.md"},
+    "pendenza_spettro": {"valore": -20, "unita": "dB/decade", "fonte": "[ARX2402] [MCK12]", "confidenza": "stimato", "nota": "Pendenza dello spettro a banda larga sopra qualche centinaio di Hz (−20·log f, la forma di Ross 1976): sposta i livelli dati a 1 kHz al centro di ogni banda (−6 dB a 2 kHz, +10,5 dB a 300 Hz)."},
+    "frazione_cavitazione_bassa_frequenza": {"valore": 0.5, "unita": "1", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Frazione del salto di cavitazione (dato a sopra 1 kHz) che si sente nella banda dei 300 Hz: il rumore di cavitazione e' soprattutto ad alta frequenza.", "rif": "05_acustica.md §7.2"},
+    "elica_sopra_chiglia": {"valore": 5, "unita": "m", "fonte": "[CFW86 p.618–619]", "confidenza": "nozionale", "nota": "L'elica e la sfera stanno circa sull'asse dello scafo (diametro 10 m): la loro quota e' quella della chiglia meno 5 m. Serve alla cavitazione (pressione all'elica) e a decidere da che parte dello strato stanno."},
+    "soffiaggio_emergenza": {"valore": 20, "unita": "dB", "fonte": "[MAN-688] [FUN-8]", "confidenza": "nozionale", "nota": "Quanto sale il rumore irradiato, in entrambe le bande, mentre si soffia la zavorra in emersione d'emergenza: un transitorio fortissimo (il manuale del 1989 la dice rumorosa)."},
+    "rumore_proprio_cavitazione": {"valore": 10, "unita": "dB", "fonte": "[MAN-688] [FUN-8]", "confidenza": "nozionale", "nota": "Quanto sale il rumore proprio sulla sfera quando si cavita (sulla banda dell'antenna la meta'). Nel 1989 fra 34 e 37 kt si perdevano tutti i contatti (docs/ORIGINALE.md)."}
+  },
+  "rumore_proprio": {
+    "pendenza_spettro": {"valore": -20, "unita": "dB/decade", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Sposta il rumore proprio dei sensori di scafo, dato a 1 kHz (acustica.rumore_proprio.livello_macchinario), alla banda della sfera: −6 dB a 2 kHz. Con mare forza 3 il rumore proprio comincia a dominare intorno ai 15 kt, come chiede 05 §7.1.", "rif": "05_acustica.md §7.1"},
+    "towed_base": {"valore": 33, "unita": "dB", "fonte": "[FUN-8] [WP-TAS]", "confidenza": "nozionale", "nota": "Rumore proprio dell'antenna rimorchiata a velocita' minima nella banda dei 300 Hz. Il livello_macchinario delle piattaforme (45 dB a 1 kHz, misurato sullo scafo) applicato all'antenna con v₀ = 3 kt la renderebbe sorda gia' a 6 kt, contro le regole R2 (piena efficacia fino a 8 kt, sorda oltre 12): l'antenna sta 800 m a poppa, lontana dai macchinari. Con 33 dB il rumore di flusso pareggia il mare forza 3 a circa 9 kt e lo supera di 4 dB a 12 kt.", "rif": "04_sensori.md §4.6.2"}
+  },
+  "propagazione": {
+    "distanza_transizione_min": {"valore": 100, "unita": "m", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "TL = 20·log r fino a r₀, poi 10·log(r/r₀) in piu' (divergenza cilindrica, PROGETTO §5.3): r₀ e' la profondita' dell'acqua (la piu' bassa fra sorgente, ricevitore e punto medio), mai sotto questo valore.", "rif": "05_acustica.md §2.1, §5.5"},
+    "perdita_rimbalzo": {"valore": 5, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Perdita per riflessione sul fondo (documentato 2-30 dB). Nel regime cilindrico l'energia che resta rimbalza: perdita per km = perdita_rimbalzo · tan(angolo_radente) / (2·H), cioe' circa 0,9 dB/km con 1000 m d'acqua.", "rif": "05_acustica.md §2.3, §5.5"},
+    "angolo_radente": {"valore": 20, "unita": "°", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Angolo tipico dei raggi che rimbalzano sul fondo."},
+    "perdita_fondo_max": {"valore": 2, "unita": "dB/km", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Tetto della perdita per km in acque basse (0,5-2 dB/km).", "rif": "05_acustica.md §5.5"},
+    "perdita_strato": {"valore": 12, "unita": "dB", "fonte": "[CW-MOD] [FUN-9]", "confidenza": "nozionale", "nota": "Perdita quando sorgente e ricevitore stanno da parti opposte dello strato, se l'ambiente non ne da' una sua (0-15 dB secondo la forza dello strato; Cold Waters usa 12).", "rif": "05_acustica.md §5.1"},
+    "strato_distanza_minima": {"valore": 500, "unita": "m", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Sotto questa distanza lo strato non nasconde: i raggi ripidi lo attraversano. La perdita cresce linearmente fino a strato_distanza_piena.", "rif": "05_acustica.md §5.1"},
+    "strato_distanza_piena": {"valore": 2000, "unita": "m", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Da qui in poi la perdita dello strato vale per intero."}
+  },
+  "sensori": {
+    "sfera": {
+      "lobi_laterali": {"valore": -25, "unita": "dB", "fonte": "[GUS-GAK] [CONO]", "confidenza": "nozionale", "nota": "Livello dei lobi laterali del fascio formato (sfera con ponderazione). Il lobo principale e' gaussiano: −12·(Δ/fascio)² dB, cioe' −3 dB a mezzo fascio; i lobi decrescono di 20·log(Δ/fascio)."}
+    },
+    "towed": {
+      "lobi_laterali": {"valore": -20, "unita": "dB", "fonte": "[FAS-TB16] [CONO]", "confidenza": "nozionale", "nota": "Antenna lineare: lobi piu' alti della sfera."},
+      "allargamento_max": {"valore": 4, "unita": "1", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Il fascio di un'antenna lineare si allarga come 1/sin(angolo dall'asse); limitato a 4 volte il fascio al traverso verso gli assi."},
+      "quota_velocita_lenta": {"valore": 3, "unita": "kt", "fonte": "[WP-TAS]", "confidenza": "nozionale", "nota": "Velocita' a cui l'antenna sta abbassamento_lento sotto il battello; a velocita_sorda sta abbassamento_veloce; in mezzo si interpola.", "rif": "04_sensori.md §4.6.2"},
+      "rischio_danno": {"valore": 0.05, "unita": "1", "fonte": "[WP-TAS] [MAN-688]", "confidenza": "nozionale", "nota": "Probabilita' al minuto, per ogni nodo oltre velocita_danno, di perdere l'antenna (la resistenza cresce col quadrato della velocita'). A 25 kt: circa 30 % al minuto."},
+      "velocita_filare_max": {"valore": 12, "unita": "kt", "fonte": "[WP-TAS]", "confidenza": "nozionale", "nota": "Sopra questa velocita' l'antenna non si fila ne' si ritira: il cavo resta fermo finche' non si rallenta."}
+    }
+  },
+  "sorgenti": {
+    "cacciatorpediniere": {
+      "nome": "Forrest Sherman (DD-931)",
+      "sl_10kt": {"valore": 116, "unita": "dB", "fonte": "[ARX2402] [FUN-8]", "confidenza": "nozionale", "nota": "Livello spettrale a 1 kHz a 10 kt. La formula di Ross per i mercantili (112 + 50·log(v/10) + 15·log(Δ) + 20 − 20·log f) da' 126 dB per 4 050 t; un'unita' militare a velocita' di trasferimento, con le eliche poco caricate, si prende 10 dB in meno. Tarato perche' a 10 kt si senta a varie miglia dallo stesso lato dello strato e molto meno attraverso.", "rif": "docs/CALIBRAZIONE_F1.md"},
+      "pendenza": {"valore": 50, "unita": "dB/decade", "fonte": "[ARX2402]", "confidenza": "stimato", "nota": "50·log v di Ross: le eliche delle navi di superficie cavitano quasi sempre."},
+      "velocita_min": {"valore": 3, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Sotto, il rumore e' quello dei macchinari."},
+      "quota_sorgente": {"valore": 5, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Quota delle eliche."},
+      "aspetto_poppa": {"valore": 3, "unita": "dB", "fonte": "[MCK12]", "confidenza": "nozionale"},
+      "aspetto_prua": {"valore": -2, "unita": "dB", "fonte": "[MCK12]", "confidenza": "nozionale"},
+      "velocita_max": {"valore": 32.5, "unita": "kt", "fonte": "[CFW86 p.639]", "confidenza": "nozionale", "nota": "Ordine di grandezza dei cacciatorpediniere USA del periodo (Spruance 32,5 kt); le Forrest Sherman erano da 32-33 kt (conoscenza pregressa)."},
+      "diametro_tattico": {"valore": 900, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Circa 7 lunghezze (128 m), regola empirica per le navi di superficie."},
+      "accelerazione": {"valore": 0.15, "unita": "kt/s", "fonte": "[CONO]", "confidenza": "nozionale"}
+    },
+    "mercantile": {
+      "nome": "mercantile neutrale",
+      "sl_10kt": {"valore": 132, "unita": "dB", "fonte": "[ARX2402] [MCK12]", "confidenza": "calcolato", "nota": "Ross a 1 kHz per 10 000 t: 112 + 60 + 20 − 60 = 132 dB re 1 µPa²/Hz a 10 kt."},
+      "pendenza": {"valore": 50, "unita": "dB/decade", "fonte": "[ARX2402]", "confidenza": "stimato"},
+      "velocita_min": {"valore": 3, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "quota_sorgente": {"valore": 6, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "aspetto_poppa": {"valore": 5, "unita": "dB", "fonte": "[MCK12]", "confidenza": "documentato", "nota": "Le navi mercantili irradiano 5-10 dB in piu' a poppa che a prua."},
+      "aspetto_prua": {"valore": -3, "unita": "dB", "fonte": "[MCK12]", "confidenza": "nozionale"},
+      "velocita_max": {"valore": 15, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "diametro_tattico": {"valore": 1200, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "accelerazione": {"valore": 0.05, "unita": "kt/s", "fonte": "[CONO]", "confidenza": "nozionale"}
+    },
+    "biologico": {
+      "nome": "sorgente biologica (cetacei, branchi)",
+      "sl_sfera": {"valore": 98, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Livello spettrale a 2 kHz quando la sorgente e' attiva: si sente a 3-5 miglia dallo stesso lato dello strato. I pesci emettono fra 50 e 8 000 Hz, all'alba e al tramonto.", "rif": "05_acustica.md §3.4"},
+      "sl_towed": {"valore": 104, "unita": "dB", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "A 300 Hz (vesciche natatorie 75-150 Hz, richiami dei cetacei)."},
+      "quota": {"valore": 30, "unita": "m", "fonte": "[CONO]", "confidenza": "nozionale"},
+      "attiva_media": {"valore": 120, "unita": "s", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Durata media di un episodio (esponenziale): la sorgente e' intermittente."},
+      "spenta_media": {"valore": 600, "unita": "s", "fonte": "[FUN-8]", "confidenza": "nozionale", "nota": "Pausa media fra due episodi."},
+      "deriva": {"valore": 0.5, "unita": "kt", "fonte": "[CONO]", "confidenza": "nozionale", "nota": "Velocita' di spostamento lento del gruppo."}
+    }
+  }
+}

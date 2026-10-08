@@ -2,8 +2,10 @@
 /**
  * Il cancello: server HTTP + WebSocket che accoglie i client.
  *
- * In F0 fa solo il mestiere di cancello — origine, biglietto, freni, battito,
- * presenza — ma e' gia' la porta da cui passeranno lobby e partite (F1, F5).
+ * Fa il mestiere di cancello — origine, biglietto, freni, battito, presenza —
+ * e smista i messaggi di partita (`entra`, `esci`, `ordine`, protocollo v1)
+ * alla palestra di F1. Le partite non vedono le connessioni: ricevono un
+ * «canale» per i messaggi (vedi match/palestra.js).
  * Cosa NON fa, di proposito: non legge sessioni PHP, non tocca il database,
  * non conosce password. Sa chi sei solo dal biglietto firmato.
  *
@@ -24,12 +26,16 @@ import {
   PROTOCOLLO_VERSIONE,
   codifica,
   decodifica,
+  validaEntra,
   verificaBiglietto,
 } from '../../shared/protocol.js';
+import { creaPalestra } from './match/palestra.js';
 
 /** @typedef {import('./config.js').Configurazione} Configurazione */
 /** @typedef {import('./registro.js').Registro} Registro */
 /** @typedef {import('../../shared/protocol.js').CaricoBiglietto} CaricoBiglietto */
+/** @typedef {import('./match/palestra.js').Palestra} Palestra */
+/** @typedef {import('./match/palestra.js').Canale} Canale */
 
 /**
  * @typedef {object} Connessione
@@ -43,16 +49,19 @@ import {
  * @property {number} sgarbi            violazioni del freno o della forma
  * @property {boolean} viva             per il battito
  * @property {NodeJS.Timeout | null} attesaCiao
+ * @property {Canale | null} canale     il battello che questa connessione governa
+ * @property {Promise<void>} coda       i messaggi di una connessione si trattano in ordine
  */
 
 /**
  * @param {Configurazione} conf
  * @param {Registro} registro
- * @param {{adessoMs?: () => number, battitoMs?: number}} [opzioni]
+ * @param {{adessoMs?: () => number, battitoMs?: number, palestra?: Palestra}} [opzioni]
  */
 export async function avviaCancello(conf, registro, opzioni = {}) {
   const adessoMs = opzioni.adessoMs ?? (() => Date.now());
   const battitoMs = opzioni.battitoMs ?? 30_000;
+  const palestra = opzioni.palestra ?? await creaPalestra(conf, registro);
   const avviato = new Date(adessoMs()).toISOString();
 
   /** @type {Set<Connessione>} */
@@ -99,6 +108,8 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
       sgarbi: 0,
       viva: true,
       attesaCiao: null,
+      canale: null,
+      coda: Promise.resolve(),
     };
     connessioni.add(c);
     registro.debug('connessione', { conn: c.id, ip: c.ip });
@@ -111,7 +122,12 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
     }, ATTESA_CIAO_SECONDI * 1000);
 
     ws.on('pong', () => { c.viva = true; });
-    ws.on('message', (dati, binario) => { void ricevi(c, dati, binario); });
+    // In ordine: un `ordine` che segue `entra` deve trovare il battello gia' in acqua.
+    ws.on('message', (dati, binario) => {
+      c.coda = c.coda.then(() => ricevi(c, dati, binario)).catch((e) => {
+        registro.error('messaggio_fallito', { conn: c.id, errore: /** @type {Error} */ (e).message });
+      });
+    });
     ws.on('close', (codice) => congeda(c, codice));
     ws.on('error', (err) => registro.warn('errore_socket', { conn: c.id, errore: err.message }));
   });
@@ -163,10 +179,52 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
       return;
     }
 
+    const uid = c.utente.uid;
     switch (m.t) {
       case DAL_CLIENT.PING:
         manda(c, DAL_SERVER.PONG, { n: typeof m.n === 'number' ? m.n : null, ora: adessoMs() });
         return;
+      case DAL_CLIENT.ENTRA: {
+        if (c.canale) { manda(c, DAL_SERVER.ERRORE, { codice: ERRORI.GIA_IN_PARTITA }); return; }
+        const v = validaEntra(m);
+        if (!v.ok) { manda(c, DAL_SERVER.ERRORE, { codice: v.errore }); return; }
+        /** @type {Canale} */
+        const canale = {
+          invia: (t, campi) => manda(c, t, campi),
+          revocato: (motivo) => {
+            if (c.canale !== canale) return;
+            c.canale = null;
+            manda(c, DAL_SERVER.USCITA, { motivo });
+          },
+        };
+        c.canale = canale; // prima dell'attesa: un secondo `entra` trova gia' il posto preso
+        try {
+          const r = await palestra.entra(uid, c.utente.nome, canale);
+          if (!r.ok) {
+            c.canale = null;
+            manda(c, DAL_SERVER.ERRORE, { codice: r.errore });
+          } else if (c.ws.readyState !== c.ws.OPEN) {
+            palestra.disconnesso(uid, canale);
+          }
+        } catch (e) {
+          c.canale = null;
+          registro.error('entra_fallito', { conn: c.id, uid, errore: /** @type {Error} */ (e).message });
+          manda(c, DAL_SERVER.ERRORE, { codice: ERRORI.SCENARIO_SCONOSCIUTO });
+        }
+        return;
+      }
+      case DAL_CLIENT.ESCI:
+        if (!c.canale || !palestra.esci(uid, c.canale)) manda(c, DAL_SERVER.ERRORE, { codice: ERRORI.NON_IN_PARTITA });
+        return;
+      case DAL_CLIENT.ORDINE: {
+        if (!c.canale) {
+          manda(c, DAL_SERVER.ERRORE, { codice: ERRORI.NON_IN_PARTITA, n: Number.isSafeInteger(m.n) ? m.n : null });
+          return;
+        }
+        const r = palestra.ordine(uid, c.canale, m);
+        manda(c, r.t, r.campi);
+        return;
+      }
       case DAL_CLIENT.CIAO:
         manda(c, DAL_SERVER.ERRORE, { codice: ERRORI.MESSAGGIO_MALFORMATO, nota: 'gia presentato' });
         return;
@@ -228,6 +286,10 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
   function congeda(c, codice) {
     if (c.attesaCiao) clearTimeout(c.attesaCiao);
     connessioni.delete(c);
+    if (c.utente && c.canale) {
+      palestra.disconnesso(c.utente.uid, c.canale);
+      c.canale = null;
+    }
     if (c.utente) {
       const mie = presenti.get(c.utente.uid);
       mie?.delete(c);
@@ -250,6 +312,12 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
       avviato,
       connessioni: connessioni.size,
       utenti: presenti.size,
+      palestra: palestra.partita ? {
+        partita: palestra.partita.id,
+        battelli: palestra.partita.giocatori.size,
+        ora_gioco: palestra.partita.ora,
+        scala_tempo: palestra.partita.scala,
+      } : null,
     };
   }
 
@@ -259,11 +327,15 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
   });
   const indirizzo = http_.address();
   const porta = typeof indirizzo === 'object' && indirizzo ? indirizzo.port : conf.porta;
-  registro.info('in_ascolto', { host: conf.host, porta, versione: conf.versione, origini: conf.originiAmmesse });
+  registro.info('in_ascolto', {
+    host: conf.host, porta, versione: conf.versione, origini: conf.originiAmmesse, protocollo: PROTOCOLLO_VERSIONE,
+    istantanee: conf.dirIstantanee, guardia_s: conf.guardiaSecondi, max_giocatori: conf.maxGiocatori,
+  });
 
   return {
     porta,
     stato,
+    palestra,
     /** Chiusura ordinata: si saluta chi e' a bordo, poi si spegne. */
     async chiudi(motivo = 'manutenzione') {
       clearInterval(battito);
@@ -273,6 +345,7 @@ export async function avviaCancello(conf, registro, opzioni = {}) {
       }
       await new Promise((r) => wss.close(() => r(undefined)));
       await new Promise((r) => http_.close(() => r(undefined)));
+      await palestra.chiudi();
       registro.info('spento', { motivo });
     },
   };

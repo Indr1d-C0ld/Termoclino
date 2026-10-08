@@ -1,0 +1,390 @@
+// @ts-check
+/**
+ * Ciò che tutte le stazioni del 688 hanno in comune: lo stato dell'interfaccia (zoom, HUD, mirino,
+ * bersaglio designato…), la finestra della mappa con l'HUD, la cornice, la pulsantiera della mappa,
+ * l'uscita verso la CONN.
+ *
+ * Una stazione è un oggetto con il lavoro del pannello (cls/pannelli.json), eventuali zone cliccabili
+ * in più, una funzione che disegna il suo stato vivo e una che esegue i comandi. Il disegno avviene
+ * tutto sulla tela indicizzata 320×200, ogni fotogramma, a partire dal pannello già pronto.
+ */
+import {
+  FINESTRA, CENTRO, SCALE_MAPPA_M, ZOOM_INIZIALE, classiFinestra, disegnaFondale, disegnaBattello,
+  disegnaScia, disegnaX, disegnaRombo, puntoAMetaBordo, puntoSulBordo, inSchermo, inMondo, inFinestra,
+} from '../resa/mappa.js';
+import { disegnaBussola, disegnaScalaQuota } from '../resa/hud.js';
+import {
+  disegnaBarraBersaglio, disegnaStriscia, disegnaBarraStato, disegnaRigaMessaggi, spegniPulsanti,
+  gms, orologio, treCifre,
+} from '../resa/cornice.js';
+import { picchi } from '../resa/cascata.js';
+import { scrivi, larghezzaTesto } from '../resa/testo.js';
+import { ProiezioneLocale } from '../../../shared/geo.js';
+import { normalizza360, nodiInMs } from '../../../shared/units.js';
+
+/** @typedef {import('../resa/tela.js').Tela} Tela */
+/** @typedef {import('../resa/testo.js').FontGioco} FontGioco */
+/** @typedef {import('../resa/risorse.js').Originali} Originali */
+/** @typedef {import('../resa/risorse.js').Pannello} Pannello */
+/** @typedef {import('../cls.js').Hotspot} Hotspot */
+/** @typedef {import('../stato.js').StatoClient} StatoClient */
+/** @typedef {import('../resa/mappa.js').Campionatore} Campionatore */
+/** @typedef {import('../resa/cascata.js').Riferimento} Riferimento */
+
+/** Codici dei tasti della pulsantiera della mappa (gruppo 1 di ogni stazione). */
+export const TASTI_MAPPA = Object.freeze({ P: 80, F: 70, S: 83, I: 73, H: 72, O: 79, C: 67, B: 66, T: 84 });
+/** Contour imaging (P, F, S, C): arriva in F2 con il sonar ad alta frequenza. */
+/** @type {number[]} */
+const MAPPA_SPENTI = [TASTI_MAPPA.P, TASTI_MAPPA.F, TASTI_MAPPA.S, TASTI_MAPPA.C];
+/** Uscita verso la CONN. */
+export const TASTO_USCITA = 88;
+
+/**
+ * Ritratti per ruolo che parla (`rapporto.chi` del protocollo v1): il sonarista (CREW2, 047), chi sta
+ * ai timoni (CREW4, l'ufficiale d'immersione di 014), la macchina (CREW3, l'ufficiale davanti ai
+ * macchinari di 061). L'ufficiale di guardia e il navigatore parlano senza foto.
+ */
+export const RITRATTO_PER_RUOLO = Object.freeze(/** @type {Record<string, string>} */ ({
+  sonar: 'equipaggio/CREW2.png',
+  timone: 'equipaggio/CREW4.png',
+  macchina: 'equipaggio/CREW3.png',
+}));
+
+/**
+ * @typedef {object} StatoUi
+ * @property {string} stazione
+ * @property {number} zoom indice in SCALE_MAPPA_M
+ * @property {boolean} hud
+ * @property {boolean} ombreggiatura
+ * @property {boolean} cascataSuSonar la finestra del Sonar mostra la cascata (T passa alla mappa)
+ * @property {{ x: number, y: number }} cursore posizione logica del puntatore
+ * @property {number | null} fuoco indice dell'hotspot scelto da tastiera
+ * @property {{ tipo: 'waypoint', x: number, y: number } | null} mirino
+ * @property {{ sensore: 'sfera' | 'towed' | 'entrambi', riferimento: Riferimento }} cascata
+ * @property {{ rilevamento: number, visto: number, perso: boolean } | null} bersaglio rilevamento VERO
+ * @property {{ tutteTracce: boolean, tracciaBersaglio: boolean, proiezione: boolean, minuti: number }} plot
+ * @property {{ immagine: string, fino: number } | null} ritratto
+ * @property {number} ultimoRitratto
+ * @property {boolean} filtroAlto
+ * @property {boolean} aiuto
+ * @property {boolean} capo
+ * @property {string} lingua
+ */
+
+/** @param {string} lingua @returns {StatoUi} */
+export function uiIniziale(lingua = 'it') {
+  return {
+    stazione: 'conn',
+    zoom: ZOOM_INIZIALE,
+    hud: true,
+    ombreggiatura: true,
+    cascataSuSonar: true,
+    cursore: { x: 160, y: 100 },
+    fuoco: null,
+    mirino: null,
+    cascata: { sensore: 'sfera', riferimento: 'relativo' },
+    bersaglio: null,
+    plot: { tutteTracce: true, tracciaBersaglio: false, proiezione: false, minuti: 10 },
+    ritratto: null,
+    ultimoRitratto: -1e9,
+    filtroAlto: false,
+    aiuto: false,
+    capo: false,
+    lingua,
+  };
+}
+
+/**
+ * Tutto quello che serve a una stazione per disegnare e per agire.
+ * @typedef {object} Contesto
+ * @property {Tela} tela
+ * @property {Originali} orig
+ * @property {FontGioco} font
+ * @property {Pannello} pannello
+ * @property {StatoClient} stato
+ * @property {StatoUi} ui
+ * @property {number} ora secondi (orologio del browser, solo per le animazioni)
+ * @property {Campionatore | null} fondale
+ * @property {(cosa: string, valore: unknown) => void} ordina manda un `ordine` al server
+ * @property {(chiave: string, parametri?: Record<string, unknown>) => void} avvisa messaggio locale nel nastro
+ * @property {(chiave: string, parametri?: Record<string, unknown>) => string} t traduce
+ * @property {Map<string, unknown>} cache
+ */
+
+/**
+ * @typedef {object} Stazione
+ * @property {string} id
+ * @property {string} lavoro id in cls/pannelli.json
+ * @property {boolean} cornice ha la finestra della mappa e le barre
+ * @property {(ctx: Contesto) => Hotspot[]} [hotspotExtra] zone cliccabili disegnate dal client
+ * @property {(ctx: Contesto) => void} disegna stato vivo della stazione (dopo la cornice)
+ * @property {(ctx: Contesto, h: Hotspot, punto: { x: number, y: number } | null) => boolean} attiva
+ * @property {(ctx: Contesto) => boolean} [disegnaFinestra] se c'è, disegna la finestra al posto della mappa (true = fatto)
+ */
+
+// ---------------------------------------------------------------------------------- mappa
+
+/** Vista corrente: centro sul battello, quantizzato al pixel della scala. @param {Contesto} ctx */
+export function vistaMappa(ctx) {
+  const n = ctx.stato.nave;
+  const mpp = SCALE_MAPPA_M[ctx.ui.zoom];
+  const x = n?.x ?? 0, y = n?.y ?? 0;
+  return { cx: Math.round(x / mpp) * mpp, cy: Math.round(y / mpp) * mpp, mpp };
+}
+
+/** Proiezione per lat/lon, se la partita ha un'origine. @param {Contesto} ctx */
+export function proiezione(ctx) {
+  const o = ctx.stato.partita?.origine;
+  if (!o) return null;
+  const k = `proiezione:${o.lat},${o.lon}`;
+  let p = /** @type {ProiezioneLocale | undefined} */ (ctx.cache.get(k));
+  if (!p) {
+    p = new ProiezioneLocale(o.lat, o.lon);
+    ctx.cache.set(k, p);
+  }
+  return p;
+}
+
+/**
+ * La mappa dall'alto con tutto quello che ci va sopra.
+ * @param {Contesto} ctx
+ */
+export function disegnaMappa(ctx) {
+  const { tela, ui, stato } = ctx;
+  const nave = stato.nave;
+  const v = vistaMappa(ctx);
+  tela.ritaglia(FINESTRA.x1, FINESTRA.y1, FINESTRA.x2, FINESTRA.y2);
+  if (ctx.fondale) {
+    const chiave = `fondale:${v.cx},${v.cy},${v.mpp}`;
+    let classi = /** @type {Int8Array | undefined} */ (ctx.cache.get(chiave));
+    if (!classi) {
+      for (const k of ctx.cache.keys()) if (k.startsWith('fondale:')) ctx.cache.delete(k);
+      classi = classiFinestra(v, ctx.fondale);
+      ctx.cache.set(chiave, classi);
+    }
+    disegnaFondale(tela, classi, ui.ombreggiatura);
+  } else {
+    tela.riempi(FINESTRA.x1, FINESTRA.y1, FINESTRA.x2, FINESTRA.y2, 0);
+  }
+  if (!nave) {
+    tela.senzaRitaglio();
+    return;
+  }
+  // traccia propria: puntini neri
+  if (ui.plot.tutteTracce) {
+    for (const p of stato.traccia) {
+      const s = inSchermo(v, p.x, p.y);
+      tela.pixel(Math.round(s.px), Math.round(s.py), 0);
+    }
+  }
+  // waypoint: cifre magenta (026), unite da puntini se l'autopilota li segue
+  const wp = stato.ordinati.waypoint;
+  let prec = inSchermo(v, nave.x, nave.y);
+  wp.forEach((p, i) => {
+    const s = inSchermo(v, p.x, p.y);
+    if (stato.ordinati.autopilota) tela.linea(prec.px, prec.py, s.px, s.py, 13, 3, 1);
+    prec = s;
+    scrivi(tela, ctx.font, Math.round(s.px) - 2, Math.round(s.py) - 2, String(i + 1), 13);
+  });
+  // rilevamento del bersaglio designato: puntini rossi fino al bordo
+  if (ui.bersaglio && !ui.bersaglio.perso) {
+    const b = puntoSulBordo(ui.bersaglio.rilevamento);
+    tela.linea(CENTRO.x, CENTRO.y, b.px, b.py, 12, 2, 1);
+  }
+  // contatti di solo rilevamento: la X a metà strada verso il bordo, come nel 1989
+  const f = stato.sonar[0];
+  if (f) {
+    if (f.sfera) {
+      for (const p of picchi(f.sfera.settori, f.sfera.ciechi).slice(0, 6)) {
+        const m = puntoAMetaBordo(p.rilevamento);
+        disegnaX(tela, m.px, m.py);
+      }
+    }
+    // l'antenna rimorchiata: ogni contatto compare due volte (θ e 2·asse − θ), entrambe deboli
+    if (f.towed && !f.towed.sorda) {
+      for (const p of picchi(f.towed.settori, f.towed.ciechi).slice(0, 6)) {
+        const m = puntoAMetaBordo(p.rilevamento);
+        disegnaX(tela, m.px, m.py, true);
+      }
+    }
+  }
+  // proiezione della posizione (PLOT PROJ + TIME PROJECTION)
+  if (ui.plot.proiezione) {
+    const d = nodiInMs(nave.velocita) * 60 * ui.plot.minuti;
+    const a = (nave.rotta * Math.PI) / 180;
+    const s = inSchermo(v, nave.x + d * Math.sin(a), nave.y + d * Math.cos(a));
+    if (inFinestra(s.px, s.py)) disegnaRombo(tela, s.px, s.py, 14);
+  }
+  disegnaScia(tela, nave.rotta, nave.velocita);
+  disegnaBattello(tela);
+  if (ui.hud) {
+    disegnaBussola(tela, ctx.font, nave.rotta);
+    const fondo = nave.profondita_acqua ?? (nave.fondale === null ? null : nave.z + nave.fondale);
+    disegnaScalaQuota(tela, nave.z, fondo, nave.strato);
+  }
+  tela.senzaRitaglio();
+}
+
+/**
+ * Ritratto dell'equipaggio al posto della finestra (014, 047): la riga più bassa della foto sta
+ * sull'ultima riga della finestra (y 120) e le righe in cima che non ci stanno restano tagliate.
+ * Misurato su 014: CREW4 (96 righe) va da y 25, e i pixel coincidono tutti.
+ * @param {Contesto} ctx @param {string} percorso
+ */
+export function disegnaRitratto(ctx, percorso) {
+  const img = ctx.orig.immagini[percorso];
+  if (!img) return;
+  const { tela } = ctx;
+  tela.ritaglia(FINESTRA.x1, FINESTRA.y1, FINESTRA.x2, FINESTRA.y2);
+  tela.riempi(FINESTRA.x1, FINESTRA.y1, FINESTRA.x2, FINESTRA.y2, 0);
+  tela.incolla(img.indici, img.larghezza, FINESTRA.x1, FINESTRA.y2 - (img.altezza - 1));
+  tela.senzaRitaglio();
+}
+
+// ---------------------------------------------------------------------------------- bersaglio
+
+/**
+ * Tiene agganciato il bersaglio designato al picco più vicino del fotogramma sonar più recente
+ * (entro 8°); dopo 15 s senza un picco il contatto è perso.
+ * @param {Contesto} ctx
+ */
+export function seguiBersaglio(ctx) {
+  const b = ctx.ui.bersaglio, f = ctx.stato.sonar[0];
+  if (!b || !f || !f.sfera) return;
+  if (ctx.cache.get('bersaglio:ora') === f.ora) return;
+  ctx.cache.set('bersaglio:ora', f.ora);
+  let migliore = null, dmin = 8;
+  for (const p of picchi(f.sfera.settori, f.sfera.ciechi)) {
+    const d = Math.abs(((p.rilevamento - b.rilevamento + 540) % 360) - 180);
+    if (d <= dmin) { dmin = d; migliore = p.rilevamento; }
+  }
+  if (migliore !== null) {
+    ctx.ui.bersaglio = { rilevamento: migliore, visto: f.ora, perso: false };
+  } else if (!b.perso && f.ora - b.visto > 15) {
+    ctx.ui.bersaglio = { ...b, perso: true };
+    ctx.avvisa('locale.contatto_perso');
+  }
+}
+
+/**
+ * TARGET (G): designa il picco successivo, dal più forte (Tab nel mirino del 1989).
+ * @param {Contesto} ctx
+ */
+export function designaProssimo(ctx) {
+  const f = ctx.stato.sonar[0];
+  const lista = f?.sfera ? picchi(f.sfera.settori, f.sfera.ciechi).map((p) => normalizza360(p.rilevamento)) : [];
+  if (!f || lista.length === 0) {
+    ctx.avvisa('locale.nessun_contatto');
+    return;
+  }
+  const att = ctx.ui.bersaglio;
+  let i = 0;
+  if (att && !att.perso) {
+    const j = lista.findIndex((r) => Math.abs(((r - att.rilevamento + 540) % 360) - 180) < 3);
+    i = j < 0 ? 0 : (j + 1) % lista.length;
+  }
+  ctx.ui.bersaglio = { rilevamento: lista[i], visto: f.ora, perso: false };
+  ctx.avvisa('locale.bersaglio_acquisito');
+}
+
+// ---------------------------------------------------------------------------------- cornice
+
+/**
+ * Disegna la cornice comune: finestra (mappa, ritratto o quella della stazione), barre, nastro.
+ * @param {Contesto} ctx @param {Stazione} st @param {{ disegna: (t: Tela, f: FontGioco) => void }} nastro
+ */
+export function disegnaCornice(ctx, st, nastro) {
+  const { tela, ui, stato, font } = ctx;
+  const nave = stato.nave;
+  seguiBersaglio(ctx);
+  const ritratto = ui.ritratto && ui.ritratto.fino > ctx.ora ? ui.ritratto.immagine : null;
+  if (ritratto) disegnaRitratto(ctx, ritratto);
+  else if (!(st.disegnaFinestra && st.disegnaFinestra(ctx))) disegnaMappa(ctx);
+  if (!nave) {
+    const testo = ctx.t('locale.attesa_partita');
+    scrivi(tela, font, CENTRO.x - Math.floor(larghezzaTesto(font, testo) / 2), CENTRO.y - 2, testo, 7);
+  }
+  if (nave) {
+    disegnaStriscia(tela, font, nave.rotta, nave.velocita, nave.z);
+    const b = ui.bersaglio;
+    if (b) {
+      disegnaBarraBersaglio(tela, font, {
+        bersaglio: ctx.t(b.perso ? 'ui.contatto_perso' : 'ui.contatto_sonar'),
+        rilevamento: b.perso ? '' : treCifre(b.rilevamento - nave.rotta),
+      });
+    }
+    const p = proiezione(ctx);
+    const ora = orologio(nave.ora);
+    if (p) {
+      const g = p.inGeografiche(nave.x, nave.y);
+      disegnaBarraStato(tela, font, gms(g.lat, 'lat'), gms(g.lon, 'lon'), ora);
+    } else {
+      disegnaBarraStato(tela, font, null, null, ora);
+    }
+  }
+  // mirino: la riga dei messaggi mostra le coordinate del punto, come in 025
+  if (ui.mirino) {
+    const v = vistaMappa(ctx);
+    const m = inMondo(v, ui.mirino.x, ui.mirino.y);
+    const p = proiezione(ctx);
+    if (p) {
+      const g = p.inGeografiche(m.x, m.y);
+      const a = gms(g.lat, 'lat'), o = gms(g.lon, 'lon');
+      disegnaRigaMessaggi(tela, font, `${a.testo}${a.emisfero} ${o.testo}${o.emisfero}`);
+    } else {
+      disegnaRigaMessaggi(tela, font, `${(m.x / 1000).toFixed(1)}X ${(m.y / 1000).toFixed(1)}Y`);
+    }
+  } else {
+    nastro.disegna(tela, font);
+  }
+  spegniPulsanti(tela, ctx.pannello.hotspot.filter((h) => h.gruppo === 1 && MAPPA_SPENTI.includes(h.tasto)));
+}
+
+/**
+ * Comandi comuni: pulsantiera della mappa e uscita. Restituisce true se il comando è stato preso.
+ * @param {Contesto} ctx @param {Hotspot} h @param {(stazione: string) => void} vaiA
+ */
+export function attivaComune(ctx, h, vaiA) {
+  const ui = ctx.ui;
+  if (h.tasto === TASTO_USCITA && h.gruppo === 0) {
+    vaiA('conn');
+    return true;
+  }
+  if (h.gruppo !== 1) return false;
+  switch (h.tasto) {
+    case TASTI_MAPPA.I:
+      if (ui.zoom === 0) ctx.avvisa('locale.zoom_minimo');
+      else ui.zoom--;
+      return true;
+    case TASTI_MAPPA.O:
+      if (ui.zoom === SCALE_MAPPA_M.length - 1) ctx.avvisa('locale.zoom_massimo');
+      else ui.zoom++;
+      return true;
+    case TASTI_MAPPA.H:
+      ui.hud = !ui.hud;
+      return true;
+    case TASTI_MAPPA.B:
+      ui.ombreggiatura = !ui.ombreggiatura;
+      return true;
+    case TASTI_MAPPA.T:
+      if (ui.stazione === 'sonar') ui.cascataSuSonar = !ui.cascataSuSonar;
+      return true;
+    default:
+      if (MAPPA_SPENTI.includes(h.tasto)) {
+        ctx.avvisa('locale.non_disponibile');
+        return true;
+      }
+      return false;
+  }
+}
+
+/**
+ * Mostra un ritratto per qualche secondo, se è passato abbastanza tempo dall'ultimo.
+ * @param {StatoUi} ui @param {string} ruolo @param {number} ora
+ */
+export function ritrattoPer(ui, ruolo, ora) {
+  const img = RITRATTO_PER_RUOLO[ruolo];
+  if (!img || ora - ui.ultimoRitratto < 8) return;
+  ui.ritratto = { immagine: img, fino: ora + 2 };
+  ui.ultimoRitratto = ora;
+}
